@@ -1,0 +1,399 @@
+{
+  "baselineCommit": "67f12aed44db8ad8eda38ebd4a1e5d890a30f847",
+  "fixedNow": 1792022400000,
+  "tasks": {
+    "result": [
+      {
+        "id": "task-pm69128",
+        "name": "协助设备调试",
+        "description": "更新社团公众号文章，保持活跃度。",
+        "type": "donate_stone",
+        "cost": {
+          "spiritStones": 172
+        },
+        "reward": {
+          "contribution": 72,
+          "spiritStones": 51
+        },
+        "timeCost": "medium"
+      },
+      {
+        "id": "task-8ghehjh",
+        "name": "整理活动海报",
+        "description": "把一批元器件送到指定实验室。",
+        "type": "donate_stone",
+        "cost": {
+          "spiritStones": 166
+        },
+        "reward": {
+          "contribution": 72,
+          "spiritStones": 49
+        },
+        "timeCost": "instant"
+      },
+      {
+        "id": "task-w9ujdhz",
+        "name": "驱逐占座书本",
+        "description": "把一批元器件送到指定实验室。",
+        "type": "donate_stone",
+        "cost": {
+          "spiritStones": 123
+        },
+        "reward": {
+          "contribution": 115,
+          "spiritStones": 36
+        },
+        "timeCost": "short"
+      },
+      {
+        "id": "task-iz0uesw",
+        "name": "撰写社团推送",
+        "description": "维护社团活动室门禁刷卡系统。",
+        "type": "collect",
+        "cost": {
+          "items": [
+            {
+              "name": "电阻若干",
+              "quantity": 2
+            }
+          ]
+        },
+        "reward": {
+          "contribution": 117,
+          "items": [
+            {
+              "name": "冰美式",
+              "quantity": 1
+            }
+          ]
+        },
+        "timeCost": "instant"
+      },
+      {
+        "id": "task-2maqcff",
+        "name": "采集实验耗材",
+        "description": "为社团新成员解答入门问题。",
+        "type": "donate_stone",
+        "cost": {
+          "spiritStones": 146
+        },
+        "reward": {
+          "contribution": 124,
+          "spiritStones": 43
+        },
+        "timeCost": "instant"
+      },
+      {
+        "id": "task-ntmptw1",
+        "name": "撰写社团推送",
+        "description": "帮社团清理占座的书本和私人物品。",
+        "type": "donate_herb",
+        "cost": {
+          "items": [
+            {
+              "name": "乌龙茶叶茶包",
+              "quantity": 2
+            }
+          ]
+        },
+        "reward": {
+          "contribution": 47
+        },
+        "timeCost": "instant"
+      },
+      {
+        "id": "task-2eeo8rk",
+        "name": "打扫社团活动室",
+        "description": "在社团值班，负责迎新答疑，维护秩序。",
+        "type": "donate_herb",
+        "cost": {
+          "items": [
+            {
+              "name": "速溶咖啡粉",
+              "quantity": 2
+            }
+          ]
+        },
+        "reward": {
+          "contribution": 67
+        },
+        "timeCost": "short"
+      },
+      {
+        "id": "task-zy1p3ls",
+        "name": "社团迎新值班",
+        "description": "收集下一阶段项目需要的参考资料。",
+        "type": "donate_stone",
+        "cost": {
+          "spiritStones": 190
+        },
+        "reward": {
+          "contribution": 84,
+          "spiritStones": 57
+        },
+        "timeCost": "instant"
+      },
+      {
+        "id": "task-loofs4r",
+        "name": "社团迎新值班",
+        "description": "更新社团公众号文章，保持活跃度。",
+        "type": "patrol",
+        "cost": {},
+        "reward": {
+          "contribution": 47
+        },
+        "timeCost": "medium"
+      },
+      {
+        "id": "task-b1lrh4l",
+        "name": "打扫社团活动室",
+        "description": "帮社团清理占座的书本和私人物品。",
+        "type": "donate_herb",
+        "cost": {
+          "items": [
+            {
+              "name": "抹茶粉",
+              "quantity": 2
+            }
+          ]
+        },
+        "reward": {
+          "contribution": 58
+        },
+        "timeCost": "instant"
+      },
+      {
+        "id": "task-j1c9zfa",
+        "name": "打扫社团活动室",
+        "description": "清理机房租物，把前人留下的杂物收掉。",
+        "type": "hunt",
+        "cost": {},
+        "reward": {
+          "contribution": 90,
+          "exp": 167
+        },
+        "timeCost": "medium"
+      },
+      {
+        "id": "task-2q7a5ua",
+        "name": "社团迎新值班",
+        "description": "为社团活动设计并张贴海报。",
+        "type": "hunt",
+        "cost": {},
+        "reward": {
+          "contribution": 131,
+          "exp": 300
+        },
+        "timeCost": "long"
+      }
+    ],
+    "randomCalls": 99
+  },
+  "victory": {
+    "result": {
+      "adventureResult": {
+        "story": "在固定副本中，你遭遇了重修常客实验报告 DDL的袭击。经过一番 debug，你成功把它按在地上摩擦，消耗了 15 点精力。你从敌人身上找到了战利品。",
+        "hpChange": -15,
+        "expChange": 138,
+        "spiritStonesChange": 26,
+        "eventColor": "danger",
+        "itemsObtained": [
+          {
+            "name": "红茶叶",
+            "type": "食材",
+            "description": "红茶叶，击败敌人后获得。",
+            "rarity": "普通",
+            "isEquippable": false,
+            "effect": {
+              "hp": 30
+            }
+          },
+          {
+            "name": "红轴机械键盘",
+            "type": "键鼠",
+            "rarity": "稀有",
+            "description": "红轴机械键盘，从副本搜刮获得。",
+            "isEquippable": true,
+            "equipmentSlot": "键鼠",
+            "effect": {
+              "attack": 30
+            }
+          }
+        ]
+      },
+      "replay": {
+        "id": "vwyif0i",
+        "enemy": {
+          "name": "实验报告 DDL",
+          "title": "重修常客",
+          "realm": "大二",
+          "attack": 19,
+          "defense": 13,
+          "maxHp": 240,
+          "speed": 11,
+          "strengthMultiplier": 0.9543582317885012
+        },
+        "rounds": [
+          {
+            "id": "c3xjqc5",
+            "attacker": "enemy",
+            "damage": 15,
+            "crit": false,
+            "description": "重修常客实验报告 DDL反扑，造成 15 点伤害。",
+            "playerHpAfter": 9985,
+            "enemyHpAfter": 240
+          },
+          {
+            "id": "jhtlvtl",
+            "attacker": "player",
+            "damage": 10007,
+            "crit": false,
+            "description": "你敲下一段代码，造成 10007 点伤害。",
+            "playerHpAfter": 9985,
+            "enemyHpAfter": 0
+          }
+        ],
+        "victory": true,
+        "hpLoss": 15,
+        "playerHpBefore": 10000,
+        "playerHpAfter": 9985,
+        "summary": "在固定副本中，你遭遇了重修常客实验报告 DDL的袭击。经过一番 debug，你成功把它按在地上摩擦，消耗了 15 点精力。你从敌人身上找到了战利品。",
+        "expChange": 138,
+        "spiritChange": 26
+      }
+    },
+    "randomCalls": 25
+  },
+  "defeat": {
+    "result": {
+      "adventureResult": {
+        "story": "在固定副本中，你遭遇了强大的致命 Bug卡顿魔。面对其猛烈的输出，你渐渐落入下风，只能带着崩溃的心态逃离，损失了 100 点精力。",
+        "hpChange": -100,
+        "expChange": -82,
+        "spiritStonesChange": -21,
+        "eventColor": "danger"
+      },
+      "replay": {
+        "id": "edg67wx",
+        "enemy": {
+          "name": "卡顿魔",
+          "title": "致命 Bug",
+          "realm": "大四",
+          "attack": 108,
+          "defense": 55,
+          "maxHp": 1041,
+          "speed": 18,
+          "strengthMultiplier": 1.1552616650704295
+        },
+        "rounds": [
+          {
+            "id": "9qkf8ay",
+            "attacker": "enemy",
+            "damage": 91,
+            "crit": false,
+            "description": "致命 Bug卡顿魔反扑，造成 91 点伤害。",
+            "playerHpAfter": 9,
+            "enemyHpAfter": 1041
+          },
+          {
+            "id": "inrsprg",
+            "attacker": "player",
+            "damage": 5,
+            "crit": false,
+            "description": "你敲下一段代码，造成 5 点伤害。",
+            "playerHpAfter": 9,
+            "enemyHpAfter": 1036
+          },
+          {
+            "id": "h8mk6tq",
+            "attacker": "enemy",
+            "damage": 101,
+            "crit": false,
+            "description": "致命 Bug卡顿魔反扑，造成 101 点伤害。",
+            "playerHpAfter": 0,
+            "enemyHpAfter": 1036
+          }
+        ],
+        "victory": false,
+        "hpLoss": 100,
+        "playerHpBefore": 100,
+        "playerHpAfter": 0,
+        "summary": "在固定副本中，你遭遇了强大的致命 Bug卡顿魔。面对其猛烈的输出，你渐渐落入下风，只能带着崩溃的心态逃离，损失了 100 点精力。",
+        "expChange": -82,
+        "spiritChange": -21
+      }
+    },
+    "randomCalls": 20
+  },
+  "items": {
+    "result": {
+      "known": {
+        "effect": {
+          "exp": 200,
+          "hp": 30
+        },
+        "permanentEffect": {
+          "maxHp": 23
+        }
+      },
+      "unknown": {
+        "effect": {
+          "attack": 9,
+          "hp": 12
+        },
+        "permanentEffect": {
+          "maxHp": 23
+        }
+      },
+      "slots": [
+        {
+          "type": "手环",
+          "isEquippable": true,
+          "equipmentSlot": "手环1"
+        },
+        {
+          "type": "挂件",
+          "isEquippable": true,
+          "equipmentSlot": "挂件2"
+        },
+        {
+          "type": "外设",
+          "isEquippable": true,
+          "equipmentSlot": "外设2"
+        },
+        {
+          "type": "穿戴",
+          "isEquippable": true,
+          "equipmentSlot": "上衣"
+        }
+      ]
+    },
+    "randomCalls": 3
+  },
+  "localEvents": {
+    "result": [
+      {
+        "story": "你漫步在主楼走廊，突然注意到实验室门缝里塞着一份 U 盘，贴着「绝版资料」的标签。你小心翼翼地取出，插进电脑一看——是学长整理的真题集，还附了详细的解答思路。",
+        "hpChange": 0,
+        "expChange": 37,
+        "spiritStonesChange": 6,
+        "eventColor": "gain"
+      },
+      {
+        "story": "你误入一处通宵实验室，里面堆满了焊台和元器件，墙上贴满了看不懂的电路图，散发着咖啡和焊锡的味道。经过一番探索，你解开了一个小型电路，获得了其中调试好的一块开发板。",
+        "hpChange": -4,
+        "expChange": 182,
+        "spiritStonesChange": 57,
+        "eventColor": "special"
+      },
+      {
+        "story": "期末考场里翻卷子声此起彼伏，时间一分一秒流逝。你奋笔疾书，最后一道大题突然卡壳。深吸一口气，回想起老师讲过的某条定理，写下了关键一步——稳稳拿下。",
+        "hpChange": -9,
+        "expChange": 106,
+        "spiritStonesChange": 76,
+        "eventColor": "gain"
+      }
+    ],
+    "randomCalls": 17
+  }
+}

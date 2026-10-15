@@ -1,0 +1,708 @@
+{
+  "baselineCommit": "67f12ae",
+  "basePlayer": {
+    "name": "回归测试同学",
+    "realm": "大三",
+    "realmLevel": 3,
+    "exp": 60,
+    "maxExp": 1000,
+    "hp": 180,
+    "maxHp": 200,
+    "attack": 80,
+    "defense": 60,
+    "spirit": 50,
+    "physique": 40,
+    "speed": 30,
+    "spiritStones": 400,
+    "inventory": [
+      {
+        "id": "existing-material",
+        "name": "报废芯片",
+        "type": "元件",
+        "description": "测试材料",
+        "quantity": 3,
+        "rarity": "普通"
+      }
+    ],
+    "cultivationArts": [],
+    "activeArtId": null,
+    "equippedItems": {},
+    "sectId": null,
+    "sectRank": "新成员",
+    "sectContribution": 0,
+    "talentId": "talent-ordinary",
+    "titleId": null,
+    "attributePoints": 0,
+    "luck": 10,
+    "achievements": [],
+    "pets": [],
+    "activePetId": null,
+    "lotteryTickets": 3,
+    "lotteryCount": 0,
+    "inheritanceLevel": 1,
+    "dailyTaskCount": {
+      "instant": 0,
+      "short": 0,
+      "medium": 0,
+      "long": 0
+    },
+    "lastTaskResetDate": "2026-10-15",
+    "viewedAchievements": [],
+    "natalArtifactId": null,
+    "unlockedRecipes": [],
+    "meditationHpRegenMultiplier": 1,
+    "meditationBoostEndTime": null,
+    "playtimeSeconds": 0,
+    "lastLeaderboardSubmit": 0
+  },
+  "cases": [
+    {
+      "name": "单外设随机属性、移除绩点加成和伤害视觉",
+      "seed": 123456,
+      "result": {
+        "story": "获得一件神秘外设。",
+        "hpChange": -15,
+        "expChange": 12,
+        "spiritStonesChange": 35,
+        "eventColor": "danger",
+        "itemObtained": {
+          "name": "神秘外设",
+          "type": "外设",
+          "description": "测试掉落",
+          "rarity": "稀有",
+          "effect": {
+            "exp": 99
+          }
+        }
+      },
+      "expected": {
+        "player": {
+          "name": "回归测试同学",
+          "realm": "大三",
+          "realmLevel": 3,
+          "exp": 72,
+          "maxExp": 1000,
+          "hp": 165,
+          "maxHp": 200,
+          "attack": 80,
+          "defense": 60,
+          "spirit": 50,
+          "physique": 40,
+          "speed": 30,
+          "spiritStones": 435,
+          "inventory": [
+            {
+              "id": "existing-material",
+              "name": "报废芯片",
+              "type": "元件",
+              "description": "测试材料",
+              "quantity": 3,
+              "rarity": "普通"
+            },
+            {
+              "id": "1792022400000-generated1-hc2kxvxxf",
+              "name": "紫霄屏",
+              "type": "外设",
+              "description": "测试掉落",
+              "quantity": 1,
+              "rarity": "稀有",
+              "level": 0,
+              "isEquippable": true,
+              "equipmentSlot": "外设1",
+              "effect": {
+                "spirit": 53
+              },
+              "permanentEffect": {}
+            }
+          ],
+          "cultivationArts": [],
+          "activeArtId": null,
+          "equippedItems": {},
+          "sectId": null,
+          "sectRank": "新成员",
+          "sectContribution": 0,
+          "talentId": "talent-ordinary",
+          "titleId": null,
+          "attributePoints": 0,
+          "luck": 10,
+          "achievements": [],
+          "pets": [],
+          "activePetId": null,
+          "lotteryTickets": 3,
+          "lotteryCount": 0,
+          "inheritanceLevel": 1,
+          "dailyTaskCount": {
+            "instant": 0,
+            "short": 0,
+            "medium": 0,
+            "long": 0
+          },
+          "lastTaskResetDate": "2026-10-15",
+          "viewedAchievements": [],
+          "natalArtifactId": null,
+          "unlockedRecipes": [],
+          "meditationHpRegenMultiplier": 1,
+          "meditationBoostEndTime": null,
+          "playtimeSeconds": 0,
+          "lastLeaderboardSubmit": 0
+        },
+        "logs": [
+          [
+            "获得一件神秘外设。",
+            "danger"
+          ],
+          [
+            "获得物品: 神秘外设",
+            "gain"
+          ]
+        ],
+        "visuals": [
+          [
+            "damage",
+            "-15",
+            "text-red-500"
+          ],
+          [
+            "slash"
+          ]
+        ],
+        "battleReplays": [],
+        "randomCalls": 16,
+        "timers": [
+          500
+        ],
+        "cssEvents": [
+          [
+            "add",
+            "animate-shake"
+          ],
+          [
+            "remove",
+            "animate-shake"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "批量材料叠加、外设永久属性转换和配方名称兼容",
+      "seed": 223344,
+      "result": {
+        "story": "收获测试奖励。",
+        "hpChange": 10,
+        "expChange": 20,
+        "spiritStonesChange": 60,
+        "eventColor": "gain",
+        "itemsObtained": [
+          {
+            "name": "报废芯片",
+            "type": "元件",
+            "description": "测试材料",
+            "rarity": "普通"
+          },
+          {
+            "name": "便携显示器",
+            "type": "外设",
+            "description": "测试显示器",
+            "rarity": "稀有",
+            "isEquippable": true,
+            "permanentEffect": {
+              "attack": 8,
+              "maxHp": 20
+            }
+          },
+          {
+            "name": "薄荷气泡水配方",
+            "type": "配方",
+            "description": "测试配方",
+            "rarity": "稀有",
+            "recipeName": "薄荷气泡水"
+          }
+        ]
+      },
+      "expected": {
+        "player": {
+          "name": "回归测试同学",
+          "realm": "大三",
+          "realmLevel": 3,
+          "exp": 80,
+          "maxExp": 1000,
+          "hp": 190,
+          "maxHp": 200,
+          "attack": 80,
+          "defense": 60,
+          "spirit": 50,
+          "physique": 40,
+          "speed": 30,
+          "spiritStones": 460,
+          "inventory": [
+            {
+              "id": "existing-material",
+              "name": "报废芯片",
+              "type": "元件",
+              "description": "测试材料",
+              "quantity": 4,
+              "rarity": "普通"
+            },
+            {
+              "id": "1792022400000-generated1-n1qftzpiu",
+              "name": "便携显示器",
+              "type": "外设",
+              "description": "测试显示器",
+              "quantity": 1,
+              "rarity": "稀有",
+              "level": 0,
+              "isEquippable": true,
+              "equipmentSlot": "外设2",
+              "effect": {
+                "hp": 43,
+                "spirit": 48
+              },
+              "permanentEffect": {
+                "attack": 8,
+                "maxHp": 20
+              }
+            },
+            {
+              "id": "1792022400000-generated2-ef8cxvfay",
+              "name": "薄荷气泡水配方",
+              "type": "配方",
+              "description": "测试配方",
+              "quantity": 1,
+              "rarity": "稀有",
+              "level": 0,
+              "isEquippable": false,
+              "effect": {},
+              "permanentEffect": {},
+              "recipeData": {
+                "name": "薄荷气泡水",
+                "cost": 150,
+                "ingredients": [
+                  {
+                    "name": "薄荷叶",
+                    "qty": 3
+                  },
+                  {
+                    "name": "咖啡豆",
+                    "qty": 2
+                  }
+                ],
+                "result": {
+                  "name": "薄荷气泡水",
+                  "type": "饮品",
+                  "description": "一口下去脑子瞬间清醒。永久增加思维属性。",
+                  "rarity": "稀有",
+                  "effect": {
+                    "spirit": 40
+                  }
+                }
+              }
+            }
+          ],
+          "cultivationArts": [],
+          "activeArtId": null,
+          "equippedItems": {},
+          "sectId": null,
+          "sectRank": "新成员",
+          "sectContribution": 0,
+          "talentId": "talent-ordinary",
+          "titleId": null,
+          "attributePoints": 0,
+          "luck": 10,
+          "achievements": [],
+          "pets": [],
+          "activePetId": null,
+          "lotteryTickets": 3,
+          "lotteryCount": 0,
+          "inheritanceLevel": 1,
+          "dailyTaskCount": {
+            "instant": 0,
+            "short": 0,
+            "medium": 0,
+            "long": 0
+          },
+          "lastTaskResetDate": "2026-10-15",
+          "viewedAchievements": [],
+          "natalArtifactId": null,
+          "unlockedRecipes": [],
+          "meditationHpRegenMultiplier": 1,
+          "meditationBoostEndTime": null,
+          "playtimeSeconds": 0,
+          "lastLeaderboardSubmit": 0
+        },
+        "logs": [
+          [
+            "收获测试奖励。",
+            "gain"
+          ],
+          [
+            "获得物品: 【普通】报废芯片",
+            "gain"
+          ],
+          [
+            "获得物品: 【稀有】便携显示器",
+            "gain"
+          ],
+          [
+            "获得物品: 【稀有】薄荷气泡水配方",
+            "gain"
+          ]
+        ],
+        "visuals": [
+          [
+            "heal",
+            "+10",
+            "text-emerald-400"
+          ]
+        ],
+        "battleReplays": [],
+        "randomCalls": 17,
+        "timers": [],
+        "cssEvents": []
+      }
+    },
+    {
+      "name": "单配方物品兼容和已有外设属性保留",
+      "seed": 998877,
+      "result": {
+        "story": "找到配方和外设。",
+        "hpChange": 0,
+        "expChange": 0,
+        "spiritStonesChange": 0,
+        "eventColor": "special",
+        "itemObtained": {
+          "name": "薄荷气泡水配方",
+          "type": "配方",
+          "description": "测试配方",
+          "rarity": "稀有",
+          "recipeName": "薄荷气泡水"
+        },
+        "itemsObtained": [
+          {
+            "name": "扩展坞",
+            "type": "外设",
+            "description": "测试扩展坞",
+            "rarity": "普通",
+            "isEquippable": true,
+            "effect": {
+              "attack": 12,
+              "defense": 3,
+              "exp": 50
+            }
+          }
+        ]
+      },
+      "expected": {
+        "player": {
+          "name": "回归测试同学",
+          "realm": "大三",
+          "realmLevel": 3,
+          "exp": 60,
+          "maxExp": 1000,
+          "hp": 180,
+          "maxHp": 200,
+          "attack": 80,
+          "defense": 60,
+          "spirit": 50,
+          "physique": 40,
+          "speed": 30,
+          "spiritStones": 400,
+          "inventory": [
+            {
+              "id": "existing-material",
+              "name": "报废芯片",
+              "type": "元件",
+              "description": "测试材料",
+              "quantity": 3,
+              "rarity": "普通"
+            },
+            {
+              "id": "1792022400000-generated1-6losn8g5r",
+              "name": "扩展坞",
+              "type": "外设",
+              "description": "测试扩展坞",
+              "quantity": 1,
+              "rarity": "普通",
+              "level": 0,
+              "isEquippable": true,
+              "equipmentSlot": "外设1",
+              "effect": {
+                "attack": 12,
+                "defense": 3
+              },
+              "permanentEffect": {}
+            },
+            {
+              "id": "1792022400000-generated2-5x65g9kc4",
+              "name": "薄荷气泡水配方",
+              "type": "配方",
+              "description": "测试配方",
+              "quantity": 1,
+              "rarity": "稀有",
+              "level": 0,
+              "isEquippable": false,
+              "effect": {},
+              "permanentEffect": {},
+              "recipeData": {
+                "name": "薄荷气泡水",
+                "cost": 150,
+                "ingredients": [
+                  {
+                    "name": "薄荷叶",
+                    "qty": 3
+                  },
+                  {
+                    "name": "咖啡豆",
+                    "qty": 2
+                  }
+                ],
+                "result": {
+                  "name": "薄荷气泡水",
+                  "type": "饮品",
+                  "description": "一口下去脑子瞬间清醒。永久增加思维属性。",
+                  "rarity": "稀有",
+                  "effect": {
+                    "spirit": 40
+                  }
+                }
+              }
+            }
+          ],
+          "cultivationArts": [],
+          "activeArtId": null,
+          "equippedItems": {},
+          "sectId": null,
+          "sectRank": "新成员",
+          "sectContribution": 0,
+          "talentId": "talent-ordinary",
+          "titleId": null,
+          "attributePoints": 0,
+          "luck": 10,
+          "achievements": [],
+          "pets": [],
+          "activePetId": null,
+          "lotteryTickets": 3,
+          "lotteryCount": 0,
+          "inheritanceLevel": 1,
+          "dailyTaskCount": {
+            "instant": 0,
+            "short": 0,
+            "medium": 0,
+            "long": 0
+          },
+          "lastTaskResetDate": "2026-10-15",
+          "viewedAchievements": [],
+          "natalArtifactId": null,
+          "unlockedRecipes": [],
+          "meditationHpRegenMultiplier": 1,
+          "meditationBoostEndTime": null,
+          "playtimeSeconds": 0,
+          "lastLeaderboardSubmit": 0
+        },
+        "logs": [
+          [
+            "找到配方和外设。",
+            "special"
+          ],
+          [
+            "获得物品: 【普通】扩展坞",
+            "gain"
+          ]
+        ],
+        "visuals": [],
+        "battleReplays": [],
+        "randomCalls": 5,
+        "timers": [],
+        "cssEvents": []
+      }
+    },
+    {
+      "name": "抽奖券、传承上限、室友经验与属性降低保护",
+      "seed": 445566,
+      "result": {
+        "story": "测试成长奖励。",
+        "hpChange": -6,
+        "expChange": -100,
+        "spiritStonesChange": -500,
+        "eventColor": "special",
+        "lotteryTicketsChange": 5,
+        "inheritanceLevelChange": 8,
+        "petObtained": "pet-spirit-fox",
+        "petOpportunity": {
+          "type": "exp",
+          "expGain": 320
+        },
+        "attributeReduction": {
+          "attack": 800,
+          "defense": 600,
+          "spirit": 500,
+          "physique": 400,
+          "speed": 300,
+          "maxHp": 2000
+        }
+      },
+      "expected": {
+        "player": {
+          "name": "回归测试同学",
+          "realm": "大三",
+          "realmLevel": 3,
+          "exp": 0,
+          "maxExp": 1000,
+          "hp": 174,
+          "maxHp": 180,
+          "attack": 72,
+          "defense": 54,
+          "spirit": 45,
+          "physique": 36,
+          "speed": 27,
+          "spiritStones": 0,
+          "inventory": [
+            {
+              "id": "existing-material",
+              "name": "报废芯片",
+              "type": "元件",
+              "description": "测试材料",
+              "quantity": 3,
+              "rarity": "普通"
+            }
+          ],
+          "cultivationArts": [],
+          "activeArtId": null,
+          "equippedItems": {},
+          "sectId": null,
+          "sectRank": "新成员",
+          "sectContribution": 0,
+          "talentId": "talent-ordinary",
+          "titleId": null,
+          "attributePoints": 0,
+          "luck": 10,
+          "achievements": [],
+          "pets": [
+            {
+              "id": "1792022400000-generated1-wzgoq512f",
+              "name": "带饭室友",
+              "species": "后勤型",
+              "level": 3,
+              "exp": 70,
+              "maxExp": 225,
+              "rarity": "普通",
+              "stats": {
+                "attack": 24,
+                "defense": 17,
+                "hp": 121,
+                "speed": 32
+              },
+              "skills": [
+                {
+                  "id": "skill-bite",
+                  "name": "挑 BUG",
+                  "description": "基础攻击",
+                  "type": "attack",
+                  "effect": {
+                    "damage": 10
+                  }
+                },
+                {
+                  "id": "skill-heal",
+                  "name": "帮你带饭",
+                  "description": "恢复精力",
+                  "type": "support",
+                  "effect": {
+                    "heal": 50
+                  }
+                }
+              ],
+              "evolutionStage": 0,
+              "affection": 50
+            }
+          ],
+          "activePetId": null,
+          "lotteryTickets": 8,
+          "lotteryCount": 0,
+          "inheritanceLevel": 4,
+          "dailyTaskCount": {
+            "instant": 0,
+            "short": 0,
+            "medium": 0,
+            "long": 0
+          },
+          "lastTaskResetDate": "2026-10-15",
+          "viewedAchievements": [],
+          "natalArtifactId": null,
+          "unlockedRecipes": [],
+          "meditationHpRegenMultiplier": 1,
+          "meditationBoostEndTime": null,
+          "playtimeSeconds": 0,
+          "lastLeaderboardSubmit": 0
+        },
+        "logs": [
+          [
+            "🎫 获得 5 张抽奖券！",
+            "gain"
+          ],
+          [
+            "🌟 你获得了学霸传承！可以直接连跳 3 个学阶！",
+            "special"
+          ],
+          [
+            "✨ 你成功 get 到了一位室友【带饭室友】，从此宿舍热闹了！",
+            "special"
+          ],
+          [
+            "✨ 【带饭室友】在刷题中获得了 320 点经验，并提升了 2 级！",
+            "special"
+          ],
+          [
+            "⚠️ 你的攻击力降低了 8 点！",
+            "danger"
+          ],
+          [
+            "⚠️ 你的防御力降低了 6 点！",
+            "danger"
+          ],
+          [
+            "⚠️ 你的思维降低了 5 点！",
+            "danger"
+          ],
+          [
+            "⚠️ 你的体能降低了 4 点！",
+            "danger"
+          ],
+          [
+            "⚠️ 你的手速降低了 3 点！",
+            "danger"
+          ],
+          [
+            "⚠️ 你的精力上限降低了 20 点！",
+            "danger"
+          ],
+          [
+            "测试成长奖励。",
+            "special"
+          ]
+        ],
+        "visuals": [
+          [
+            "damage",
+            "-6",
+            "text-red-500"
+          ]
+        ],
+        "battleReplays": [],
+        "randomCalls": 4,
+        "timers": [
+          500
+        ],
+        "cssEvents": [
+          [
+            "add",
+            "animate-shake"
+          ],
+          [
+            "remove",
+            "animate-shake"
+          ]
+        ]
+      }
+    }
+  ]
+}

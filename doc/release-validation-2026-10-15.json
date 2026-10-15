@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-15",
+  "sourceSnapshot": "872b225 (local audit reference; original history excluded)",
+  "publishedState": "numeric defects documented, not fixed",
+  "checks": {
+    "testsPassed": 19,
+    "testsFailed": 0,
+    "typecheckExit": 0,
+    "eslintExit": 0,
+    "buildExit": 0
+  },
+  "publication": {
+    "oldHistoryIncluded": false,
+    "oldBuildIncluded": false,
+    "environmentFiles": [
+      ".env.example"
+    ],
+    "runtimePlayerDataIncluded": false,
+    "credentialPatternScan": "No recognized literal in sanitized source/history and rebuilt browser files",
+    "scanLimitation": "Pattern-based scan is not a proof of absence of every secret format"
+  },
+  "scope": {
+    "AIBackend": "not integration-tested",
+    "leaderboard": "not integration-tested",
+    "physicalDevice": "not verified"
+  }
+}

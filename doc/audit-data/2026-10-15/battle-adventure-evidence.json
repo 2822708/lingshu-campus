@@ -1,0 +1,360 @@
+{
+  "sourceCommit": "d021986",
+  "checks": [
+    {
+      "check": "思维、体能、出战室友均不改变战斗",
+      "base": {
+        "spirit": 5,
+        "physique": 10,
+        "pets": 0
+      },
+      "raised": {
+        "spirit": 999999,
+        "physique": 999999,
+        "petAttack": 999999
+      },
+      "identical": true,
+      "rounds": 7,
+      "hpLoss": 15
+    },
+    {
+      "check": "普通战斗传入低/极度危险完全相同",
+      "identical": true,
+      "enemy": {
+        "name": "刷课机",
+        "title": "盲审老登",
+        "realm": "大一",
+        "attack": 7,
+        "defense": 4,
+        "maxHp": 42,
+        "speed": 5,
+        "strengthMultiplier": 0.9
+      },
+      "exp": 37,
+      "stones": 8
+    },
+    {
+      "check": "副本风险确实影响数值",
+      "low": {
+        "enemy": {
+          "name": "刷课机",
+          "title": "盲审老登",
+          "realm": "大二",
+          "attack": 14,
+          "defense": 9,
+          "maxHp": 125,
+          "speed": 7,
+          "strengthMultiplier": 0.9
+        },
+        "exp": 37,
+        "stones": 8
+      },
+      "extreme": {
+        "enemy": {
+          "name": "刷课机",
+          "title": "盲审老登",
+          "realm": "大二",
+          "attack": 77,
+          "defense": 50,
+          "maxHp": 675,
+          "speed": 20,
+          "strengthMultiplier": 1.5
+        },
+        "exp": 163,
+        "stones": 35
+      }
+    },
+    {
+      "check": "战斗奇遇回放奖励少于实际到账",
+      "story": "饭点最热门的窗口排起长龙，一个插队的老油条挑衅地看着你。\n\n经过一番激烈的 debug，你最终把累积怪内存泄漏给拿下了。虽然爆肝了 0 点精力，但你成功获得了胜利。你仔细搜刮了战利品，发现了一些有用的物品。",
+      "actualExp": 67,
+      "replayExp": 37,
+      "actualStones": 28,
+      "replayStones": 8
+    },
+    {
+      "check": "纯奖励奇遇精力奖励未叠加",
+      "encounter": "🌟 校园奇遇：食堂阿姨手抖转稳\n\n平时手抖的阿姨今天突然稳了，给你打了一勺满到溢出的红烧肉。",
+      "configuredHpReward": 10,
+      "baseEventHpChange": -6,
+      "actualHpChange": -6,
+      "expectedHpChange": 4
+    },
+    {
+      "check": "仅permanentEffect外设未转换成装备effect",
+      "inputPermanent": {
+        "attack": 80,
+        "maxHp": 200
+      },
+      "actualItem": {
+        "id": "1792022400000-2-i",
+        "name": "审计显示器",
+        "type": "外设",
+        "description": "测试掉落",
+        "quantity": 1,
+        "rarity": "普通",
+        "level": 0,
+        "isEquippable": true,
+        "equipmentSlot": "外设2",
+        "effect": {
+          "attack": 10,
+          "defense": 10
+        },
+        "permanentEffect": {
+          "attack": 80,
+          "maxHp": 200
+        }
+      },
+      "effectiveStats": {
+        "attack": 10,
+        "defense": 10,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0
+      }
+    },
+    {
+      "check": "已装备主力外设未补加50%精力属性",
+      "before": {
+        "hp": 500,
+        "attack": 30
+      },
+      "after": {
+        "hp": 450,
+        "attack": 40
+      },
+      "expectedHpAfter50CostAnd50Bonus": 500,
+      "rawHpBonus": 50,
+      "afterUnequipReequipHp": 450
+    },
+    {
+      "check": "无装备各学阶基础战斗成长曲线,固定随机0.5",
+      "data": [
+        {
+          "realm": "大一",
+          "attack": 10,
+          "playerHp": 100,
+          "enemyHp": 42,
+          "enemyAttack": 7,
+          "first": "player",
+          "rounds": 11,
+          "hpLoss": 25,
+          "victory": true
+        },
+        {
+          "realm": "大二",
+          "attack": 50,
+          "playerHp": 500,
+          "enemyHp": 125,
+          "enemyAttack": 14,
+          "first": "player",
+          "rounds": 5,
+          "hpLoss": 10,
+          "victory": true
+        },
+        {
+          "realm": "大三",
+          "attack": 200,
+          "playerHp": 2500,
+          "enemyHp": 208,
+          "enemyAttack": 22,
+          "first": "player",
+          "rounds": 3,
+          "hpLoss": 6,
+          "victory": true
+        },
+        {
+          "realm": "大四",
+          "attack": 1000,
+          "playerHp": 10000,
+          "enemyHp": 291,
+          "enemyAttack": 29,
+          "first": "player",
+          "rounds": 1,
+          "hpLoss": 0,
+          "victory": true
+        },
+        {
+          "realm": "硕士",
+          "attack": 5000,
+          "playerHp": 50000,
+          "enemyHp": 375,
+          "enemyAttack": 37,
+          "first": "player",
+          "rounds": 1,
+          "hpLoss": 0,
+          "victory": true
+        },
+        {
+          "realm": "博士",
+          "attack": 20000,
+          "playerHp": 200000,
+          "enemyHp": 458,
+          "enemyAttack": 44,
+          "first": "player",
+          "rounds": 1,
+          "hpLoss": 0,
+          "victory": true
+        },
+        {
+          "realm": "院士",
+          "attack": 100000,
+          "playerHp": 1000000,
+          "enemyHp": 541,
+          "enemyAttack": 52,
+          "first": "player",
+          "rounds": 1,
+          "hpLoss": 0,
+          "victory": true
+        }
+      ]
+    },
+    {
+      "check": "40行动上限判负,双方存活",
+      "rounds": 40,
+      "playerHpAfter": 999740,
+      "enemyHpAfter": 441,
+      "expChange": -19,
+      "spiritChange": -5
+    },
+    {
+      "check": "同种子单变量灵敏度：敌人完全不随玩家攻防速精力变化",
+      "samples": [
+        {
+          "adventureType": "normal",
+          "summaries": {
+            "baseline": {
+              "wins": 100,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 0,
+              "firstMoves": 100,
+              "averageHpLoss": 10.47,
+              "averageHpAfter": 89.53,
+              "averageActions": 4.78
+            },
+            "attack_x2": {
+              "wins": 100,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 100,
+              "firstMoves": 100,
+              "averageHpLoss": 4.37,
+              "averageHpAfter": 95.63,
+              "averageActions": 2.58
+            },
+            "defense_x2": {
+              "wins": 100,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 0,
+              "firstMoves": 100,
+              "averageHpLoss": 10.47,
+              "averageHpAfter": 89.53,
+              "averageActions": 4.78
+            },
+            "speed_x2": {
+              "wins": 100,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 10,
+              "firstMoves": 100,
+              "averageHpLoss": 10.14,
+              "averageHpAfter": 89.86,
+              "averageActions": 4.72
+            },
+            "maxHp_x2_current_unchanged": {
+              "wins": 100,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 0,
+              "firstMoves": 100,
+              "averageHpLoss": 10.47,
+              "averageHpAfter": 89.53,
+              "averageActions": 4.78
+            },
+            "maxHp_and_hp_x2": {
+              "wins": 100,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 100,
+              "firstMoves": 100,
+              "averageHpLoss": 10.47,
+              "averageHpAfter": 189.53,
+              "averageActions": 4.78
+            }
+          }
+        },
+        {
+          "adventureType": "secret_realm",
+          "risk": "中",
+          "summaries": {
+            "baseline": {
+              "wins": 0,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 0,
+              "firstMoves": 89,
+              "averageHpLoss": 100,
+              "averageHpAfter": 0,
+              "averageActions": 11.69
+            },
+            "attack_x2": {
+              "wins": 4,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 100,
+              "firstMoves": 89,
+              "averageHpLoss": 99.33,
+              "averageHpAfter": 0.67,
+              "averageActions": 11.59
+            },
+            "defense_x2": {
+              "wins": 0,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 100,
+              "firstMoves": 89,
+              "averageHpLoss": 100,
+              "averageHpAfter": 0,
+              "averageActions": 13.35
+            },
+            "speed_x2": {
+              "wins": 0,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 39,
+              "firstMoves": 100,
+              "averageHpLoss": 100,
+              "averageHpAfter": 0,
+              "averageActions": 12
+            },
+            "maxHp_x2_current_unchanged": {
+              "wins": 0,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 0,
+              "firstMoves": 89,
+              "averageHpLoss": 100,
+              "averageHpAfter": 0,
+              "averageActions": 11.69
+            },
+            "maxHp_and_hp_x2": {
+              "wins": 0,
+              "sampleSize": 100,
+              "enemyChanged": 0,
+              "resultChanged": 100,
+              "firstMoves": 89,
+              "averageHpLoss": 200,
+              "averageHpAfter": 0,
+              "averageActions": 22.27
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "additionalIgnoredStatSeedsVerified": 50,
+  "fetchCalls": 0
+}

@@ -1,0 +1,1597 @@
+[
+  {
+    "id": "npu:circuit:juanwang",
+    "expRate": 0.3,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:baizi",
+    "expRate": -0.3,
+    "observedGain": 11,
+    "documentedGain": 7,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:ouhuang",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:pingmin",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:shekong",
+    "expRate": 0.2,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:sheniu",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 21
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 19,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:aoye",
+    "expRate": 0.25,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:zaoqi",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:tongxiao",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 18
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 16,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:circuit:danshen",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 23
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 11
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 21,
+    "level2Attack": 12,
+    "initialSpeed": 14,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:juanwang",
+    "expRate": 0.3,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:baizi",
+    "expRate": -0.3,
+    "observedGain": 11,
+    "documentedGain": 7,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:ouhuang",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:pingmin",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:shekong",
+    "expRate": 0.2,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:sheniu",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 17
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 15,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:aoye",
+    "expRate": 0.25,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:zaoqi",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:tongxiao",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:signal:danshen",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 17
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 19
+      }
+    ],
+    "initialAttack": 15,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:juanwang",
+    "expRate": 0.44999999999999996,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:baizi",
+    "expRate": -0.15,
+    "observedGain": 11,
+    "documentedGain": 9,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:ouhuang",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:pingmin",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:shekong",
+    "expRate": 0.35,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:sheniu",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 17
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 15,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:aoye",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:zaoqi",
+    "expRate": 0.3,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:tongxiao",
+    "expRate": 0.55,
+    "observedGain": 11,
+    "documentedGain": 17,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 16
+      }
+    ],
+    "initialAttack": 14,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:algorithm:danshen",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 21
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 11
+      }
+    ],
+    "initialAttack": 19,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:juanwang",
+    "expRate": 0.3,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:baizi",
+    "expRate": -0.3,
+    "observedGain": 11,
+    "documentedGain": 7,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:ouhuang",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:pingmin",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:shekong",
+    "expRate": 0.2,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:sheniu",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 17
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 15,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:aoye",
+    "expRate": 0.25,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:zaoqi",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:tongxiao",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:network:danshen",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 17
+      },
+      {
+        "key": "defense",
+        "observed": 6,
+        "withTalent": 14
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 11
+      }
+    ],
+    "initialAttack": 15,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:juanwang",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:baizi",
+    "expRate": -0.19999999999999998,
+    "observedGain": 11,
+    "documentedGain": 8,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:ouhuang",
+    "expRate": 0.1,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:pingmin",
+    "expRate": 0.1,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:shekong",
+    "expRate": 0.30000000000000004,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:sheniu",
+    "expRate": 0.1,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 17
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 15,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:aoye",
+    "expRate": 0.35,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:zaoqi",
+    "expRate": 0.25,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:tongxiao",
+    "expRate": 0.5,
+    "observedGain": 11,
+    "documentedGain": 16,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:optoelectronic:danshen",
+    "expRate": 0.1,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 17
+      },
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 130
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 11
+      }
+    ],
+    "initialAttack": 15,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:juanwang",
+    "expRate": 0.3,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:baizi",
+    "expRate": -0.3,
+    "observedGain": 11,
+    "documentedGain": 7,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:ouhuang",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:pingmin",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:shekong",
+    "expRate": 0.2,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:sheniu",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 23
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 21,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:aoye",
+    "expRate": 0.25,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:zaoqi",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:tongxiao",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:iot:danshen",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 17
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 11
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 18
+      }
+    ],
+    "initialAttack": 15,
+    "level2Attack": 12,
+    "initialSpeed": 16,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:juanwang",
+    "expRate": 0.3,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:baizi",
+    "expRate": -0.3,
+    "observedGain": 11,
+    "documentedGain": 7,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:ouhuang",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:pingmin",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:shekong",
+    "expRate": 0.2,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:sheniu",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 17
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 15,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:aoye",
+    "expRate": 0.25,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:zaoqi",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:tongxiao",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 10,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:material:danshen",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 17
+      },
+      {
+        "key": "maxHp",
+        "observed": 120,
+        "withTalent": 126
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 11
+      },
+      {
+        "key": "physique",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 15,
+    "level2Attack": 12,
+    "initialSpeed": 10,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:juanwang",
+    "expRate": 0.3,
+    "observedGain": 11,
+    "documentedGain": 14,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:baizi",
+    "expRate": -0.3,
+    "observedGain": 11,
+    "documentedGain": 7,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:ouhuang",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:pingmin",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:shekong",
+    "expRate": 0.2,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:sheniu",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 25
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 23,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:aoye",
+    "expRate": 0.25,
+    "observedGain": 11,
+    "documentedGain": 13,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:zaoqi",
+    "expRate": 0.15,
+    "observedGain": 11,
+    "documentedGain": 12,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:tongxiao",
+    "expRate": 0.4,
+    "observedGain": 11,
+    "documentedGain": 15,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 15
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 13,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  },
+  {
+    "id": "npu:automation:danshen",
+    "expRate": 0,
+    "observedGain": 11,
+    "documentedGain": 11,
+    "lostBonus": [
+      {
+        "key": "attack",
+        "observed": 12,
+        "withTalent": 20
+      },
+      {
+        "key": "spirit",
+        "observed": 6,
+        "withTalent": 11
+      },
+      {
+        "key": "speed",
+        "observed": 12,
+        "withTalent": 20
+      }
+    ],
+    "initialAttack": 18,
+    "level2Attack": 12,
+    "initialSpeed": 18,
+    "level2Speed": 12
+  }
+]

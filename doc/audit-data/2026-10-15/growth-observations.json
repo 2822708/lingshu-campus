@@ -1,0 +1,261 @@
+{
+  "baseline": "d021986",
+  "method": "actual production handlers, fixed clock and random, isolated state; observations are not correctness assertions",
+  "npuTalents": {
+    "combinations": 80,
+    "observedGainValues": [
+      11
+    ],
+    "combinationsWithNonzeroExpRate": 56,
+    "gainMismatches": 56,
+    "lostStatBonuses": 80,
+    "example": {
+      "id": "npu:circuit:pingmin",
+      "expRate": 0,
+      "observedGain": 11,
+      "documentedGain": 11,
+      "lostBonus": [
+        {
+          "key": "attack",
+          "observed": 12,
+          "withTalent": 18
+        },
+        {
+          "key": "speed",
+          "observed": 12,
+          "withTalent": 16
+        }
+      ],
+      "initialAttack": 16,
+      "level2Attack": 12,
+      "initialSpeed": 14,
+      "level2Speed": 12
+    }
+  },
+  "titleExpRate": {
+    "withoutTitle": 11,
+    "withThirtyPercentTitle": 11
+  },
+  "breakthroughBuff": {
+    "before": 0.3,
+    "failedRoll": 0.95,
+    "afterFailure": 0.3,
+    "afterSuccess": 0
+  },
+  "finalRealm": {
+    "before": {
+      "realm": "院士",
+      "level": 9,
+      "attack": 190000,
+      "maxExp": 28499997
+    },
+    "after": {
+      "realm": "院士",
+      "level": 1,
+      "attack": 110000,
+      "maxExp": 16499998
+    },
+    "logs": [
+      [
+        "你为学科做出了杰出贡献，被授予院士称号。",
+        "special"
+      ],
+      [
+        "恭喜！你的学阶提升到了 院士 ！",
+        "special"
+      ]
+    ]
+  },
+  "inheritance": {
+    "before": {
+      "realm": "大一",
+      "level": 1,
+      "charges": 4
+    },
+    "after": {
+      "realm": "大一",
+      "level": 5,
+      "charges": 0
+    },
+    "logs": [
+      [
+        "🌟 你祭出学霸传承，一路通关 4 个学阶！",
+        "special"
+      ]
+    ]
+  },
+  "sameLevelDemotion": {
+    "before": {
+      "realm": "大一",
+      "level": 1,
+      "attack": 16,
+      "hp": 100,
+      "maxExp": 100
+    },
+    "after": {
+      "realm": "大一",
+      "level": 1,
+      "attack": 11,
+      "hp": 110,
+      "maxExp": 165
+    }
+  },
+  "permanentGrowthLoss": {
+    "before": {
+      "attack": 15,
+      "maxHp": 200,
+      "points": 0,
+      "inventoryLength": 0
+    },
+    "after": {
+      "attack": 12,
+      "maxHp": 120,
+      "points": 0,
+      "inventoryLength": 0
+    },
+    "withPermanentBonusesAtLevel2": {
+      "attack": 17,
+      "maxHp": 220
+    },
+    "pointSource": "Injected single attribute point to examine legacy/imported allocations; normal new games currently grant none"
+  },
+  "progression": [
+    {
+      "realm": "大一",
+      "thresholds": [
+        100,
+        180,
+        195,
+        210,
+        225,
+        240,
+        255,
+        270,
+        285
+      ],
+      "idealSecondsAcrossNineLevels": 123.53
+    },
+    {
+      "realm": "大二",
+      "thresholds": [
+        1650,
+        1800,
+        1950,
+        2100,
+        2250,
+        2400,
+        2550,
+        2700,
+        2850
+      ],
+      "idealSecondsAcrossNineLevels": 630.51
+    },
+    {
+      "realm": "大三",
+      "thresholds": [
+        8250,
+        9000,
+        9750,
+        10500,
+        11250,
+        12000,
+        12750,
+        13500,
+        14250
+      ],
+      "idealSecondsAcrossNineLevels": 1251.37
+    },
+    {
+      "realm": "大四",
+      "thresholds": [
+        41250,
+        45000,
+        48750,
+        52500,
+        56250,
+        60000,
+        63750,
+        67500,
+        71250
+      ],
+      "idealSecondsAcrossNineLevels": 3114.74
+    },
+    {
+      "realm": "硕士",
+      "thresholds": [
+        165000,
+        180000,
+        195000,
+        210000,
+        225000,
+        240000,
+        255000,
+        270000,
+        285000
+      ],
+      "idealSecondsAcrossNineLevels": 4968.06
+    },
+    {
+      "realm": "博士",
+      "thresholds": [
+        825000,
+        900000,
+        975000,
+        1050000,
+        1125000,
+        1200000,
+        1275000,
+        1350000,
+        1425000
+      ],
+      "idealSecondsAcrossNineLevels": 12405.38
+    },
+    {
+      "realm": "院士",
+      "thresholds": [
+        16499998,
+        17999998,
+        19499998,
+        20999997,
+        22499997,
+        23999997,
+        25499997,
+        26999997,
+        28499997
+      ],
+      "idealSecondsAcrossNineLevels": 124011.92
+    }
+  ],
+  "regeneration": [
+    {
+      "maxHp": 100,
+      "basePerSecond": 1,
+      "level1MeditationPerSecond": 2
+    },
+    {
+      "maxHp": 120,
+      "basePerSecond": 1,
+      "level1MeditationPerSecond": 2
+    },
+    {
+      "maxHp": 199,
+      "basePerSecond": 1,
+      "level1MeditationPerSecond": 2
+    },
+    {
+      "maxHp": 200,
+      "basePerSecond": 2,
+      "level1MeditationPerSecond": 4
+    },
+    {
+      "maxHp": 500,
+      "basePerSecond": 5,
+      "level1MeditationPerSecond": 10
+    },
+    {
+      "maxHp": 1000000,
+      "basePerSecond": 10000,
+      "level1MeditationPerSecond": 21000
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "baseline": "d021986",
+  "majorFindings": 31,
+  "P1": 7,
+  "P2": 24,
+  "matrixGroups": 53,
+  "numericDeclarations": 169,
+  "combinations": 80,
+  "growthBands": 63,
+  "coffeeRecipes": 14,
+  "lotteryPrizes": 99,
+  "pairedSensitivityFights": 1200,
+  "ignoredStatPairs": 50,
+  "productionFilesModified": 0
+}

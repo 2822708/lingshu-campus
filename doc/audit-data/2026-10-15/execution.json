@@ -1,0 +1,24 @@
+{
+  "repo": "<local-project>",
+  "results": [
+    {
+      "probe": "growth",
+      "completed": true
+    },
+    {
+      "probe": "equipment",
+      "completed": true
+    },
+    {
+      "probe": "battle",
+      "completed": true
+    },
+    {
+      "probe": "economy",
+      "completed": true
+    }
+  ],
+  "meaning": "Completed observation probes, not a claim that game numbers are correct",
+  "network": "disabled within probes",
+  "react": "functional-state harness; battle useRef is isolated; no browser scheduling integration"
+}

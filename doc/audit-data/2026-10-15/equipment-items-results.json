@@ -1,0 +1,434 @@
+{
+  "baseline": "d021986",
+  "method": "Calls imported current views handlers with synchronous React functional-state harness; deterministic RNG=0; no UI/network integration. Findings document observed behavior, not regression tests approving bugs.",
+  "findings": [
+    {
+      "id": "equipment-formula",
+      "expected": {
+        "ordinaryAttack": 100,
+        "rareAttack": 150,
+        "natalRareAttack": 225
+      },
+      "observed": {
+        "ordinaryAttack": 100,
+        "rareAttack": 150,
+        "natalRareAttack": 225
+      },
+      "note": "Direct helper probe; successful diagnosis is not a system health result."
+    },
+    {
+      "id": "equip-unequip-roundtrip",
+      "expected": 10,
+      "observed": 10,
+      "note": "Ordinary non-natal roundtrip restores attack."
+    },
+    {
+      "id": "repeat-equip-not-idempotent",
+      "expected": 10,
+      "observed": 110,
+      "note": "Direct handler double-call; UI normally hides equip once worn, but handler has no same-slot idempotence check."
+    },
+    {
+      "id": "natal-hp-drift",
+      "expected": {
+        "afterEquip": 600,
+        "afterRefine": 600,
+        "afterUnequip": 450
+      },
+      "observed": {
+        "afterEquip": 600,
+        "afterRefine": 550,
+        "afterUnequip": 400
+      },
+      "note": "50 maxHP binding cost remains spent; missing +50 HP natal difference produces extra permanent loss."
+    },
+    {
+      "id": "inventory-wrong-slot-unload",
+      "expected": {
+        "ring1": "ring-a",
+        "ring2": null
+      },
+      "observed": {
+        "手环2": "ring-b"
+      },
+      "note": "InventoryModal passes item.equipmentSlot instead of locating actual occupied slot, so clicking ring-b unloads ring-a."
+    },
+    {
+      "id": "zero-bonus-card-missing",
+      "expected": "success at forced RNG 0 with 0 requested cards",
+      "observed": "error",
+      "note": "Upgrade unconditionally requires an upgrade-card inventory entry."
+    },
+    {
+      "id": "stale-batch-upgrade",
+      "expected": {
+        "level": 3,
+        "rawAttack": 133,
+        "playerAttack": 143,
+        "totalCost": 300,
+        "matsSpent": 14
+      },
+      "observed": {
+        "count": 3,
+        "level": 3,
+        "rawAttack": 110,
+        "playerAttack": 140,
+        "totalCost": 150,
+        "matsSpent": 6
+      },
+      "note": "Each loop reuses raw100, level0 success rate and initial costs50/2; actual stored effect only110 while player applies +10 three times."
+    },
+    {
+      "id": "upgrade-small-stat-floor",
+      "expected": "designer judgment: whether paid upgrade should improve a stat",
+      "observed": {
+        "level": 1,
+        "rawAttack": 5,
+        "growthRate": 0.1
+      },
+      "note": "floor(5*1.1)=5; even repeated manual upgrades never grow raw5."
+    },
+    {
+      "id": "drink-flat-effect-ignored",
+      "expected": {
+        "exp": 6000,
+        "spirit": 105,
+        "physique": 110
+      },
+      "observed": {
+        "exp": 6000,
+        "spirit": 5,
+        "physique": 10
+      },
+      "note": "Non-equipment effect only handles hp/exp/breakthroughBonus, never flat attributes."
+    },
+    {
+      "id": "protein-false-egg",
+      "expected": {
+        "newPets": 0,
+        "physiqueDelta": 2
+      },
+      "observed": {
+        "newPets": 1,
+        "physiqueDelta": 0
+      },
+      "note": "Name substring 蛋 causes protein drink to hatch a roommate; physique effect is ignored."
+    },
+    {
+      "id": "use-all-destroys-nonconsumables-and-buffs",
+      "expected": {
+        "materialsPreserved": 10,
+        "beansPreserved": 5,
+        "contractPreservedOrPetAdded": true,
+        "bonus": 0.6,
+        "exp": 400
+      },
+      "observed": {
+        "inventory": [],
+        "pets": 0,
+        "bonus": 0,
+        "exp": 400
+      },
+      "note": "Actual one-click UI action selects every unequipped non-Recipe, including materials and pet cards; applies only hp/exp/permanent flat fields."
+    },
+    {
+      "id": "batch-use-inventory-not-validated",
+      "expected": {
+        "exp": 100
+      },
+      "observed": {
+        "exp": 300,
+        "inventory": []
+      },
+      "note": "Direct handler count beyond stock; current UI caps to min(5,item.quantity), so this requires stale/reentrant invocation."
+    },
+    {
+      "id": "low-hp-title-switch-negative",
+      "expected": {
+        "hpAtLeast": 0
+      },
+      "observed": {
+        "oldTitle": "专业课能手",
+        "newTitle": "萌新",
+        "hp": -199,
+        "maxHp": 500
+      },
+      "note": "Title subtracts old maxHP bonus from current HP without a lower clamp."
+    },
+    {
+      "id": "duplicate-course-handler",
+      "expected": {
+        "learnedOnce": true,
+        "defense": 10
+      },
+      "observed": {
+        "courseIds": [
+          "art-iron-skin",
+          "art-iron-skin"
+        ],
+        "defense": 15,
+        "maxHp": 540
+      },
+      "note": "Direct handler lacks learned/realm guards; current UI normally disables learned course."
+    },
+    {
+      "id": "queued-point-allocation-negative",
+      "expected": {
+        "attributePoints": 0,
+        "attack": 15
+      },
+      "observed": {
+        "attributePoints": -1,
+        "attack": 20
+      },
+      "note": "Guard reads outer player; queued callbacks can spend the same last point twice."
+    },
+    {
+      "id": "cross-shop-price-scan",
+      "expected": "no positive buy/resell margin",
+      "observed": [],
+      "note": "Scanned actual SHOPS inventory; no invented prices."
+    },
+    {
+      "id": "sell-missing-item-credits",
+      "expected": {
+        "credits": 10000
+      },
+      "observed": {
+        "credits": 10450,
+        "delta": 450
+      },
+      "note": "Sell callback does not validate item exists/quantity; UI stale double invocation can credit absent item."
+    },
+    {
+      "id": "batch-sell-confirmation-mismatch",
+      "expected": {
+        "confirmed": 30,
+        "quantitySold": 10,
+        "creditsDelta": 30
+      },
+      "observed": {
+        "handlerCallsFromUI": 1,
+        "quantitySold": 1,
+        "creditsDelta": 3,
+        "quantityRemaining": 9
+      },
+      "note": "ShopModal handleBatchSell totals price*quantity then calls onSellItem once per stack; actual handler sells one."
+    },
+    {
+      "id": "field-coverage",
+      "expected": "flat effect/permanentEffect consumers match displayed values",
+      "observed": {
+        "coursesWithSecondaryFields": [],
+        "titlesWithUnusedFields": [
+          {
+            "name": "学界大牛",
+            "effects": {
+              "attack": 1000,
+              "defense": 500,
+              "hp": 5000,
+              "expRate": 0.3
+            }
+          }
+        ],
+        "recipeFlatEffectItems": [
+          {
+            "name": "手冲瑰夏",
+            "effect": {
+              "exp": 5000,
+              "attack": 10,
+              "defense": 10
+            }
+          },
+          {
+            "name": "薄荷气泡水",
+            "effect": {
+              "spirit": 40
+            }
+          },
+          {
+            "name": "能量蛋白棒",
+            "effect": {
+              "physique": 40,
+              "hp": 100
+            }
+          },
+          {
+            "name": "冷萃氮气咖啡",
+            "effect": {
+              "exp": 6000,
+              "spirit": 100,
+              "physique": 100
+            }
+          },
+          {
+            "name": "学神特调",
+            "effect": {
+              "exp": 30000,
+              "attack": 100,
+              "defense": 100,
+              "spirit": 150,
+              "physique": 150,
+              "speed": 50
+            }
+          }
+        ]
+      },
+      "note": "Permanent breakthroughBonus is in Item type but neither single nor all-use handles it. No getPlayerTotalStats symbol exists in current source."
+    },
+    {
+      "id": "consumable-ui-rarity-mismatch",
+      "expected": {
+        "displayedHp": 300
+      },
+      "observed": {
+        "actualHpDelta": 200,
+        "rawEffect": {
+          "hp": 200
+        },
+        "rarity": "稀有"
+      },
+      "note": "InventoryModal local getItemStats applies rarity to every effect.hp even non-equipment; useItem applies raw200 instead of displayed300."
+    },
+    {
+      "id": "same-name-source-values",
+      "expected": "same named stack has stable numerical meaning",
+      "observed": [
+        {
+          "name": "鲜牛奶",
+          "shops": [
+            {
+              "hp": 20
+            }
+          ],
+          "recipes": [],
+          "normalized": {
+            "hp": 50
+          }
+        },
+        {
+          "name": "速溶美式",
+          "shops": [
+            {
+              "exp": 50
+            }
+          ],
+          "recipes": [
+            {
+              "exp": 50
+            }
+          ],
+          "normalized": {
+            "exp": 200,
+            "hp": 30
+          }
+        },
+        {
+          "name": "生椰拿铁",
+          "shops": [
+            {
+              "hp": 200
+            }
+          ],
+          "recipes": [
+            {
+              "hp": 200
+            }
+          ],
+          "normalized": {
+            "hp": 500,
+            "exp": 50
+          }
+        },
+        {
+          "name": "手冲瑰夏",
+          "shops": [],
+          "recipes": [
+            {
+              "exp": 5000,
+              "attack": 10,
+              "defense": 10
+            }
+          ],
+          "normalized": {
+            "exp": 15000,
+            "attack": 30,
+            "defense": 30
+          }
+        }
+      ],
+      "note": "Shop and crafting do not normalize; adventure normalizes. Stacking matches only by name so first acquired effect remains for every later unit."
+    },
+    {
+      "id": "same-name-stack-effect-order",
+      "expected": {
+        "shopUnitExp": 50
+      },
+      "observed": {
+        "quantity": 2,
+        "storedEffect": {
+          "exp": 200,
+          "hp": 30
+        },
+        "eachUnitExp": 200
+      },
+      "note": "Bought raw50-exp coffee merges into existing normalized200-exp stack retaining200 on both units; reverse order also loses stronger effect."
+    },
+    {
+      "id": "use-all-mutates-initial-item-templates",
+      "expected": [
+        {
+          "name": "零散元件",
+          "quantity": 5
+        },
+        {
+          "name": "万能板",
+          "quantity": 10
+        },
+        {
+          "name": "鲜牛奶",
+          "quantity": 2
+        },
+        {
+          "name": "咖啡豆",
+          "quantity": 5
+        },
+        {
+          "name": "入门薄膜键盘",
+          "quantity": 1
+        },
+        {
+          "name": "军训迷彩服",
+          "quantity": 1
+        }
+      ],
+      "observed": [
+        {
+          "name": "零散元件",
+          "quantity": 0
+        },
+        {
+          "name": "万能板",
+          "quantity": 0
+        },
+        {
+          "name": "鲜牛奶",
+          "quantity": 0
+        },
+        {
+          "name": "咖啡豆",
+          "quantity": 0
+        },
+        {
+          "name": "入门薄膜键盘",
+          "quantity": 1
+        },
+        {
+          "name": "军训迷彩服",
+          "quantity": 1
+        }
+      ],
+      "note": "createInitialPlayer shallow-copies INITIAL_ITEMS; one-click consumption writes quantity=0 into shared item objects. Future new characters inherit zero-quantity starting supplies in same page session."
+    }
+  ]
+}

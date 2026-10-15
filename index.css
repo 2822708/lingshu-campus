@@ -1,0 +1,254 @@
+@import 'tailwindcss';
+@import './styles/entry.css';
+@import './styles/navigation.css';
+@import './styles/journal.css';
+@config './tailwind.config.js';
+
+:root {
+  color-scheme: light;
+  --npu-bg: #f1efe7;
+  --npu-panel: #fffdf7;
+  --npu-border: #d8d6c9;
+  --npu-text: #303c34;
+  --npu-dim: #657066;
+  --npu-muted: #616b5f;
+  --npu-ink: #315c47;
+  --npu-ink-light: #49715a;
+  --npu-code: #315c47;
+  --npu-warn: #9b5045;
+  --font-body:
+    'Microsoft YaHei UI', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  --font-heading: 'Songti SC', 'STSong', 'SimSun', serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--npu-bg);
+  color: var(--npu-text);
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.65;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--npu-code);
+  outline-offset: 4px;
+}
+input,
+select,
+textarea {
+  accent-color: var(--npu-code);
+}
+::selection {
+  background: #dce7d9;
+  color: #243e2f;
+}
+
+/* 旧功能弹窗沿用布局，正文使用可读的中文字体。 */
+.font-mono,
+.font-sans {
+  font-family: var(--font-body);
+}
+.font-serif {
+  font-family: var(--font-heading);
+}
+.paper-overlay {
+  background: rgb(35 45 36 / 34%);
+  backdrop-filter: blur(2px);
+}
+.paper-overlay > div {
+  border-radius: 3px;
+}
+.paper-toast-wrapper {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  width: min(370px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.paper-toast {
+  background: var(--npu-panel);
+  color: var(--npu-text);
+  border: 1px solid var(--npu-border);
+  border-left: 3px solid var(--npu-code);
+  padding: 18px 20px;
+  box-shadow: 0 8px 28px rgb(45 50 38 / 12%);
+  line-height: 1.7;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c8c9bd;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #969e90;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c8c9bd transparent;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.terminal-border {
+  border: 1px solid var(--npu-border);
+}
+.code-block {
+  background: #f4f3eb;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.animate-terminal-in {
+  animation: paperEnter 180ms ease-out;
+}
+@keyframes paperEnter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.paper-game {
+  display: flex;
+  height: 100dvh;
+  max-width: 1600px;
+  margin: 0 auto;
+  overflow: hidden;
+  color: var(--npu-text);
+  background: var(--npu-panel);
+  border-inline: 1px solid var(--npu-border);
+}
+.paper-game-aside {
+  display: block;
+  flex: 0 0 272px;
+  min-height: 0;
+  border-right: 1px solid var(--npu-border);
+}
+.paper-game-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.paper-game-reading {
+  flex: 1;
+  min-height: 0;
+}
+.paper-mobile-record {
+  background: var(--npu-panel);
+  width: 100%;
+  max-height: 88dvh;
+  overflow-y: auto;
+  border-radius: 5px 5px 0 0;
+}
+.paper-record-close {
+  display: block;
+  margin: 6px 12px 0 auto;
+  min-height: 44px;
+  padding: 8px 14px;
+  color: var(--npu-code);
+  font-size: 13px;
+}
+.paper-inventory-heading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 16px;
+}
+.paper-inventory-heading h3 {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.paper-inventory-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.paper-inventory-tools button {
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .paper-game {
+    border: none;
+  }
+  .paper-game-aside {
+    display: none;
+  }
+  .paper-inventory-heading {
+    display: block;
+    padding: 12px 16px;
+  }
+  .paper-inventory-heading h3 {
+    min-height: 36px;
+    padding-right: 44px;
+  }
+  .paper-inventory-tools {
+    margin-top: 10px;
+    gap: 6px;
+  }
+  .paper-inventory-tools > button {
+    flex: 1;
+    min-width: 0;
+  }
+  .paper-inventory-tools > button[aria-label='关闭'] {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
