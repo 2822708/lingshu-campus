@@ -366,7 +366,7 @@ const SettingsModal: React.FC<Props> = ({
             </div>
             <div className="space-y-3">
               <a
-                href="https://github.com/2822708/xiuxian-npu"
+                href="https://github.com/2822708/lingshu-campus"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 w-full bg-npu-bg hover:border-npu-code hover:text-npu-code text-npu-text border border-npu-border px-4 py-2 transition-colors"

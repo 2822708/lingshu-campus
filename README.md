@@ -46,7 +46,7 @@ node scripts/numerical-audit/run.mjs . ./audit-output
 
 ## 下载
 
-[发布页](https://github.com/2822708/xiuxian-npu/releases/tag/v0.1.0-audit-20261015)提供源码包、无密钥网页构建包、审计数据包、脱敏Git快照及SHA256校验。网页包需要HTTP静态服务器；不代表已发布网站或验证真实后端。
+[发布页](https://github.com/2822708/lingshu-campus/releases/tag/v0.1.0-audit-20261015)提供源码包、无密钥网页构建包、审计数据包、脱敏Git快照及SHA256校验。网页包需要HTTP静态服务器；不代表已发布网站或验证真实后端。
 
 ## 发布范围
 
