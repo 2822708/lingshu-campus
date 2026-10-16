@@ -5,8 +5,6 @@ import {
   RealmType,
 } from '../types';
 import { REALM_ORDER } from '../constants';
-import { CAMPUS_THEME } from '../config/campusTheme';
-import { neutralizeCampusText } from '../utils/campusText';
 import {
   getAIConfig,
   validateAIConfig,
@@ -232,7 +230,7 @@ export const generateAdventureEvent = async (player: PlayerStats, adventureType:
             【副本环境特点】
             副本是独立于日常校园的特殊场景，环境奇特多变，充满未知的挑战和机遇。
 
-            ${realmName ? `\n【关键要求 - 必须严格遵守】\n你生成的事件描述必须完全符合【${realmName}】这个副本的特点和环境！\n- 如果副本名称包含"实验室"、"实训"，描述应该涉及实验台、示波器、焊台等\n- 如果副本名称包含"竞赛"、"集训"，描述应该涉及赛场、评委、队友等\n- 如果副本名称包含"答辩"、"面试"，描述应该涉及评委席、PPT、追问等\n- 如果副本名称包含"考研"、"自习"，描述应该涉及自习室、背单词、倒计时等\n- 如果副本名称包含"期末"、"考试"，描述应该涉及考场、监考、试卷等\n- 如果副本名称包含"毕业"、"延毕"，描述应该涉及答辩、查重、答辩委员会等\n- 如果副本名称包含"熬夜"、"通宵"，描述应该涉及深夜实验室、咖啡、空旷校园等\n- 如果副本名称包含"网安"、"CTF"，描述应该涉及授权靶场、隔离环境、漏洞排查和防护复盘等\n- 如果副本名称包含"智能车"、"机器人"，描述应该涉及赛道、调参、车模等\n- 如果副本名称包含"电赛"、"电子"，描述应该涉及 PCB、焊台、示波器等\n- 如果副本名称包含"建模"、"数学"，描述应该涉及论文、夜宵、优化等\n- 如果副本名称包含"四六级"、"英语"，描述应该涉及考场、耳机、作文等\n- 如果副本名称包含"图书馆"、"自习"，描述应该涉及书架、占座、夜归等\n- 如果副本名称包含"实习"、"面试"，描述应该涉及 HR、白板、算法题等\n- 如果副本名称包含"答辩"、"盲审"，描述应该涉及评委、修改、压力等\n- 如果副本名称包含"答辩"、"导师"，描述应该涉及导师、修改、压力等\n- 如果副本名称包含"毕业"、"答辩"，描述应该涉及学院、修改、压力等\n\n绝对不能生成与副本名称无关的通用描述！所有场景、环境、事件都必须紧扣副本名称和特点！` : ''}
+            ${realmName ? `\n【关键要求 - 必须严格遵守】\n你生成的事件描述必须完全符合【${realmName}】这个副本的特点和环境！\n- 如果副本名称包含"实验室"、"实训"，描述应该涉及实验台、示波器、焊台等\n- 如果副本名称包含"竞赛"、"集训"，描述应该涉及赛场、评委、队友等\n- 如果副本名称包含"答辩"、"面试"，描述应该涉及评委席、PPT、追问等\n- 如果副本名称包含"考研"、"自习"，描述应该涉及自习室、背单词、倒计时等\n- 如果副本名称包含"期末"、"考试"，描述应该涉及考场、监考、试卷等\n- 如果副本名称包含"毕业"、"延毕"，描述应该涉及答辩、查重、答辩委员会等\n- 如果副本名称包含"熬夜"、"通宵"，描述应该涉及深夜实验室、咖啡、空旷校园等\n- 如果副本名称包含"网安"、"CTF"，描述应该涉及攻防、漏洞、命令行等\n- 如果副本名称包含"智能车"、"机器人"，描述应该涉及赛道、调参、车模等\n- 如果副本名称包含"电赛"、"电子"，描述应该涉及 PCB、焊台、示波器等\n- 如果副本名称包含"建模"、"数学"，描述应该涉及论文、夜宵、优化等\n- 如果副本名称包含"四六级"、"英语"，描述应该涉及考场、耳机、作文等\n- 如果副本名称包含"图书馆"、"自习"，描述应该涉及书架、占座、夜归等\n- 如果副本名称包含"实习"、"面试"，描述应该涉及 HR、白板、算法题等\n- 如果副本名称包含"答辩"、"盲审"，描述应该涉及评委、修改、压力等\n- 如果副本名称包含"答辩"、"导师"，描述应该涉及导师、修改、压力等\n- 如果副本名称包含"毕业"、"答辩"，描述应该涉及学院、修改、压力等\n\n绝对不能生成与副本名称无关的通用描述！所有场景、环境、事件都必须紧扣副本名称和特点！` : ''}
 
             【副本场景类型（必须多样化）】
             - 校园地标：如"图书馆深夜区"、"主楼自习室"、"操场夜跑跑道"、"实验室通宵档"等
@@ -461,7 +459,7 @@ export const generateAdventureEvent = async (player: PlayerStats, adventureType:
         {
           role: 'system',
           content:
-            `${CAMPUS_THEME.aiSetting}\n你是一名严谨的校园游戏GM，需要严格按照用户要求返回结构化数据。\n\n重要规则：\n1. 只返回JSON格式，不要有任何额外的文字说明、解释或描述\n2. 不要使用代码块标记（如\`\`\`json\`\`\`），直接返回纯JSON\n3. 所有数字值必须是纯数字格式，例如 "spirit": 8 而不是 "spirit": +8\n4. 不要添加任何注释或说明文字\n5. 确保JSON格式完全正确，可以被直接解析`,
+            '你是一名严谨的校园游戏GM，需要严格按照用户要求返回结构化数据。\n\n重要规则：\n1. 只返回JSON格式，不要有任何额外的文字说明、解释或描述\n2. 不要使用代码块标记（如```json```），直接返回纯JSON\n3. 所有数字值必须是纯数字格式，例如 "spirit": 8 而不是 "spirit": +8\n4. 不要添加任何注释或说明文字\n5. 确保JSON格式完全正确，可以被直接解析',
         },
         {
           role: 'user',
@@ -600,23 +598,7 @@ export const generateAdventureEvent = async (player: PlayerStats, adventureType:
     const cleanedJson = cleanJsonString(resultText);
 
     try {
-      const parsed = JSON.parse(cleanedJson) as AdventureResult;
-      // 只清理生成文案，不触碰 ID、类型、存档字段或任何数值。
-      if (typeof parsed.story === 'string') {
-        parsed.story = neutralizeCampusText(parsed.story);
-      }
-      const generatedItems = [
-        parsed.itemObtained,
-        ...(Array.isArray(parsed.itemsObtained) ? parsed.itemsObtained : []),
-      ];
-      for (const item of generatedItems) {
-        if (!item) continue;
-        if (typeof item.name === 'string') item.name = neutralizeCampusText(item.name);
-        if (typeof item.description === 'string') {
-          item.description = neutralizeCampusText(item.description);
-        }
-      }
-      return parsed;
+      return JSON.parse(cleanedJson) as AdventureResult;
     } catch (parseError) {
       console.error('JSON解析失败，原始内容:', resultText);
       console.error('清理后的内容:', cleanedJson);
@@ -653,14 +635,14 @@ export const generateBreakthroughFlavorText = async (
       [
         {
           role: 'system',
-          content: `${CAMPUS_THEME.aiSetting}\n你是校园小说作家，擅长以细腻中文描绘学生升级场景。`,
+          content: '你是校园小说作家，擅长以细腻中文描绘学生升级场景。',
         },
         { role: 'user', content: prompt },
       ],
       0.8
     );
 
-    return neutralizeCampusText(
+    return (
       content.trim() ||
       generateLocalBreakthroughText(realm, success)
     );
@@ -713,7 +695,7 @@ export const generateEnemyName = async (
         {
           role: 'system',
           content:
-            `${CAMPUS_THEME.aiSetting}\n你是校园游戏的设计师，擅长创造符合现代校园风格的对手名称。请严格返回JSON格式。`,
+            '你是校园游戏的设计师，擅长创造符合现代校园风格的对手名称。请严格返回JSON格式。',
         },
         { role: 'user', content: prompt },
       ],
@@ -725,8 +707,8 @@ export const generateEnemyName = async (
 
     if (parsed.name && parsed.title) {
       return {
-        name: neutralizeCampusText(parsed.name.trim()),
-        title: neutralizeCampusText(parsed.title.trim()),
+        name: parsed.name.trim(),
+        title: parsed.title.trim(),
       };
     }
 

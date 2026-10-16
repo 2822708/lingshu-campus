@@ -11,7 +11,6 @@ import {
 import { createAutoSaveScheduler } from '../features/save/autoSaveScheduler';
 import { TALENTS } from '../constants';
 import { getNpuTalent } from '../npu-data';
-import { CAMPUS_THEME } from '../config/campusTheme';
 
 /** 当前屏幕状态 */
 export type Screen = 'home' | 'create' | 'playing';
@@ -158,7 +157,7 @@ export function useGameState() {
       const initialLogs: LogEntry[] = [
         {
           id: `${Date.now()}-1-${Math.random().toString(36).substr(2, 9)}`,
-          text: CAMPUS_THEME.welcome,
+          text: '欢迎来到南邮。你的学涯就此开始。',
           type: 'special',
           timestamp: Date.now(),
         },

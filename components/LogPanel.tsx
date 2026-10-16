@@ -6,7 +6,6 @@ import React, {
   useCallback,
 } from 'react';
 import { LogEntry } from '../types';
-import { neutralizeCampusText } from '../utils/campusText';
 
 interface Props {
   logs: LogEntry[];
@@ -39,7 +38,7 @@ const LogItem = React.memo<{ log: LogEntry }>(({ log }) => {
         <span className="campus-journal__label">
           {LOG_LABEL[log.type] ?? LOG_LABEL.normal}
         </span>
-        <p className="campus-journal__text">{neutralizeCampusText(log.text)}</p>
+        <p className="campus-journal__text">{log.text}</p>
       </div>
     </article>
   );

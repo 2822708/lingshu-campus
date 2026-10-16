@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { Menu } from 'lucide-react';
 import { PlayerStats } from '../types';
 import { findLingGen, findMingGe } from '../npu-data';
-import { CAMPUS_THEME } from '../config/campusTheme';
 
 interface GameHeaderProps {
   player: PlayerStats;
@@ -46,7 +45,7 @@ function GameHeader({
     <header className="paper-nav-header">
       <div className="paper-nav-heading">
         <div className="paper-nav-title-group">
-          <h1 className="paper-nav-brand">{CAMPUS_THEME.title}</h1>
+          <h1 className="paper-nav-brand">灵枢录·南邮修仙传</h1>
           <p className="paper-nav-profile">
             {lingGen ? (
               <>

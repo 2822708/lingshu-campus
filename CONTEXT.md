@@ -1,8 +1,6 @@
 # 项目维护上下文
 
-本项目是发生在虚构工科学园的 React 文字养成游戏《灵枢录 · 校园成长记》。当前实现与模块边界见 [模块说明](doc/MODULE_BOUNDARIES.md)，首轮工作见 [工作报告](doc/工作报告-2026-10-15.md)。`PLAN.md` 保留策划结构，不能据此认定功能已经实现。主题词和枚举值以 `doc/THEME-MAP.md`、`types.ts` 为准。
-
-当前仓库及前端包名为 `lingshu-campus`，远程为 `https://github.com/2822708/lingshu-campus.git`。本机工作仓库位于本会话 `work/lingshu-campus`；原始 `E:\projects\xiuxian-npu` 因未获得写入权限尚未原地改名。日期与操作范围见 [仓库更名记录](doc/仓库更名记录-2026-10-16.md)。
+本项目是以南邮校园成长为主题的 React 游戏。当前实现与模块边界见 [模块说明](doc/MODULE_BOUNDARIES.md)，本轮工作见 [工作报告](doc/工作报告-2026-10-15.md)。`PLAN.md` 保留历史策划，不能据此认定功能已经实现。主题词和枚举值以 `doc/THEME-MAP.md`、`types.ts` 为准。
 
 入口为 `index.tsx → App.tsx`；`views/*Handlers` 实现主要业务，`services` 实现战斗和文本服务，`utils` 提供领域工具，`components` 展示页面与弹窗。`features/modal` 已接入 App，`features/save` 负责存档协议和调度。其他旧 features Hook 尚未接入，不应直接替换现有 handlers。
 
@@ -11,5 +9,3 @@
 检查命令：`npm test`、`npm run typecheck`、`npm run build`、`npm run lint -- --max-warnings 0`。后续已清理 90 个历史错误与 45 条警告，当前全量 ESLint 为 0 错误 0 警告、19 项回归通过，见 [历史问题修复报告](doc/历史问题修复报告-2026-10-15.md)。网络排行榜、UID 和 AI 仍需要单独做集成验证。
 
 纸本校园界面实现与浏览器验证见 [界面工作报告](doc/纸本校园界面工作报告-2026-10-15.md)。主题变量在 `index.css`，入口、导航、档案与手记样式分别位于 `styles/` 下三个 CSS 文件。
-
-用户后续要求去除现实学校元素：品牌和 AI 背景集中于 `config/campusTheme.ts`，采用八个虚构学部、通用地点和原创校园短句；已知旧文案的展示兼容在 `utils/campusText.ts`。保留存档 key、`npu:` 天赋 ID、枚举和数值；这些历史技术命名不再代表现实学校设定。见 [虚构校园决策](doc/adr/0003-fictional-campus.md)。历史审计报告和旧版本截图是当时证据，不作为当前设定。

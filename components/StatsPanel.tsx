@@ -4,7 +4,6 @@ import { CULTIVATION_ARTS, TALENTS } from '../constants';
 import { findLingGen, findMingGe } from '../npu-data';
 import { extractPlayerName } from '../utils/uidApi';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { CAMPUS_THEME } from '../config/campusTheme';
 
 interface Props {
   player: PlayerStats;
@@ -85,7 +84,7 @@ const StatsPanel: React.FC<Props> = ({ player }) => {
         <dl className="student-record__identity">
           {identity.college && (
             <div>
-              <dt>学部</dt>
+              <dt>学院</dt>
               <dd>{identity.college}</dd>
             </div>
           )}
@@ -203,7 +202,7 @@ const StatsPanel: React.FC<Props> = ({ player }) => {
           </dl>
         )}
 
-        <p className="student-record__motto">{CAMPUS_THEME.motto}</p>
+        <p className="student-record__motto">厚德 · 弘毅 · 求是 · 笃行</p>
       </div>
     </aside>
   );

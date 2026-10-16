@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Item, PlayerStats } from '../types';
-import { neutralizeCampusText } from '../utils/campusText';
 import {
   UPGRADE_MATERIAL_NAME,
   UPGRADE_STONE_NAME,
@@ -152,7 +151,7 @@ const ArtifactUpgradeModal: React.FC<Props> = ({
           {/* Header Item Info */}
           <div className="text-center">
             <h4 className="text-2xl font-bold font-mono text-npu-text">
-                        {neutralizeCampusText(currentItem.name)}
+              {currentItem.name}
             </h4>
             <div className="text-npu-dim text-sm mt-1">
               {currentItem.rarity} · +{currentLevel}

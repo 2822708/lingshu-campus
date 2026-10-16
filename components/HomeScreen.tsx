@@ -5,7 +5,6 @@ import { findLingGen, findMingGe } from '../npu-data';
 import AIConfigPanel from './AIConfigPanel';
 import LeaderboardPanel from './LeaderboardPanel';
 import { extractPlayerName } from '../utils/uidApi';
-import { CAMPUS_THEME } from '../config/campusTheme';
 
 interface HomeScreenProps {
   hasSave: boolean;
@@ -97,7 +96,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     <div className="paper-entry-page">
       <div className="paper-entry-wrap">
         <header className="paper-entry-masthead">
-          <span>{CAMPUS_THEME.description}</span>
+          <span>以南京邮电大学校园为背景的文字养成</span>
           <span>个人成长档案</span>
         </header>
         <main className="paper-entry-sheet paper-entry-cover">
@@ -106,14 +105,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             aria-labelledby="home-title"
           >
             <p className="paper-entry-eyebrow">校园生活 · 文字冒险</p>
-            <h1 id="home-title">{CAMPUS_THEME.title.split(' · ')[0]}</h1>
-            <p className="paper-entry-subtitle">{CAMPUS_THEME.subtitle}</p>
+            <h1 id="home-title">灵枢录</h1>
+            <p className="paper-entry-subtitle">南邮修仙传</p>
             <div className="paper-entry-title-rule" />
             <p className="paper-entry-intro">
               一份关于学业、社团与校园日常的成长档案。
             </p>
             <div className="paper-entry-cover-caption">
-              {CAMPUS_THEME.motto}
+              个人档案 · 校园成长记录
             </div>
           </section>
           <section
@@ -173,7 +172,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 <p>
                   {hasSave
                     ? '继续读取当前存档，接上上次的校园生活。'
-                    : '选择学部、抽取命格并登记姓名，即可开始游戏。'}
+                    : '选择学院、抽取命格并登记姓名，即可开始游戏。'}
                 </p>
               </div>
             )}
@@ -250,8 +249,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           )}
         </section>
         <footer className="paper-entry-footer">
-          <span>{CAMPUS_THEME.title}</span>
-          <span>{CAMPUS_THEME.footer}</span>
+          <span>灵枢录 · 南邮修仙传</span>
+          <span>信达天下，自强不息</span>
         </footer>
       </div>
       <LeaderboardPanel

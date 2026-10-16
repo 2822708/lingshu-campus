@@ -20,8 +20,6 @@ try {
     format: 'esm',
     outExtension: { '.js': '.mjs' },
     define: { 'import.meta.env': '{}' },
-    // React 服务端渲染依赖 Node 内置模块；为 ESM 测试包保留 require 入口。
-    banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
     logLevel: 'warning',
   });
   const result = spawnSync(

@@ -1,4 +1,3 @@
-import { neutralizeCampusText } from '../utils/campusText';
 import React, { useState, useMemo } from 'react';
 import { X, ShoppingBag, Coins, Package, Filter, Trash } from 'lucide-react';
 import {
@@ -428,7 +427,7 @@ const ShopModal: React.FC<Props> = ({
                             <h4
                               className={`font-bold ${getRarityColor(shopItem.rarity).split(' ')[0]}`}
                             >
-                              {neutralizeCampusText(shopItem.name)}
+                              {shopItem.name}
                             </h4>
                             <span className="text-xs text-npu-muted">
                               {shopItem.type}
@@ -441,7 +440,7 @@ const ShopModal: React.FC<Props> = ({
                           </span>
                         </div>
                         <p className="text-sm text-npu-dim mb-3">
-                          {neutralizeCampusText(shopItem.description)}
+                          {shopItem.description}
                         </p>
                         {shopItem.effect && (
                           <div className="text-xs text-npu-dim mb-3 space-y-1">
@@ -714,7 +713,7 @@ const ShopModal: React.FC<Props> = ({
                             <h4
                               className={`font-bold ${getRarityColor(rarity).split(' ')[0]}`}
                             >
-                              {neutralizeCampusText(item.name)}
+                              {item.name}
                               {item.level && item.level > 0 && (
                                 <span className="text-xs text-npu-muted ml-1">
                                   +{item.level}
@@ -730,7 +729,7 @@ const ShopModal: React.FC<Props> = ({
                           </span>
                         </div>
                         <p className="text-sm text-npu-dim mb-3">
-                          {neutralizeCampusText(item.description)}
+                          {item.description}
                         </p>
                         {item.effect && (
                           <div className="text-xs text-npu-dim mb-3 space-y-1">

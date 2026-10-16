@@ -1,4 +1,3 @@
-import { neutralizeCampusText } from '../utils/campusText';
 import React, { useState, useMemo } from 'react';
 import { X, Trash2, Filter } from 'lucide-react';
 import { Item, ItemType, ItemRarity, EquipmentSlot } from '../types';
@@ -128,11 +127,7 @@ const BatchDiscardModal: React.FC<Props> = ({
           <h3 className="text-xl font-mono text-npu-code flex items-center gap-2">
             <Trash2 size={20} /> 批量丢弃
           </h3>
-          <button
-            onClick={onClose}
-            aria-label="关闭"
-            className="text-npu-dim hover:text-npu-text"
-          >
+          <button onClick={onClose} aria-label="关闭" className="text-npu-dim hover:text-npu-text">
             <X size={24} />
           </button>
         </div>
@@ -260,7 +255,7 @@ const BatchDiscardModal: React.FC<Props> = ({
                             getRarityColor(rarity).split(' ')[0]
                           }`}
                         >
-                          {neutralizeCampusText(item.name)}
+                          {item.name}
                         </h4>
                         <span className="text-xs bg-npu-border text-npu-text px-1.5 py-0.5 rounded shrink-0">
                           x{item.quantity}
@@ -279,7 +274,7 @@ const BatchDiscardModal: React.FC<Props> = ({
                         </span>
                       </div>
                       <p className="text-xs text-npu-muted line-clamp-2">
-                        {neutralizeCampusText(item.description)}
+                        {item.description}
                       </p>
                     </div>
                   </div>

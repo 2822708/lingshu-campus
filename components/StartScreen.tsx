@@ -8,14 +8,13 @@ import {
   mergeNpuTalent,
 } from '../npu-data';
 import { Talent } from '../types';
-import { CAMPUS_THEME } from '../config/campusTheme';
 
 interface Props {
   onStart: (playerName: string, npuTalentId: string) => void;
 }
 type Step = 'linggen' | 'mingge' | 'name';
 const STEPS: Array<{ id: Step; name: string; note: string }> = [
-  { id: 'linggen', name: '选择学部', note: '选择专业方向' },
+  { id: 'linggen', name: '选择学院', note: '选择专业方向' },
   { id: 'mingge', name: '抽取命格', note: '确定初始天赋' },
   { id: 'name', name: '登记姓名', note: '确认入学信息' },
 ];
@@ -80,7 +79,7 @@ const StartScreen: React.FC<Props> = ({ onStart }) => {
     <div className="paper-entry-page">
       <div className="paper-entry-wrap paper-entry-register-wrap">
         <header className="paper-entry-masthead">
-          <span>{CAMPUS_THEME.title}</span>
+          <span>灵枢录 · 南邮修仙传</span>
           <span>新生档案</span>
         </header>
         <main className="paper-entry-sheet paper-entry-register">
@@ -133,14 +132,14 @@ const StartScreen: React.FC<Props> = ({ onStart }) => {
             </div>
             <div className="paper-entry-form-content" key={step}>
               {step === 'linggen' && (
-                <section aria-label="学部选择">
+                <section aria-label="学院选择">
                   <p className="paper-entry-form-description">
-                    选择一个学部。不同专业具有不同的初始属性，游戏开始后不能更换。
+                    选择一个学院。不同专业具有不同的初始属性，游戏开始后不能更换。
                   </p>
                   <div
                     className="paper-entry-college-grid"
                     role="group"
-                    aria-label="选择你的学部"
+                    aria-label="选择你的学院"
                   >
                     {LING_GENS.map((gen, index) => (
                       <CollegeChoice
@@ -161,7 +160,7 @@ const StartScreen: React.FC<Props> = ({ onStart }) => {
                   </p>
                   {selectedLingGen && (
                     <p className="paper-entry-selection-note">
-                      已选学部：{selectedLingGen.college}
+                      已选学院：{selectedLingGen.college}
                     </p>
                   )}
                   <div className="paper-entry-fate-record">
@@ -192,11 +191,11 @@ const StartScreen: React.FC<Props> = ({ onStart }) => {
                   aria-label="姓名登记"
                 >
                   <p className="paper-entry-form-description">
-                    确认学部与命格，填写你的校园称呼。
+                    确认学院与命格，填写你的校园称呼。
                   </p>
                   <dl className="paper-entry-registration-summary">
                     <div>
-                      <dt>学部</dt>
+                      <dt>学院</dt>
                       <dd>{selectedLingGen?.college || '未选择'}</dd>
                     </div>
                     <div>
@@ -256,8 +255,8 @@ const StartScreen: React.FC<Props> = ({ onStart }) => {
           </div>
         </main>
         <footer className="paper-entry-footer">
-          <span>{CAMPUS_THEME.title}</span>
-          <span>{CAMPUS_THEME.footer}</span>
+          <span>灵枢录 · 南邮修仙传</span>
+          <span>信达天下，自强不息</span>
         </footer>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { Item, ItemType, ItemRarity, EquipmentSlot } from '../types';
 import { RARITY_MULTIPLIERS } from '../constants';
 
 // 已知物品的效果映射表（确保描述和实际效果一致）
-// 物品名使用虚构工科学园主题：食材类→鲜牛奶/咖啡豆，饮品类→速溶美式/...
+// 物品名已按 NPU 工科主题重命名：食材类→鲜牛奶/咖啡豆，饮品类→速溶美式/...
 export const KNOWN_ITEM_EFFECTS: Record<
   string,
   Pick<Item, 'effect' | 'permanentEffect'>

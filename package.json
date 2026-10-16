@@ -1,8 +1,8 @@
 {
-  "name": "lingshu-campus",
+  "name": "xiuxian-npu",
   "private": true,
   "version": "0.1.0",
-  "description": "《灵枢录 · 校园成长记》- 一款发生在虚构工科学园的文字养成游戏",
+  "description": "《灵枢录——南邮修仙传》- 一款以南京邮电大学校园生活为蓝本的现代修仙文字冒险游戏",
   "type": "module",
   "scripts": {
     "dev": "vite",

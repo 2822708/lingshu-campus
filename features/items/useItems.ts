@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import { PlayerStats, Item } from '../../types';
 import { PET_TEMPLATES } from '../../constants';
 import { uid } from '../../utils/gameUtils';
-import { neutralizeCampusText } from '../../utils/campusText';
 
 interface UseItemsParams {
   player: PlayerStats | null;
@@ -136,7 +135,7 @@ export function useItems({ setPlayer, addLog }: UseItemsParams) {
 
   const handleDiscardItem = useCallback(
     (item: Item) => {
-      if (window.confirm(`确定要丢弃 ${neutralizeCampusText(item.name)} x${item.quantity} 吗？`)) {
+      if (window.confirm(`确定要丢弃 ${item.name} x${item.quantity} 吗？`)) {
         setPlayer((prev) => {
           if (!prev) return prev;
           // 检查是否已装备
