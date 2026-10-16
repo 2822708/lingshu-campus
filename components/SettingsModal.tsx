@@ -14,6 +14,7 @@ import { SAVE_KEY } from '../utils/gameUtils';
 import { parseImportSave } from '../features/save/saveCodec';
 import { playSound } from '../utils/sound';
 import dayjs from 'dayjs';
+import { CAMPUS_THEME } from '../config/campusTheme';
 
 interface Props {
   isOpen: boolean;
@@ -104,7 +105,7 @@ const SettingsModal: React.FC<Props> = ({
 
       // 创建文件名
       const playerName = saveData.player?.name || 'player';
-      const fileName = `npu-save-${playerName}-${dayjs().format('YYYY-MM-DD HH:mm:ss')}.json`;
+      const fileName = `lingshu-save-${playerName}-${dayjs().format('YYYY-MM-DD HH:mm:ss')}.json`;
 
       // 创建下载链接
       const blob = new Blob([saved], { type: 'application/json' });
@@ -272,7 +273,10 @@ const SettingsModal: React.FC<Props> = ({
                 <select
                   value={settings.animationSpeed}
                   onChange={(e) =>
-                    onUpdateSettings({ animationSpeed: e.target.value as GameSettings['animationSpeed'] })
+                    onUpdateSettings({
+                      animationSpeed: e.target
+                        .value as GameSettings['animationSpeed'],
+                    })
                   }
                   className="w-full bg-npu-bg border border-npu-border px-3 py-2 text-npu-text"
                 >
@@ -343,7 +347,9 @@ const SettingsModal: React.FC<Props> = ({
             <select
               value={settings.language}
               onChange={(e) =>
-                onUpdateSettings({ language: e.target.value as GameSettings['language'] })
+                onUpdateSettings({
+                  language: e.target.value as GameSettings['language'],
+                })
               }
               className="w-full bg-npu-bg border border-npu-border px-3 py-2 text-npu-text"
             >
@@ -360,7 +366,7 @@ const SettingsModal: React.FC<Props> = ({
             </div>
             <div className="space-y-3">
               <a
-                href="https://github.com/JeasonLoop/react-xiuxian-game"
+                href="https://github.com/2822708/xiuxian-npu"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 w-full bg-npu-bg hover:border-npu-code hover:text-npu-code text-npu-text border border-npu-border px-4 py-2 transition-colors"
@@ -370,7 +376,7 @@ const SettingsModal: React.FC<Props> = ({
                 <span className="ml-auto text-xs text-npu-muted">↗</span>
               </a>
               <p className="text-xs text-npu-muted">
-                {'// 一款南邮工科文字游戏，欢迎 Star 和 Fork！'}
+                {CAMPUS_THEME.description}
               </p>
             </div>
           </div>

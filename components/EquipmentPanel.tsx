@@ -1,3 +1,4 @@
+import { neutralizeCampusText } from '../utils/campusText';
 import React from 'react';
 import { EquipmentSlot, Item, PlayerStats } from '../types';
 import { ShieldCheck, X } from 'lucide-react';
@@ -82,7 +83,7 @@ const EquipmentPanel: React.FC<Props> = ({
                 <>
                   <div className="flex-1">
                     <div className="font-bold text-sm mb-1 text-npu-text">
-                      {item.name}
+                      {neutralizeCampusText(item.name)}
                       {item.level && item.level > 0 && (
                         <span className="text-xs text-npu-muted ml-1">
                           +{item.level}

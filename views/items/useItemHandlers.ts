@@ -2,6 +2,7 @@ import React from 'react';
 import { PlayerStats, Item, Pet, ItemType } from '../../types';
 import { PET_TEMPLATES } from '../../constants';
 import { uid } from '../../utils/gameUtils';
+import { neutralizeCampusText } from '../../utils/campusText';
 
 interface UseItemHandlersProps {
   player: PlayerStats;
@@ -273,7 +274,7 @@ export function useItemHandlers({
   };
 
   const handleDiscardItem = (item: Item) => {
-    if (window.confirm(`确定要丢弃 ${item.name} x${item.quantity} 吗？`)) {
+    if (window.confirm(`确定要丢弃 ${neutralizeCampusText(item.name)} x${item.quantity} 吗？`)) {
       setPlayer((prev) => {
         // 检查是否已装备
         const isEquipped = Object.values(prev.equippedItems).includes(item.id);

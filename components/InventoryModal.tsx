@@ -20,6 +20,7 @@ import {
 import { RARITY_MULTIPLIERS } from '../constants';
 import EquipmentPanel from './EquipmentPanel';
 import BatchDiscardModal from './BatchDiscardModal';
+import { neutralizeCampusText } from '../utils/campusText';
 
 interface Props {
   isOpen: boolean;
@@ -703,7 +704,7 @@ const InventoryModal: React.FC<Props> = ({
                       <div>
                         <div className="flex justify-between items-start pr-16 mb-1">
                           <h4 className={getRarityNameClasses(item.rarity)}>
-                            {item.name}{' '}
+                            {neutralizeCampusText(item.name)}{' '}
                             {level > 0 && (
                               <span className="text-npu-muted text-xs font-normal ml-1">
                                 + {level}
@@ -727,7 +728,7 @@ const InventoryModal: React.FC<Props> = ({
                         </div>
 
                         <p className="text-xs text-npu-muted italic mb-3">
-                          {item.description}
+                          {neutralizeCampusText(item.description)}
                         </p>
 
                         {item.isNatal && (

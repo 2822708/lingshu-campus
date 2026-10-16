@@ -1,0 +1,1045 @@
+{
+  "sourceCommit": "5868861c04d13b831ef5cf7d43d519e72112fe3f",
+  "combinations": [
+    {
+      "id": "npu:circuit:juanwang",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0.3,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:circuit:baizi",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": -0.3,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:circuit:ouhuang",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0,
+        "luck": 10
+      }
+    },
+    {
+      "id": "npu:circuit:pingmin",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:circuit:shekong",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0.2,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:circuit:sheniu",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 9,
+        "expRate": 0,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:circuit:aoye",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0.25,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:circuit:zaoqi",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0.15,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:circuit:tongxiao",
+      "effects": {
+        "attack": 6,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0.4,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:circuit:danshen",
+      "effects": {
+        "attack": 11,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 5,
+        "physique": 0,
+        "speed": 4,
+        "expRate": 0,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:signal:juanwang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.3,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:signal:baizi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": -0.3,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:signal:ouhuang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 12
+      }
+    },
+    {
+      "id": "npu:signal:pingmin",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:signal:shekong",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.2,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:signal:sheniu",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 5,
+        "expRate": 0,
+        "luck": 5
+      }
+    },
+    {
+      "id": "npu:signal:aoye",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.25,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:signal:zaoqi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.15,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:signal:tongxiao",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 8,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.4,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:signal:danshen",
+      "effects": {
+        "attack": 5,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 13,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 2
+      }
+    },
+    {
+      "id": "npu:algorithm:juanwang",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.44999999999999996,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:algorithm:baizi",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": -0.15,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:algorithm:ouhuang",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.15,
+        "luck": 10
+      }
+    },
+    {
+      "id": "npu:algorithm:pingmin",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.15,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:algorithm:shekong",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.35,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:algorithm:sheniu",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 5,
+        "expRate": 0.15,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:algorithm:aoye",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.4,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:algorithm:zaoqi",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.3,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:algorithm:tongxiao",
+      "effects": {
+        "attack": 4,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.55,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:algorithm:danshen",
+      "effects": {
+        "attack": 9,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 5,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.15,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:network:juanwang",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.3,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:network:baizi",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": -0.3,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:network:ouhuang",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 13
+      }
+    },
+    {
+      "id": "npu:network:pingmin",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:network:shekong",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.2,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:network:sheniu",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 5,
+        "expRate": 0,
+        "luck": 6
+      }
+    },
+    {
+      "id": "npu:network:aoye",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.25,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:network:zaoqi",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.15,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:network:tongxiao",
+      "effects": {
+        "attack": 0,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.4,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:network:danshen",
+      "effects": {
+        "attack": 5,
+        "defense": 8,
+        "hp": 0,
+        "spirit": 5,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:optoelectronic:juanwang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.4,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:optoelectronic:baizi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": -0.19999999999999998,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:optoelectronic:ouhuang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.1,
+        "luck": 10
+      }
+    },
+    {
+      "id": "npu:optoelectronic:pingmin",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.1,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:optoelectronic:shekong",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.30000000000000004,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:optoelectronic:sheniu",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 5,
+        "expRate": 0.1,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:optoelectronic:aoye",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.35,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:optoelectronic:zaoqi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.25,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:optoelectronic:tongxiao",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.5,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:optoelectronic:danshen",
+      "effects": {
+        "attack": 5,
+        "defense": 0,
+        "hp": 10,
+        "spirit": 5,
+        "physique": 0,
+        "speed": 0,
+        "expRate": 0.1,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:iot:juanwang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0.3,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:iot:baizi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": -0.3,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:iot:ouhuang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0,
+        "luck": 14
+      }
+    },
+    {
+      "id": "npu:iot:pingmin",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:iot:shekong",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0.2,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:iot:sheniu",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 11,
+        "expRate": 0,
+        "luck": 7
+      }
+    },
+    {
+      "id": "npu:iot:aoye",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0.25,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:iot:zaoqi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0.15,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:iot:tongxiao",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0.4,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:iot:danshen",
+      "effects": {
+        "attack": 5,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 5,
+        "physique": 0,
+        "speed": 6,
+        "expRate": 0,
+        "luck": 4
+      }
+    },
+    {
+      "id": "npu:material:juanwang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0.3,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:material:baizi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": -0.3,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:material:ouhuang",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 10
+      }
+    },
+    {
+      "id": "npu:material:pingmin",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:material:shekong",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0.2,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:material:sheniu",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 5,
+        "expRate": 0,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:material:aoye",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0.25,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:material:zaoqi",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0.15,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:material:tongxiao",
+      "effects": {
+        "attack": 0,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 0,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0.4,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:material:danshen",
+      "effects": {
+        "attack": 5,
+        "defense": 0,
+        "hp": 6,
+        "spirit": 5,
+        "physique": 8,
+        "speed": 0,
+        "expRate": 0,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:juanwang",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0.3,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:baizi",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": -0.3,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:ouhuang",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0,
+        "luck": 10
+      }
+    },
+    {
+      "id": "npu:automation:pingmin",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:shekong",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0.2,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:sheniu",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 13,
+        "expRate": 0,
+        "luck": 3
+      }
+    },
+    {
+      "id": "npu:automation:aoye",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0.25,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:zaoqi",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0.15,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:tongxiao",
+      "effects": {
+        "attack": 3,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 0,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0.4,
+        "luck": 0
+      }
+    },
+    {
+      "id": "npu:automation:danshen",
+      "effects": {
+        "attack": 8,
+        "defense": 0,
+        "hp": 0,
+        "spirit": 5,
+        "physique": 0,
+        "speed": 8,
+        "expRate": 0,
+        "luck": 0
+      }
+    }
+  ]
+}
