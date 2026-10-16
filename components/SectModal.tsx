@@ -1,3 +1,4 @@
+import { neutralizeCampusText } from '../utils/campusText';
 import React, { useState, useMemo } from 'react';
 import { PlayerStats, SectRank, RealmType, Item } from '../types';
 import { SECTS, SECT_RANK_REQUIREMENTS, REALM_ORDER } from '../constants';
@@ -490,7 +491,8 @@ const SectModal: React.FC<Props> = ({
                               task.cost.items.map((item, idx) => (
                                 <span key={idx}>
                                   {idx > 0 && '、'}
-                                  {item.quantity} {item.name}
+                                  {item.quantity}{' '}
+                                  {neutralizeCampusText(item.name)}
                                 </span>
                               ))}
                           </div>
@@ -510,7 +512,8 @@ const SectModal: React.FC<Props> = ({
                             task.reward.items.map((item, idx) => (
                               <span key={idx}>
                                 {idx === 0 && '、'}
-                                {item.quantity} {item.name}
+                                {item.quantity}{' '}
+                                {neutralizeCampusText(item.name)}
                               </span>
                             ))}
                         </div>
@@ -624,9 +627,11 @@ const SectModal: React.FC<Props> = ({
                     className="bg-npu-panel p-3 rounded border border-npu-border flex items-center justify-between"
                   >
                     <div>
-                      <div className="font-bold text-npu-text">{item.name}</div>
+                      <div className="font-bold text-npu-text">
+                        {neutralizeCampusText(item.name)}
+                      </div>
                       <div className="text-xs text-npu-muted">
-                        {item.item.description}
+                        {neutralizeCampusText(item.item.description)}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

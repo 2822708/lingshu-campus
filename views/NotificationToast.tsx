@@ -1,5 +1,6 @@
 import React from 'react';
 import { LogEntry } from '../types';
+import { neutralizeCampusText } from '../utils/campusText';
 
 interface PurchaseSuccessProps {
   item: string;
@@ -23,7 +24,7 @@ export function PurchaseSuccessToast({ item, quantity }: PurchaseSuccessProps) {
           <div>
             <div className="font-semibold">购买成功</div>
             <div className="text-sm">
-              获得 {item} x{quantity}
+              获得 {neutralizeCampusText(item)} x{quantity}
             </div>
           </div>
         </div>
@@ -61,7 +62,7 @@ export function ItemActionToast({ log }: ItemActionToastProps) {
 
   return (
     <div className="paper-toast-wrapper" role="status" aria-live="polite">
-      <div className={logClassName}>{log.text}</div>
+      <div className={logClassName}>{neutralizeCampusText(log.text)}</div>
     </div>
   );
 }
@@ -84,7 +85,7 @@ export function LotteryRewardsToast({ rewards }: LotteryRewardsProps) {
                 key={idx}
                 className="border-b border-npu-border py-2 flex items-center justify-between gap-6"
               >
-                <span className="font-semibold">{reward.name}</span>
+                <span className="font-semibold">{neutralizeCampusText(reward.name)}</span>
                 {reward.quantity !== undefined && (
                   <span className="text-npu-code font-semibold">
                     x{reward.quantity}

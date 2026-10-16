@@ -1,8 +1,8 @@
 /**
- * 南邮专属数据
+ * 虚构工科学园主题数据
  *
- * 存放与南邮校园/工科元素绑定的游戏内容：
- * - 8 大专业灵根（对应南邮 8 大学院）
+ * 存放《灵枢录 · 校园成长记》的校园与工科主题内容：
+ * - 8 大专业灵根（对应虚构学园 8 个学部）
  * - 10 种命格
  * - 外设清单（笔记本/外设）
  * - 咖啡配方
@@ -15,23 +15,23 @@
 
 import { Talent } from './types';
 
-// ============ 专业灵根（8 大学院）============
+// ============ 专业灵根（8 个学部）============
 
 export type LingGenId =
-  | 'circuit'      // 电路灵根 - 电子与光学工程学院
-  | 'signal'       // 信号灵根 - 通信与信息工程学院
-  | 'algorithm'    // 算法灵根 - 计算机学院
-  | 'network'      // 网络灵根 - 网络空间安全学院
-  | 'optoelectronic' // 光电灵根 - 柔性电子（未来技术）学院
-  | 'iot'          // 物联网灵根 - 物联网学院
-  | 'material'     // 材料灵根 - 材料科学与工程学院
-  | 'automation';  // 自动化灵根 - 自动化学院
+  | 'circuit'      // 电路灵根 - 电路学部
+  | 'signal'       // 信号灵根 - 信号学部
+  | 'algorithm'    // 算法灵根 - 算法学部
+  | 'network'      // 网络灵根 - 网络学部
+  | 'optoelectronic' // 光电灵根 - 光电学部
+  | 'iot'          // 物联网灵根 - 物联学部
+  | 'material'     // 材料灵根 - 材料学部
+  | 'automation';  // 自动化灵根 - 自控学部
 
 export interface LingGen {
   id: LingGenId;
   name: string;           // 灵根名
-  college: string;        // 学院名
-  slogan: string;         // 学院口号
+  college: string;        // 学部名
+  slogan: string;         // 研习方向短句
   description: string;    // 灵根描述
   effects: {
     attack?: number;
@@ -52,90 +52,90 @@ export const LING_GENS: LingGen[] = [
   {
     id: 'circuit',
     name: '电路灵根',
-    college: '电子与光学工程学院',
-    slogan: '集成万物，电路通神',
+    college: '电路学部',
+    slogan: '从电路出发，让想法成形',
     description: '电子在手，天下我有。精通 PCB 设计、芯片验证、模拟电路，玩转 FPGA。',
     effects: { attack: 6, speed: 4 },
     color: 'text-amber-400',
     emoji: '⚡',
-    hiddenPlot: '集成电路国家实验室的深夜传说',
+    hiddenPlot: '电路研习室里一份未完成的设计手记',
   },
   {
     id: 'signal',
     name: '信号灵根',
-    college: '通信与信息工程学院',
-    slogan: '通达寰宇，信连万物',
+    college: '信号学部',
+    slogan: '在波形之间，寻找传递的规律',
     description: '从 5G 到 6G，从电磁波到光通信，掌握信息时代的血脉。',
     effects: { spirit: 8, luck: 2 },
     color: 'text-blue-400',
     emoji: '📡',
-    hiddenPlot: '与诺贝尔级老教授的实验室对话',
+    hiddenPlot: '夜间研习室里的一次信号解谜',
   },
   {
     id: 'algorithm',
     name: '算法灵根',
-    college: '计算机学院',
-    slogan: '码行千里，算法为道',
-    description: '数据结构与算法是基本功，ACM 校队集训场是圣地。',
+    college: '算法学部',
+    slogan: '拆解问题，再写下清晰的解法',
+    description: '数据结构与算法是基本功，学园程序设计队的研习室是日常据点。',
     effects: { attack: 4, expRate: 0.15 },
     color: 'text-emerald-400',
     emoji: '💻',
-    hiddenPlot: 'ICPC 金牌的师兄传授快速傅里叶变换',
+    hiddenPlot: '校内程序设计赛的师兄讲解快速傅里叶变换',
   },
   {
     id: 'network',
     name: '网络灵根',
-    college: '网络空间安全学院',
-    slogan: '攻防一体，守望网安',
-    description: 'CTF 夺旗赛是日常，挖漏洞是本能，能在凌晨三点攻破校园网防火墙。',
+    college: '网络学部',
+    slogan: '在授权靶场中，练习可靠的防护',
+    description: '在学园授权的隔离靶场里练习 CTF 解题，排查演练环境中的漏洞，让每一次测试都有清晰边界。',
     effects: { defense: 8, luck: 3 },
     color: 'text-purple-400',
     emoji: '🛡️',
-    hiddenPlot: '国家级护网行动的幕后英雄',
+    hiddenPlot: '学园授权靶场演练中遗留的一份防护日志',
   },
   {
     id: 'optoelectronic',
     name: '光电灵根',
-    college: '柔性电子（未来技术）学院',
-    slogan: '柔光万象，电照未来',
+    college: '光电学部',
+    slogan: '观察光与电，尝试新的器件',
     description: '从柔性显示到生物电子，研究最前沿的"未来已来"科技。',
     effects: { hp: 10, expRate: 0.1 },
     color: 'text-cyan-400',
     emoji: '🔬',
-    hiddenPlot: 'Nature 论文背后的灵感来源',
+    hiddenPlot: '光电研习室里一篇校内研究札记的灵感来源',
   },
   {
     id: 'iot',
     name: '物联网灵根',
-    college: '物联网学院',
-    slogan: '万物互联，感知天下',
+    college: '物联学部',
+    slogan: '连起小小设备，感知身边变化',
     description: '从嵌入式到智慧城市，让每个设备都开口说话。',
     effects: { speed: 6, luck: 4 },
     color: 'text-orange-400',
     emoji: '📱',
-    hiddenPlot: '智慧城市大创项目的国家级答辩',
+    hiddenPlot: '学园智慧花房项目的结题展示',
   },
   {
     id: 'material',
     name: '材料灵根',
-    college: '材料科学与工程学院',
-    slogan: '造物致知，格物穷理',
+    college: '材料学部',
+    slogan: '从微小结构里，发现材料的可能',
     description: '从半导体到石墨烯，从纳米到宏观，材料是所有科技的基石。',
     effects: { physique: 8, hp: 6 },
     color: 'text-rose-400',
     emoji: '⚙️',
-    hiddenPlot: '半导体材料突破背后的故事',
+    hiddenPlot: '材料研习室中一片特殊样品的故事',
   },
   {
     id: 'automation',
     name: '自动化灵根',
-    college: '自动化学院',
-    slogan: '智能控制，自动巡航',
-    description: '智能车竞赛是试炼场，从 PID 到深度学习无所不包。',
+    college: '自控学部',
+    slogan: '反复调试，让控制更稳一点',
+    description: '学园智能车赛是试炼场，从 PID 到深度学习无所不包。',
     effects: { speed: 8, attack: 3 },
     color: 'text-pink-400',
     emoji: '🤖',
-    hiddenPlot: '全国大学生智能车竞赛一等奖之路',
+    hiddenPlot: '学园环形赛道上的智能车决赛',
   },
 ];
 

@@ -1,3 +1,4 @@
+import { neutralizeCampusText } from '../utils/campusText';
 import React, { useState } from 'react';
 import {
   X,
@@ -249,7 +250,7 @@ const PetModal: React.FC<Props> = ({
                     <button
                       onClick={() => onEvolvePet(activePet.id)}
                       disabled={!canEvolve}
-                      title={reason}
+                      title={neutralizeCampusText(reason)}
                       className={[
                         'flex-1 px-4 py-2 border text-sm transition-colors',
                         canEvolve
@@ -521,7 +522,7 @@ const PetModal: React.FC<Props> = ({
                           >
                             <div className="flex items-center justify-between">
                               <div className="font-bold text-sm">
-                                {item.name}
+                                {neutralizeCampusText(item.name)}
                               </div>
                               <div
                                 className={`text-xs px-1.5 py-0.5 rounded ${getRarityColor(rarity)}`}
