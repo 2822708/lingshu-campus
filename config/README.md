@@ -1,136 +1,50 @@
-# AI 配置说明
+# AI 接入说明
 
-本目录包含 AI 服务的配置系统，支持多种 AI 服务提供商，方便切换和调整。
+AI 默认关闭，关闭时使用本地模板。游戏没有内置可供所有玩家使用的共享密钥。
 
-**默认配置**: 项目默认使用 **SiliconFlow** 作为 AI 接口，无需额外配置即可使用。
+## 在游戏里接入
 
-## 快速开始
+1. 在首页展开“AI 文案设置”，选择服务商。
+2. 填入账户提供的模型 ID 和 API Key；模型可直接手填，预设仅为示例。
+3. 如使用不同地域、代理或自定义服务，展开“更多接口设置”，核对协议和地址。标准 Base URL 会补齐路径，完整接口与旧自定义代理路径保留。
+4. 点击“测试当前草稿”。测试会请求服务商，可能产生费用；使用与游戏事件相同的文案协议，但不改变游戏进度或保存配置。
+5. 勾选启用并保存。未保存的修改不会生效，编辑后原测试结果失效。
 
-### 1. 配置环境变量
+密钥发送到界面显示的目标服务地址。默认只保存在本标签页会话；勾选“记住密钥”后才在浏览器长期明文保存。旧版已长期保存的密钥会提示迁移。切换服务商清空草稿旧密钥，保存或清除失败会提示，不能当作成功。
 
-创建 `.env.local` 文件（参考 `.env.example`）：
+## 服务与协议
 
-```bash
-# AI 提供商（可选，默认: siliconflow）
-# 如果不设置，将自动使用 SiliconFlow
-# VITE_AI_PROVIDER=siliconflow
+预设包括硅基流动、DeepSeek、MiniMax、OpenAI、豆包、通义千问、Kimi、智谱、Gemini、Claude、Ollama、LM Studio 和自定义服务。支持 OpenAI 兼容 Chat Completions、Anthropic Messages、Gemini generateContent 三类非流式文本协议。
 
-# 设置 API Key（必需）
-VITE_AI_KEY=your-api-key-here
+预设不代表模型已对账户开放，也不代表本轮已用真实凭证逐家验证。模型服务、地域与套餐各有不同，请以面板链接的官方说明和自己的控制台为准。豆包可填模型 ID 或 ep-* 接入点。MiniMax 旧配置保留原地址，迁移国际站前应自行核对账户与密钥。
 
-# 可选：自定义模型（默认: Qwen/Qwen2.5-72B-Instruct）
-# VITE_AI_MODEL=Qwen/Qwen2.5-72B-Instruct
-```
+本机 Ollama 默认地址为 http://localhost:11434/v1/chat/completions，LM Studio 为 http://localhost:1234/v1/chat/completions。须先启动服务并填入已经加载的模型。本机 loopback 可免 Key；远程地址必须使用 HTTPS 和 Key。浏览器跨域、混合内容策略及服务端设置仍可能限制连接。不会自动绕过这些限制，公共代理尚未实现。
 
-**最小配置**: 只需设置 `VITE_AI_KEY`，其他配置使用默认值（SiliconFlow）。
+## 生成与回退
 
-### 2. 支持的提供商
+AI 用于校园手记、升学记录、挑战称谓。游戏先生成本地结果，AI 只润色文字；奖励、数值和物品由本地规则决定。输出额外字段、无效 JSON、空响应、拒绝、截断、断网或超时后使用同一份本地结果，不重新抽取。默认总超时 12 秒、并发 1、零队列、不自动重试。
 
-#### SiliconFlow (推荐)
+连接测试成功表示当前草稿完成了一次合格事件文案请求，不表示已保存或所有模型能力都已验收。首次接入建议先测试，再保存。
 
-```bash
-VITE_AI_PROVIDER=siliconflow
-VITE_AI_KEY=your-siliconflow-key
-VITE_AI_MODEL=Qwen/Qwen2.5-72B-Instruct
-```
+## 环境变量与开发
 
-**获取 API Key**: https://siliconflow.cn
+旧环境变量读取仍保留，但返回默认关闭状态。仅配置 VITE_AI_KEY 不会自动启用 AI；请使用面板主动配置并启用。保存的关闭选择优先于环境兜底。
 
-#### OpenAI
+VITE_* 会进入浏览器构建，不能存共享或服务端秘密。历史 Vite 开发代理不等于已实现公开 AI 代理；当前面板使用显示的地址，不会自动转到 Vite 代理。
 
-```bash
-VITE_AI_PROVIDER=openai
-VITE_AI_KEY=your-openai-key
-VITE_AI_MODEL=gpt-3.5-turbo
-```
+新增服务商在 userAIConfig.ts 的 PROVIDER_PRESETS 注册；地址解析统一使用 services/ai/client.ts。新增游戏内能力在 features/ai/skills.ts 定义输入、输出契约、提示词版本及预算，经测试后接入指定 handler。不要再把原始模型对象断言为 AdventureResult 用于结算。
 
-**获取 API Key**: https://platform.openai.com
+## 常见失败
 
-#### 自定义服务
+| 现象 | 核对方向 |
+| --- | --- |
+| HTTP 401/403 | Key、账户权限、服务商地域和目标地址 |
+| HTTP 404 | 模型 ID、接入点及接口路径 |
+| HTTP 429 | 账户额度或频率；游戏不会无限自动重试 |
+| 网络或跨域失败 | 本机网络、浏览器策略和服务端跨域配置；不能只据此断定是 Key 错误 |
+| 空内容、截断或格式错误 | 模型是否返回最终文本、输出预算及 JSON 能力；当前事件使用本地回退 |
+| 关闭标签页后显示配置待补充 | 默认会话密钥已不在当前会话，重新填写；其他配置仍保留 |
 
-```bash
-VITE_AI_PROVIDER=custom
-VITE_AI_KEY=your-custom-key
-VITE_AI_API_URL=https://your-api.com/v1/chat/completions
-VITE_AI_MODEL=your-model-name
-```
+内容路线见 [AI 增强实施方案](../doc/AI增强实施方案-2026-10-16.md)，后续接口与技能设计见 [接入规划](../doc/ai/接口与技能接入规划.md)。
 
-## 配置选项
-
-### 必需配置
-
-- `VITE_AI_KEY`: API Key（必需）
-
-### 可选配置
-
-- `VITE_AI_PROVIDER`: 提供商 (`siliconflow` | `openai` | `custom`)，默认 `siliconflow`
-- `VITE_AI_MODEL`: 模型名称，根据提供商使用默认值
-- `VITE_AI_API_URL`: 完整 API URL，如果设置则覆盖提供商默认 URL
-- `VITE_AI_USE_PROXY`: 是否使用代理（开发环境），默认 `true`
-
-## 使用示例
-
-### 在代码中使用
-
-```typescript
-import { getAIConfig, validateAIConfig } from '../config/aiConfig';
-
-const config = getAIConfig();
-const validation = validateAIConfig(config);
-
-if (validation.valid) {
-  // 使用 config.apiUrl, config.apiKey, config.model
-} else {
-  console.error(validation.error);
-}
-```
-
-## 切换提供商
-
-只需修改 `.env.local` 文件中的 `VITE_AI_PROVIDER` 和对应的 `VITE_AI_KEY`：
-
-```bash
-# 从 SiliconFlow 切换到 OpenAI
-VITE_AI_PROVIDER=openai
-VITE_AI_KEY=sk-your-openai-key
-VITE_AI_MODEL=gpt-3.5-turbo
-```
-
-重启开发服务器即可生效。
-
-## 故障排查
-
-### 404 错误
-
-1. 检查 `VITE_AI_API_URL` 是否正确
-2. 检查代理配置（`vite.config.ts`）
-3. 检查路径是否正确（应该是 `/v1/chat/completions`）
-
-### 401 错误
-
-1. 检查 `VITE_AI_KEY` 是否正确
-2. 检查 API Key 是否有效
-3. 检查 API Key 是否有足够的配额
-
-### 跨域错误
-
-1. 确保 `VITE_AI_USE_PROXY=true`（开发环境）
-2. 检查 `vite.config.ts` 中的代理配置
-3. 生产环境使用 Vercel Function 代理
-
-## 添加新提供商
-
-在 `config/aiConfig.ts` 中添加新提供商：
-
-```typescript
-const AI_PROVIDERS: Record<AIProvider, {...}> = {
-  // ... 现有提供商
-  newprovider: {
-    defaultUrl: 'https://api.newprovider.com/v1/chat/completions',
-    defaultModel: 'default-model',
-    proxyPath: '/api/v1/chat/completions',
-  },
-};
-```
-
-然后在 `vite.config.ts` 和 `api/proxy.js` 中添加对应的代理目标。
+开发自检使用 `npm test`；允许本机 loopback 时，可运行 `npm run test:ai:http` 检查三协议的实际 HTTP 传输。测试仅使用合成配置与本地服务，不验证真实账户或服务商跨域。最近结果见[自测报告](../doc/ai/自测与修复报告-2026-10-16.md)。

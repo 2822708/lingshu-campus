@@ -1,6 +1,10 @@
 import type { Item, LogEntry, PlayerStats } from '../../types';
 import { SAVE_VERSION } from '../../utils/gameUtils';
 import { inferItemTypeAndSlot } from '../../utils/itemUtils';
+import {
+  assertInteractiveProgress,
+  type InteractiveProgress,
+} from '../interactive/state';
 
 type MigratedField =
   | 'inventory'
@@ -25,6 +29,7 @@ export interface GameSave {
   player: SavedPlayer;
   logs?: LogEntry[];
   timestamp?: number;
+  interactive?: InteractiveProgress;
 }
 
 /** 维持现有版本门槛；这不是对所有玩家字段的完整运行时校验。 */
@@ -46,6 +51,8 @@ export function parseImportSave(raw: string): GameSave {
   if (!Array.isArray(saved.logs)) {
     throw new Error('存档日志数据必须是数组格式。');
   }
+  if (saved.interactive !== undefined)
+    assertInteractiveProgress(saved.interactive);
   return saved;
 }
 
@@ -109,7 +116,14 @@ export function restoreSavedPlayer(
 export function createGameSave(
   player: PlayerStats,
   logs: LogEntry[],
-  timestamp = Date.now()
+  timestamp = Date.now(),
+  interactive?: InteractiveProgress
 ): GameSave {
-  return { version: SAVE_VERSION, player, logs, timestamp };
+  return {
+    version: SAVE_VERSION,
+    player,
+    logs,
+    timestamp,
+    ...(interactive ? { interactive } : {}),
+  };
 }

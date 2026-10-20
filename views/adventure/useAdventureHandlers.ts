@@ -14,6 +14,11 @@ import {
   BattleReplay,
 } from '../../services/battleService';
 import { executeAdventureCore } from './executeAdventureCore';
+import {
+  AIContextCancelledError,
+  getAIContextEpoch,
+  isAIContextCurrent,
+} from '../../services/ai/runtime';
 
 /**
  * 期末冲刺处理函数
@@ -44,6 +49,8 @@ interface UseAdventureHandlersProps {
   onOpenShop: (shopType: ShopType) => void;
   onOpenBattleModal: (replay: BattleReplay) => void;
   skipBattle?: boolean; // 是否跳过战斗（自动模式下）
+  /** true consumes this action; false keeps the existing ordinary-event path. */
+  onStartInteractive?: () => boolean;
 }
 
 export function useAdventureHandlers({
@@ -58,10 +65,12 @@ export function useAdventureHandlers({
   onOpenShop,
   onOpenBattleModal,
   skipBattle = false,
+  onStartInteractive,
 }: UseAdventureHandlersProps) {
   // 🆕 商店触发冷却：90 秒内不重复弹商店（避免连续点击刷屏）
   const SHOP_COOLDOWN_MS = 90_000;
   const lastShopAtRef = React.useRef<number>(0);
+  const actionInFlight = React.useRef(false);
   const executeAdventure = async (
     adventureType: AdventureType,
     realmName?: string,
@@ -70,13 +79,19 @@ export function useAdventureHandlers({
     realmDescription?: string,
     realmDrops?: string[] // 🆕 副本"可能掉落"列表，搜刮时按概率兑现
   ) => {
+    if (actionInFlight.current) return;
     if (!player) {
       setLoading(false);
       return;
     }
+    actionInFlight.current = true;
     setLoading(true);
+    const actionEpoch = getAIContextEpoch();
     if (realmName) {
-      addLog(`你进入了【${realmName}】，只觉 DDL 扑面而来，气氛紧张...`, 'special');
+      addLog(
+        `你进入了【${realmName}】，只觉 DDL 扑面而来，气氛紧张...`,
+        'special'
+      );
     } else {
       addLog('你走出宿舍，前往图书馆/实训室刷题...', 'normal');
     }
@@ -160,8 +175,16 @@ export function useAdventureHandlers({
         result = battleResolution.adventureResult;
         battleContext = battleResolution.replay;
       } else {
-        result = await generateAdventureEvent(player, adventureType, riskLevel, realmName, realmDescription);
+        result = await generateAdventureEvent(
+          player,
+          adventureType,
+          riskLevel,
+          realmName,
+          realmDescription
+        );
       }
+
+      if (!isAIContextCurrent(actionEpoch)) return;
 
       // 纯奖励奇遇叠加：如果在 50/50 分配里 roll 到了纯奖励奇遇，叠加到原 result 上
       // （战斗奇遇已在前置处理，这里只叠加纯奖励奇遇）
@@ -177,7 +200,8 @@ export function useAdventureHandlers({
           story: result.story + '\n\n' + encounterResult.story,
           expChange: result.expChange + (encounterResult.expChange ?? 0),
           spiritStonesChange:
-            result.spiritStonesChange + (encounterResult.spiritStonesChange ?? 0),
+            result.spiritStonesChange +
+            (encounterResult.spiritStonesChange ?? 0),
           itemObtained: encounterResult.itemObtained ?? result.itemObtained,
           eventColor: 'special',
         };
@@ -196,16 +220,25 @@ export function useAdventureHandlers({
         skipBattle,
         riskLevel,
       });
-    } catch {
-      addLog('刷题途中突发 Bug，你脑细胞阵亡，不得不撤回。', 'danger');
+    } catch (error) {
+      if (
+        !(error instanceof AIContextCancelledError) &&
+        isAIContextCurrent(actionEpoch)
+      ) {
+        addLog('本次行动已中止，请稍后重试。', 'danger');
+      }
     } finally {
-      setLoading(false);
-      setCooldown(2);
+      actionInFlight.current = false;
+      if (isAIContextCurrent(actionEpoch)) {
+        setLoading(false);
+        setCooldown(2);
+      }
     }
   };
 
   const handleAdventure = async () => {
-    if (loading || cooldown > 0) return;
+    if (loading || cooldown > 0 || actionInFlight.current) return;
+    if (onStartInteractive?.()) return;
     if (player.hp < player.maxHp * 0.2) {
       addLog('你精力见底，仍然强撑着继续刷题...', 'danger');
     }

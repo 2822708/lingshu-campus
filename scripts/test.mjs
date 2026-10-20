@@ -9,9 +9,16 @@ import { spawnSync } from 'node:child_process';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const temporary = await mkdtemp(join(tmpdir(), 'xiuxian-npu-tests-'));
 try {
-  const testFiles = (await readdir(join(root, 'tests')))
-    .filter((name) => name.endsWith('.test.mjs'))
-    .sort();
+  const available = await readdir(join(root, 'tests'));
+  const requested = process.argv.slice(2);
+  const testFiles = requested.length
+    ? requested.map((name) => {
+        if (!available.includes(name) || !name.endsWith('.mjs')) {
+          throw new Error(`Unknown test file: ${name}`);
+        }
+        return name;
+      })
+    : available.filter((name) => name.endsWith('.test.mjs')).sort();
   await build({
     entryPoints: testFiles.map((name) => join(root, 'tests', name)),
     outdir: temporary,
@@ -21,7 +28,9 @@ try {
     outExtension: { '.js': '.mjs' },
     define: { 'import.meta.env': '{}' },
     // React 服务端渲染依赖 Node 内置模块；为 ESM 测试包保留 require 入口。
-    banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
+    banner: {
+      js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
+    },
     logLevel: 'warning',
   });
   const result = spawnSync(

@@ -19,6 +19,10 @@ import {
 } from '../../constants';
 import { BattleReplay } from '../../services/battleService';
 import { generateAdventureEvent } from '../../services/aiService';
+import {
+  getAIContextEpoch,
+  isAIContextCurrent,
+} from '../../services/ai/runtime';
 import { uid } from '../../utils/gameUtils';
 import {
   normalizeItemEffect,
@@ -526,7 +530,10 @@ export async function executeAdventureCore({
             affection: 50,
           };
           newPets.push(newPet);
-          addLog(`✨ 你成功 get 到了一位室友【${newPet.name}】，从此宿舍热闹了！`, 'special');
+          addLog(
+            `✨ 你成功 get 到了一位室友【${newPet.name}】，从此宿舍热闹了！`,
+            'special'
+          );
         } else {
           addLog(
             `你遇到了另一位同款室友，但你宿舍已经有同类人了，便婉拒了。`,
@@ -894,12 +901,20 @@ export async function executeAdventureCore({
 
   // 如果触发随机副本，自动进入副本并触发新的随机事件
   if (result.triggerSecretRealm) {
+    const actionEpoch = getAIContextEpoch();
     setTimeout(async () => {
+      if (!isAIContextCurrent(actionEpoch)) return;
       addLog(`你一头扎进副本深处...`, 'special');
-      const secretRealmResult = await generateAdventureEvent(
-        player,
-        'secret_realm'
-      );
+      let secretRealmResult: AdventureResult;
+      try {
+        secretRealmResult = await generateAdventureEvent(
+          player,
+          'secret_realm'
+        );
+      } catch {
+        return;
+      }
+      if (!isAIContextCurrent(actionEpoch)) return;
 
       setPlayer((prev) => {
         if (!prev) return prev;

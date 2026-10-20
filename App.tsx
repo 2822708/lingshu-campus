@@ -10,6 +10,7 @@ import { useModalState } from './features/modal/useModalState';
 import StartScreen from './components/StartScreen';
 import HomeScreen from './components/HomeScreen';
 import DeathModal from './components/DeathModal';
+import InteractiveEncounterModal from './components/InteractiveEncounterModal';
 import { BattleReplay } from './services/battleService';
 import { useGameState } from './hooks/useGameState';
 import { useGameEffects } from './hooks/useGameEffects';
@@ -18,6 +19,7 @@ import { submitScore, isEligibleForLeaderboard } from './utils/leaderboardApi';
 import { applyDemotion } from './utils/demotion';
 import { playSound, unlockAudio } from './utils/sound';
 import LeaderboardPanel from './components/LeaderboardPanel';
+import { cancelGameAI } from './services/ai/runtime';
 
 // 导入模块化的 handlers
 import {
@@ -57,7 +59,14 @@ function App() {
     handleContinueGame, // 继续游戏（加载存档）
     handleDeleteSave, // 删除存档
     saveGame, // 保存存档
+    interactive,
+    commitInteractive,
+    saveError,
+    importGameSave,
   } = useGameState();
+  const interactiveActive = Boolean(interactive.pending);
+  const interactiveActiveRef = useRef(interactiveActive);
+  interactiveActiveRef.current = interactiveActive;
 
   // 使用自定义hooks管理游戏效果
   const { visualEffects, createAddLog, triggerVisual } = useGameEffects();
@@ -278,7 +287,34 @@ function App() {
       }
     },
     skipBattle: autoAdventure, // 自动期末冲刺模式下跳过战斗
+    onStartInteractive: () => {
+      if (interactiveActiveRef.current || isDead) return true;
+      // Keep ordinary events, shops and drops available; the first encounter is guaranteed.
+      if (interactive.nextSeq > 1 && Math.random() >= 0.35) return false;
+      const started = commitInteractive({
+        type: 'begin',
+        id: `campus-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        seed: Math.floor(Math.random() * 0x100000000),
+      });
+      if (started) {
+        interactiveActiveRef.current = true;
+        setAutoMeditate(false);
+        setAutoAdventure(false);
+        setLoading(false);
+        setLastBattleReplay(null);
+        setCooldown(1);
+      }
+      // A failed critical save must not fall through and settle an ordinary event.
+      return true;
+    },
   });
+
+  useEffect(() => {
+    if (interactiveActive) {
+      setAutoMeditate(false);
+      setAutoAdventure(false);
+    }
+  }, [interactiveActive]);
 
   // 从 handlers 中提取函数
   const handleSkipBattleLogs = battleHandlers.handleSkipBattleLogs;
@@ -286,9 +322,11 @@ function App() {
 
   // 检测"延毕"（hp <= 0，不再删档，改为降级）
   useEffect(() => {
-    if (!player || isDead) return;
+    if (!player || isDead || interactiveActive) return;
 
     if (player.hp <= 0) {
+      cancelGameAI();
+      setLoading(false);
       // 应用降级：保留装备/宠物/学分/天赋，掉级或降学阶，绩点清零，精力回满
       const demotion = applyDemotion(player);
       const demotedPlayer = demotion.player;
@@ -317,10 +355,20 @@ function App() {
       setAutoMeditate(false);
       setAutoAdventure(false);
     }
-  }, [player, isDead, lastBattleReplay, logs, saveGame, setPlayer]);
+  }, [
+    player,
+    isDead,
+    lastBattleReplay,
+    logs,
+    saveGame,
+    setPlayer,
+    interactiveActive,
+  ]);
 
   // 延毕后重新出发（不清档，回到降级后的角色）
   const handleRebirth = () => {
+    cancelGameAI();
+    setLoading(false);
     setIsDead(false);
     setDeathBattleData(null);
     setDeathReason('');
@@ -407,7 +455,7 @@ function App() {
 
     const timer = setInterval(() => {
       // 标签页隐藏时暂停所有 tick（浏览器本来就会节流，这里显式跳过避免无谓计算）
-      if (document.hidden) return;
+      if (document.hidden || interactiveActiveRef.current) return;
       playtimeRef.current += 1; // 每秒累加游戏时长（纯 JS，不触发重渲染）
 
       setPlayer((prev) => {
@@ -460,10 +508,23 @@ function App() {
 
   // 自动自习逻辑
   useEffect(() => {
-    if (!autoMeditate || !player || loading || cooldown > 0) return;
+    if (
+      interactiveActive ||
+      !autoMeditate ||
+      !player ||
+      loading ||
+      cooldown > 0
+    )
+      return;
 
     const timer = setTimeout(() => {
-      if (autoMeditate && !loading && cooldown === 0 && player) {
+      if (
+        !interactiveActiveRef.current &&
+        autoMeditate &&
+        !loading &&
+        cooldown === 0 &&
+        player
+      ) {
         if (loading || cooldown > 0 || !player) return;
         meditateRef.current();
         setCooldown(1);
@@ -471,11 +532,26 @@ function App() {
     }, 100); // 短暂延迟，确保状态更新完成
 
     return () => clearTimeout(timer);
-  }, [autoMeditate, player, loading, cooldown, meditateRef, setCooldown]);
+  }, [
+    autoMeditate,
+    player,
+    loading,
+    cooldown,
+    meditateRef,
+    setCooldown,
+    interactiveActive,
+  ]);
 
   // 自动期末冲刺逻辑
   useEffect(() => {
-    if (!autoAdventure || !player || loading || cooldown > 0) return;
+    if (
+      interactiveActive ||
+      !autoAdventure ||
+      !player ||
+      loading ||
+      cooldown > 0
+    )
+      return;
     // if (player.hp < player.maxHp * 0.2) {
     //   // 如果精力过低，停止自动冲刺
     //   setAutoAdventure(false);
@@ -485,13 +561,26 @@ function App() {
 
     // 生死有命！富贵在天！！！
     const timer = setTimeout(() => {
-      if (autoAdventure && !loading && cooldown === 0 && player) {
+      if (
+        !interactiveActiveRef.current &&
+        autoAdventure &&
+        !loading &&
+        cooldown === 0 &&
+        player
+      ) {
         adventureRef.current();
       }
     }, 100); // 短暂延迟，确保状态更新完成
 
     return () => clearTimeout(timer);
-  }, [autoAdventure, player, loading, cooldown, adventureRef]);
+  }, [
+    autoAdventure,
+    player,
+    loading,
+    cooldown,
+    adventureRef,
+    interactiveActive,
+  ]);
 
   // 从冒险 handlers 中提取函数
   const { handleAdventure, executeAdventure } = adventureHandlers;
@@ -516,13 +605,14 @@ function App() {
   const playerMaxExp = player?.maxExp;
   useEffect(() => {
     if (
+      !interactiveActive &&
       playerExp !== undefined &&
       playerMaxExp !== undefined &&
       playerExp >= playerMaxExp
     ) {
       breakthroughRef.current();
     }
-  }, [playerExp, playerMaxExp, breakthroughRef]);
+  }, [playerExp, playerMaxExp, breakthroughRef, interactiveActive]);
 
   // 保留 handleOpenUpgrade 和 handleUpgradeItem，因为它们需要状态管理
   const handleOpenUpgrade = (item: Item) => {
@@ -560,7 +650,11 @@ function App() {
   // 排行榜：每 60 秒尝试提交一次（仅在 realm >= '硕士' 时）
   useEffect(() => {
     const currentPlayer = playerRef.current;
-    if (!currentPlayer || !isEligibleForLeaderboard(currentPlayer.realm))
+    if (
+      interactiveActive ||
+      !currentPlayer ||
+      !isEligibleForLeaderboard(currentPlayer.realm)
+    )
       return;
     const now = Date.now();
     if (now - (currentPlayer.lastLeaderboardSubmit || 0) < 60_000) return;
@@ -602,31 +696,60 @@ function App() {
     player?.lastLeaderboardSubmit,
     playerRef,
     setPlayer,
+    interactiveActive,
   ]);
 
   // 检查成就（学阶变化时）
   useEffect(() => {
-    if (hasPlayer) {
+    if (hasPlayer && !interactiveActive) {
       checkAchievements();
     }
-  }, [hasPlayer, player?.realm, player?.realmLevel, checkAchievements]);
+  }, [
+    hasPlayer,
+    player?.realm,
+    player?.realmLevel,
+    checkAchievements,
+    interactiveActive,
+  ]);
 
   // ============ 路由：首页 → 创建角色 → 游戏中 ============
   // 首页（存档选择）
   if (screen === 'home') {
     return (
-      <HomeScreen
-        hasSave={hasSave}
-        onNewGame={() => setScreen('create')}
-        onContinueGame={handleContinueGame}
-        onDeleteSave={handleDeleteSave}
-      />
+      <>
+        {saveError && (
+          <p
+            role="alert"
+            className="fixed top-3 left-3 right-3 z-[100] mx-auto max-w-lg border border-npu-border bg-npu-panel p-3 text-center text-sm text-npu-warn"
+          >
+            {saveError}
+          </p>
+        )}
+        <HomeScreen
+          hasSave={hasSave}
+          onNewGame={() => setScreen('create')}
+          onContinueGame={handleContinueGame}
+          onDeleteSave={handleDeleteSave}
+        />
+      </>
     );
   }
 
   // 创建角色（三步骤开屏仪式）
   if (screen === 'create') {
-    return <StartScreen onStart={handleStartGame} />;
+    return (
+      <>
+        {saveError && (
+          <p
+            role="alert"
+            className="fixed top-3 left-3 right-3 z-[100] mx-auto max-w-lg border border-npu-border bg-npu-panel p-3 text-center text-sm text-npu-warn"
+          >
+            {saveError}
+          </p>
+        )}
+        <StartScreen onStart={handleStartGame} />
+      </>
+    );
   }
 
   // 游戏中（gameStarted === true && screen === 'playing'）
@@ -644,186 +767,214 @@ function App() {
 
   return (
     <>
-      {/* 死亡弹窗 - 无法关闭 */}
-      {isDead && player && (
-        <DeathModal
+      <div
+        inert={interactiveActive}
+        aria-hidden={interactiveActive || undefined}
+      >
+        {saveError && !interactiveActive && (
+          <p
+            role="alert"
+            className="fixed top-3 left-3 right-3 z-[100] mx-auto max-w-lg border border-npu-border bg-npu-panel p-3 text-center text-sm text-npu-warn"
+          >
+            {saveError}
+          </p>
+        )}
+        {/* 死亡弹窗 - 无法关闭 */}
+        {isDead && player && (
+          <DeathModal
+            player={player}
+            battleData={deathBattleData}
+            deathReason={deathReason}
+            onRebirth={handleRebirth}
+          />
+        )}
+
+        <GameView
           player={player}
-          battleData={deathBattleData}
-          deathReason={deathReason}
-          onRebirth={handleRebirth}
+          logs={logs}
+          visualEffects={visualEffects}
+          loading={loading}
+          cooldown={cooldown}
+          purchaseSuccess={purchaseSuccess}
+          lotteryRewards={lotteryRewards}
+          itemActionLog={itemActionLog}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+          isMobileStatsOpen={isMobileStatsOpen}
+          modals={{
+            isInventoryOpen,
+            isCultivationOpen,
+            isCharacterOpen,
+            isAchievementOpen,
+            isPetOpen,
+            isLotteryOpen,
+            isSettingsOpen,
+            isRealmOpen,
+            isAlchemyOpen,
+            isSectOpen,
+            setIsMobileSidebarOpen,
+            setIsMobileStatsOpen,
+            setIsInventoryOpen,
+            setIsCultivationOpen,
+            setIsCharacterOpen,
+            setIsAchievementOpen,
+            setIsPetOpen,
+            setIsLotteryOpen,
+            setIsSettingsOpen,
+            setIsRealmOpen,
+            setIsAlchemyOpen,
+            setIsSectOpen,
+          }}
+          handlers={{
+            onMeditate: handleMeditate,
+            onAdventure: handleAdventure,
+            onOpenRealm: () => setIsRealmOpen(true),
+            onOpenAlchemy: () => setIsAlchemyOpen(true),
+            onOpenSect: () => setIsSectOpen(true),
+            onOpenMenu: () => setIsMobileSidebarOpen(true),
+            onOpenCultivation: () => setIsCultivationOpen(true),
+            onOpenInventory: () => setIsInventoryOpen(true),
+            onOpenCharacter: () => setIsCharacterOpen(true),
+            onOpenAchievement: () => {
+              setIsAchievementOpen(true);
+              setPlayer((prev) => ({
+                ...prev,
+                viewedAchievements: [...prev.achievements],
+              }));
+            },
+            onOpenPet: () => setIsPetOpen(true),
+            onOpenLottery: () => setIsLotteryOpen(true),
+            onOpenSettings: () => setIsSettingsOpen(true),
+            onOpenLeaderboard: () => setIsLeaderboardOpen(true),
+            onOpenStats: () => setIsMobileStatsOpen(true),
+            onUpdateViewedAchievements: () => {
+              setPlayer((prev) => ({
+                ...prev,
+                viewedAchievements: [...prev.achievements],
+              }));
+            },
+            autoMeditate,
+            autoAdventure,
+            onToggleAutoMeditate: () => setAutoMeditate((prev) => !prev),
+            onToggleAutoAdventure: () => setAutoAdventure((prev) => !prev),
+          }}
         />
-      )}
 
-      <GameView
+        <LeaderboardPanel
+          isOpen={isLeaderboardOpen}
+          onClose={() => setIsLeaderboardOpen(false)}
+          currentPlayerName={player?.name}
+        />
+
+        <ModalsContainer
+          player={player}
+          onImportSave={importGameSave}
+          settings={settings}
+          setItemActionLog={setItemActionLog}
+          modals={{
+            isInventoryOpen,
+            isCultivationOpen,
+            isAlchemyOpen,
+            isUpgradeOpen,
+            isSectOpen,
+            isRealmOpen,
+            isCharacterOpen,
+            isAchievementOpen,
+            isPetOpen,
+            isLotteryOpen,
+            isSettingsOpen,
+            isShopOpen,
+            isBattleModalOpen: isBattleModalOpen && !isDead, // 死亡时不显示战斗弹窗
+          }}
+          modalState={{
+            currentShop,
+            itemToUpgrade,
+            battleReplay,
+            revealedBattleRounds,
+          }}
+          handlers={{
+            setIsInventoryOpen: (open: boolean) => setIsInventoryOpen(open),
+            setIsCultivationOpen: (open: boolean) => setIsCultivationOpen(open),
+            setIsAlchemyOpen: (open: boolean) => setIsAlchemyOpen(open),
+            setIsUpgradeOpen: (open: boolean) => {
+              setIsUpgradeOpen(open);
+              if (!open) setItemToUpgrade(null);
+            },
+            setIsSectOpen: (open: boolean) => setIsSectOpen(open),
+            setIsRealmOpen: (open: boolean) => setIsRealmOpen(open),
+            setIsCharacterOpen: (open: boolean) => setIsCharacterOpen(open),
+            setIsAchievementOpen: (open: boolean) => setIsAchievementOpen(open),
+            setIsPetOpen: (open: boolean) => setIsPetOpen(open),
+            setIsLotteryOpen: (open: boolean) => setIsLotteryOpen(open),
+            setIsSettingsOpen: (open: boolean) => setIsSettingsOpen(open),
+            setIsShopOpen: (open: boolean) => {
+              setIsShopOpen(open);
+              if (!open) setCurrentShop(null);
+            },
+            setIsBattleModalOpen: (open: boolean) => setIsBattleModalOpen(open),
+            setItemToUpgrade,
+            setCurrentShop,
+            setBattleReplay,
+            setRevealedBattleRounds,
+            handleSkipBattleLogs,
+            handleCloseBattleModal,
+            handleUseItem,
+            handleUseItemBatch,
+            handleUseAllConsumables,
+            handleEquipItem,
+            handleUnequipItem,
+            handleAutoEquip,
+            handleOpenUpgrade,
+            handleDiscardItem,
+            handleBatchDiscard,
+            handleRefineNatalArtifact,
+            handleUnrefineNatalArtifact,
+            handleUpgradeItem,
+            handleUpgradeItemAll,
+            handleLearnArt,
+            handleActivateArt,
+            handleLearnAllArts,
+            handleCraft,
+            handleJoinSect,
+            handleLeaveSect,
+            handleSectTask,
+            handleSectPromote,
+            handleSectBuy,
+            handleEnterRealm,
+            handleSelectTalent,
+            handleSelectTitle,
+            handleAllocateAttribute,
+            handleAllocateAll,
+            handleUseInheritance,
+            handleUpdateViewedAchievements: () => {
+              setPlayer((prev) => ({
+                ...prev,
+                viewedAchievements: [...prev.achievements],
+              }));
+            },
+            handleActivatePet,
+            handleFeedPet,
+            handleEvolvePet,
+            handleAutoFeed,
+            handleDevourPet,
+            handleDraw,
+            handleUpdateSettings,
+            handleBuyItem,
+            handleSellItem,
+          }}
+        />
+      </div>
+      <InteractiveEncounterModal
+        pending={interactive.pending ?? null}
         player={player}
-        logs={logs}
-        visualEffects={visualEffects}
-        loading={loading}
-        cooldown={cooldown}
-        purchaseSuccess={purchaseSuccess}
-        lotteryRewards={lotteryRewards}
-        itemActionLog={itemActionLog}
-        isMobileSidebarOpen={isMobileSidebarOpen}
-        isMobileStatsOpen={isMobileStatsOpen}
-        modals={{
-          isInventoryOpen,
-          isCultivationOpen,
-          isCharacterOpen,
-          isAchievementOpen,
-          isPetOpen,
-          isLotteryOpen,
-          isSettingsOpen,
-          isRealmOpen,
-          isAlchemyOpen,
-          isSectOpen,
-          setIsMobileSidebarOpen,
-          setIsMobileStatsOpen,
-          setIsInventoryOpen,
-          setIsCultivationOpen,
-          setIsCharacterOpen,
-          setIsAchievementOpen,
-          setIsPetOpen,
-          setIsLotteryOpen,
-          setIsSettingsOpen,
-          setIsRealmOpen,
-          setIsAlchemyOpen,
-          setIsSectOpen,
-        }}
-        handlers={{
-          onMeditate: handleMeditate,
-          onAdventure: handleAdventure,
-          onOpenRealm: () => setIsRealmOpen(true),
-          onOpenAlchemy: () => setIsAlchemyOpen(true),
-          onOpenSect: () => setIsSectOpen(true),
-          onOpenMenu: () => setIsMobileSidebarOpen(true),
-          onOpenCultivation: () => setIsCultivationOpen(true),
-          onOpenInventory: () => setIsInventoryOpen(true),
-          onOpenCharacter: () => setIsCharacterOpen(true),
-          onOpenAchievement: () => {
-            setIsAchievementOpen(true);
-            setPlayer((prev) => ({
-              ...prev,
-              viewedAchievements: [...prev.achievements],
-            }));
-          },
-          onOpenPet: () => setIsPetOpen(true),
-          onOpenLottery: () => setIsLotteryOpen(true),
-          onOpenSettings: () => setIsSettingsOpen(true),
-          onOpenLeaderboard: () => setIsLeaderboardOpen(true),
-          onOpenStats: () => setIsMobileStatsOpen(true),
-          onUpdateViewedAchievements: () => {
-            setPlayer((prev) => ({
-              ...prev,
-              viewedAchievements: [...prev.achievements],
-            }));
-          },
-          autoMeditate,
-          autoAdventure,
-          onToggleAutoMeditate: () => setAutoMeditate((prev) => !prev),
-          onToggleAutoAdventure: () => setAutoAdventure((prev) => !prev),
-        }}
-      />
-
-      <LeaderboardPanel
-        isOpen={isLeaderboardOpen}
-        onClose={() => setIsLeaderboardOpen(false)}
-        currentPlayerName={player?.name}
-      />
-
-      <ModalsContainer
-        player={player}
-        settings={settings}
-        setItemActionLog={setItemActionLog}
-        modals={{
-          isInventoryOpen,
-          isCultivationOpen,
-          isAlchemyOpen,
-          isUpgradeOpen,
-          isSectOpen,
-          isRealmOpen,
-          isCharacterOpen,
-          isAchievementOpen,
-          isPetOpen,
-          isLotteryOpen,
-          isSettingsOpen,
-          isShopOpen,
-          isBattleModalOpen: isBattleModalOpen && !isDead, // 死亡时不显示战斗弹窗
-        }}
-        modalState={{
-          currentShop,
-          itemToUpgrade,
-          battleReplay,
-          revealedBattleRounds,
-        }}
-        handlers={{
-          setIsInventoryOpen: (open: boolean) => setIsInventoryOpen(open),
-          setIsCultivationOpen: (open: boolean) => setIsCultivationOpen(open),
-          setIsAlchemyOpen: (open: boolean) => setIsAlchemyOpen(open),
-          setIsUpgradeOpen: (open: boolean) => {
-            setIsUpgradeOpen(open);
-            if (!open) setItemToUpgrade(null);
-          },
-          setIsSectOpen: (open: boolean) => setIsSectOpen(open),
-          setIsRealmOpen: (open: boolean) => setIsRealmOpen(open),
-          setIsCharacterOpen: (open: boolean) => setIsCharacterOpen(open),
-          setIsAchievementOpen: (open: boolean) => setIsAchievementOpen(open),
-          setIsPetOpen: (open: boolean) => setIsPetOpen(open),
-          setIsLotteryOpen: (open: boolean) => setIsLotteryOpen(open),
-          setIsSettingsOpen: (open: boolean) => setIsSettingsOpen(open),
-          setIsShopOpen: (open: boolean) => {
-            setIsShopOpen(open);
-            if (!open) setCurrentShop(null);
-          },
-          setIsBattleModalOpen: (open: boolean) => setIsBattleModalOpen(open),
-          setItemToUpgrade,
-          setCurrentShop,
-          setBattleReplay,
-          setRevealedBattleRounds,
-          handleSkipBattleLogs,
-          handleCloseBattleModal,
-          handleUseItem,
-          handleUseItemBatch,
-          handleUseAllConsumables,
-          handleEquipItem,
-          handleUnequipItem,
-          handleAutoEquip,
-          handleOpenUpgrade,
-          handleDiscardItem,
-          handleBatchDiscard,
-          handleRefineNatalArtifact,
-          handleUnrefineNatalArtifact,
-          handleUpgradeItem,
-          handleUpgradeItemAll,
-          handleLearnArt,
-          handleActivateArt,
-          handleLearnAllArts,
-          handleCraft,
-          handleJoinSect,
-          handleLeaveSect,
-          handleSectTask,
-          handleSectPromote,
-          handleSectBuy,
-          handleEnterRealm,
-          handleSelectTalent,
-          handleSelectTitle,
-          handleAllocateAttribute,
-          handleAllocateAll,
-          handleUseInheritance,
-          handleUpdateViewedAchievements: () => {
-            setPlayer((prev) => ({
-              ...prev,
-              viewedAchievements: [...prev.achievements],
-            }));
-          },
-          handleActivatePet,
-          handleFeedPet,
-          handleEvolvePet,
-          handleAutoFeed,
-          handleDevourPet,
-          handleDraw,
-          handleUpdateSettings,
-          handleBuyItem,
-          handleSellItem,
+        error={saveError}
+        onChoose={(id, choiceId) =>
+          commitInteractive({ type: 'choose', id, choiceId })
+        }
+        onCommand={(id, seq, action) =>
+          commitInteractive({ type: 'battle', id, seq, action })
+        }
+        onAcknowledge={(id) => {
+          if (commitInteractive({ type: 'acknowledge', id })) setCooldown(1);
         }}
       />
     </>

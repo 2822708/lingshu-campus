@@ -11,17 +11,18 @@ import {
 } from 'lucide-react';
 import { GameSettings } from '../types';
 import { SAVE_KEY } from '../utils/gameUtils';
-import { parseImportSave } from '../features/save/saveCodec';
+import { parseImportSave, type GameSave } from '../features/save/saveCodec';
 import { playSound } from '../utils/sound';
 import dayjs from 'dayjs';
 import { CAMPUS_THEME } from '../config/campusTheme';
+import { cancelGameAI } from '../services/ai/runtime';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   settings: GameSettings;
   onUpdateSettings: (settings: Partial<GameSettings>) => void;
-  onImportSave?: () => void;
+  onImportSave: (save: GameSave) => void;
 }
 
 const SettingsModal: React.FC<Props> = ({
@@ -29,6 +30,7 @@ const SettingsModal: React.FC<Props> = ({
   onClose,
   settings,
   onUpdateSettings,
+  onImportSave,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -68,7 +70,8 @@ const SettingsModal: React.FC<Props> = ({
       }
 
       // 保存到localStorage
-      localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+      onImportSave(saveData);
+      cancelGameAI();
 
       // 提示并刷新页面
       alert('存档导入成功！页面即将刷新...');
