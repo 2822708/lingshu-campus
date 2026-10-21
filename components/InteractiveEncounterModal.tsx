@@ -257,6 +257,48 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
         {pending.phase === 'battle' && battle && (
           <>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 md:px-7">
+              {pending.adventurePlan && (
+                <div className="mb-4 border-b border-npu-border pb-3 text-xs leading-6 text-npu-dim">
+                  <p className="whitespace-pre-line">
+                    {pending.encounter.story}
+                  </p>
+                  {pending.adventurePlan.request.riskLevel && (
+                    <p>本次风险：{pending.adventurePlan.request.riskLevel}。</p>
+                  )}
+                  {pending.adventurePlan.request.sectTask && (
+                    <p>
+                      本次已占用一次社团任务次数；撤离或失败也会保留已支付的材料与费用。
+                    </p>
+                  )}
+                  <p>
+                    胜利奖励：绩点 +{pending.adventurePlan.reward.exp}、学分 +
+                    {pending.adventurePlan.reward.spiritStones}
+                    {pending.adventurePlan.reward.contribution
+                      ? `、贡献 +${pending.adventurePlan.reward.contribution}`
+                      : ''}
+                    。
+                  </p>
+                  {(pending.adventurePlan.failure.exp < 0 ||
+                    pending.adventurePlan.failure.spiritStones < 0) && (
+                    <p>
+                      战败最多损失：绩点{' '}
+                      {Math.min(player.exp, -pending.adventurePlan.failure.exp)}
+                      、学分{' '}
+                      {Math.min(
+                        player.spiritStones,
+                        -pending.adventurePlan.failure.spiritStones
+                      )}
+                      ；撤离不追加这项扣分。
+                    </p>
+                  )}
+                  {(pending.adventurePlan.independentReward.exp > 0 ||
+                    pending.adventurePlan.independentReward.spiritStones > 0 ||
+                    pending.adventurePlan.independentReward.items.length >
+                      0) && (
+                    <p>本次另有已遇到的非战斗机缘收益，结算时单独列出。</p>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-5">
                 <EnergyLine
                   name="你"

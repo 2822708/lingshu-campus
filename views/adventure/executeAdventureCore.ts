@@ -55,6 +55,7 @@ interface ExecuteAdventureCoreProps {
   realmName?: string;
   adventureType: AdventureType;
   skipBattle?: boolean; // 是否跳过战斗（自动模式下）
+  onTriggerSecretRealm?: () => Promise<void>;
 }
 
 export async function executeAdventureCore({
@@ -68,6 +69,7 @@ export async function executeAdventureCore({
   realmName,
   adventureType,
   skipBattle = false,
+  onTriggerSecretRealm,
 }: ExecuteAdventureCoreProps & {
   riskLevel?: '低' | '中' | '高' | '极度危险';
 }) {
@@ -900,6 +902,15 @@ export async function executeAdventureCore({
   }
 
   // 如果触发随机副本，自动进入副本并触发新的随机事件
+  if (result.triggerSecretRealm && onTriggerSecretRealm) {
+    const actionEpoch = getAIContextEpoch();
+    setTimeout(async () => {
+      if (!isAIContextCurrent(actionEpoch)) return;
+      await onTriggerSecretRealm();
+    }, 1000);
+    return;
+  }
+  // Legacy-only execution for callers without the active App's continuation callback.
   if (result.triggerSecretRealm) {
     const actionEpoch = getAIContextEpoch();
     setTimeout(async () => {

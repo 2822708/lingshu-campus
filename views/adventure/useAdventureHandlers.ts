@@ -10,9 +10,9 @@ import {
 import { generateAdventureEvent } from '../../services/aiService';
 import {
   shouldTriggerBattle,
-  resolveBattleEncounter,
   BattleReplay,
 } from '../../services/battleService';
+import type { AdventureBattleRequest } from '../../features/interactive/adventureBattle';
 import { executeAdventureCore } from './executeAdventureCore';
 import {
   AIContextCancelledError,
@@ -32,7 +32,7 @@ import {
  * @param loading 加载状态
  * @param cooldown 冷却时间
  * @param onOpenShop 打开商店
- * @param onOpenBattleModal 打开战斗模态框
+ * @param onStartBattle 保存未结算战斗并交由逐轮操作界面处理
  * @returns handleAdventure 期末冲刺
  * @returns executeAdventure 刷题核心逻辑
  */
@@ -47,10 +47,16 @@ interface UseAdventureHandlersProps {
   loading: boolean;
   cooldown: number;
   onOpenShop: (shopType: ShopType) => void;
-  onOpenBattleModal: (replay: BattleReplay) => void;
-  skipBattle?: boolean; // 是否跳过战斗（自动模式下）
+  /** Kept for historical nonbattle-core callers; new battles never open a settled replay. */
+  onOpenBattleModal?: (replay: BattleReplay) => void;
+  skipBattle?: boolean;
   /** true consumes this action; false keeps the existing ordinary-event path. */
   onStartInteractive?: () => boolean;
+  onStartBattle: (request: AdventureBattleRequest) => boolean;
+  /** A nonbattle realm visit must save its entry cost before applying ordinary rewards. */
+  onCommitRealmEntry?: (cost: number) => boolean;
+  getCurrentPlayer?: () => PlayerStats | null;
+  isInteractionPending?: () => boolean;
 }
 
 export function useAdventureHandlers({
@@ -63,24 +69,41 @@ export function useAdventureHandlers({
   loading,
   cooldown,
   onOpenShop,
-  onOpenBattleModal,
+  onOpenBattleModal = () => {},
   skipBattle = false,
   onStartInteractive,
+  onStartBattle,
+  onCommitRealmEntry,
+  getCurrentPlayer,
+  isInteractionPending,
 }: UseAdventureHandlersProps) {
   // 🆕 商店触发冷却：90 秒内不重复弹商店（避免连续点击刷屏）
   const SHOP_COOLDOWN_MS = 90_000;
   const lastShopAtRef = React.useRef<number>(0);
   const actionInFlight = React.useRef(false);
+  const latestContext = React.useRef({ player, loading, cooldown });
+  latestContext.current = { player, loading, cooldown };
   const executeAdventure = async (
     adventureType: AdventureType,
     realmName?: string,
     riskLevel?: '低' | '中' | '高' | '极度危险',
     realmMinRealm?: RealmType,
     realmDescription?: string,
-    realmDrops?: string[] // 🆕 副本"可能掉落"列表，搜刮时按概率兑现
+    realmDrops?: string[], // 🆕 副本"可能掉落"列表，搜刮时按概率兑现
+    entryCost = 0,
+    continueTriggeredRealm = false
   ) => {
-    if (actionInFlight.current) return;
-    if (!player) {
+    if (
+      actionInFlight.current ||
+      isInteractionPending?.() ||
+      latestContext.current.loading ||
+      (!continueTriggeredRealm && latestContext.current.cooldown > 0)
+    )
+      return;
+    const currentPlayer = getCurrentPlayer
+      ? getCurrentPlayer()
+      : latestContext.current.player;
+    if (!currentPlayer) {
       setLoading(false);
       return;
     }
@@ -98,7 +121,6 @@ export function useAdventureHandlers({
 
     try {
       let result;
-      let battleContext: BattleReplay | null = null;
 
       // ============ 奇遇触发（战斗/纯奖励 五五开）============
       // 只对"期末周"按钮（adventureType === 'normal' 且不在副本）生效
@@ -112,71 +134,46 @@ export function useAdventureHandlers({
         const rollBattle = Math.random() < 0.5;
         if (rollBattle) {
           // 50%：先强制战斗奇遇（满足条件则必出）；没候选回退到纯奖励
-          battleEncounter = pickBattleForced(player);
+          battleEncounter = pickBattleForced(currentPlayer);
           if (!battleEncounter) {
-            encounterResult = pickRewardForced(player);
+            encounterResult = pickRewardForced(currentPlayer);
           }
         } else {
           // 50%：先强制纯奖励奇遇；没候选回退到战斗奇遇
-          encounterResult = pickRewardForced(player);
+          encounterResult = pickRewardForced(currentPlayer);
           if (!encounterResult) {
-            battleEncounter = pickBattleForced(player);
+            battleEncounter = pickBattleForced(currentPlayer);
           }
         }
       }
 
       if (battleEncounter) {
-        // 用奇遇配置的难度触发战斗
-        const battleResolution = await resolveBattleEncounter(
-          player,
+        // The request contains only preparation. No turn, reward, or HP change is settled here.
+        onStartBattle({
           adventureType,
-          battleEncounter.battle?.difficulty,
+          riskLevel: battleEncounter.battle?.difficulty,
           realmMinRealm,
-          battleEncounter.name
-        );
-        result = battleResolution.adventureResult;
-        battleContext = battleResolution.replay;
-
-        // 战斗剧情拼接（奇遇描述打头）
-        result = {
-          ...result,
-          story: `${battleEncounter.description}\n\n${result.story}`,
-        };
-
-        // 打赢才给奇遇奖励（有风险才有回报）
-        if (battleResolution.replay.victory) {
-          result = {
-            ...result,
-            expChange: result.expChange + (battleEncounter.rewards.exp ?? 0),
-            spiritStonesChange:
-              result.spiritStonesChange +
-              (battleEncounter.rewards.spiritStones ?? 0),
-            itemObtained: battleEncounter.rewards.items?.[0]
-              ? {
-                  name: battleEncounter.rewards.items[0].name,
-                  type: '元件',
-                  description: `${battleEncounter.name}的战利品`,
-                  rarity: battleEncounter.rewards.items[0].rarity,
-                }
-              : result.itemObtained,
-            eventColor: 'special',
-          };
-        }
-      } else if (shouldTriggerBattle(player, adventureType)) {
-        const battleResolution = await resolveBattleEncounter(
-          player,
+          realmName: battleEncounter.name,
+          battleEncounter,
+          entryCost,
+        });
+        // Failed critical saves must also stop here; never fall through to ordinary rewards.
+        return;
+      } else if (shouldTriggerBattle(currentPlayer, adventureType)) {
+        onStartBattle({
           adventureType,
           riskLevel,
           realmMinRealm,
           realmName,
           realmDescription,
-          realmDrops // 🆕 副本 drops 透传
-        );
-        result = battleResolution.adventureResult;
-        battleContext = battleResolution.replay;
+          realmDrops,
+          entryCost,
+          rewardEncounter: encounterResult,
+        });
+        return;
       } else {
         result = await generateAdventureEvent(
-          player,
+          currentPlayer,
           adventureType,
           riskLevel,
           realmName,
@@ -185,6 +182,16 @@ export function useAdventureHandlers({
       }
 
       if (!isAIContextCurrent(actionEpoch)) return;
+
+      // Realm fees belong to this attempt even when the original battle roll misses.
+      // Save first so disabled autosave or refresh cannot turn the visit into a free roll.
+      if (
+        adventureType === 'secret_realm' &&
+        entryCost > 0 &&
+        !onCommitRealmEntry?.(entryCost)
+      ) {
+        return;
+      }
 
       // 纯奖励奇遇叠加：如果在 50/50 分配里 roll 到了纯奖励奇遇，叠加到原 result 上
       // （战斗奇遇已在前置处理，这里只叠加纯奖励奇遇）
@@ -209,8 +216,8 @@ export function useAdventureHandlers({
 
       await executeAdventureCore({
         result,
-        battleContext,
-        player,
+        battleContext: null,
+        player: currentPlayer,
         setPlayer,
         addLog,
         triggerVisual,
@@ -219,6 +226,20 @@ export function useAdventureHandlers({
         adventureType,
         skipBattle,
         riskLevel,
+        // The legacy rare extra-realm event must use the same manual battle entry.
+        // Its timer can run just before the parent action's cooldown timer clears;
+        // this continuation bypasses only that cooldown, never loading/pending guards.
+        onTriggerSecretRealm: () =>
+          executeAdventure(
+            'secret_realm',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            0,
+            true
+          ),
       });
     } catch (error) {
       if (

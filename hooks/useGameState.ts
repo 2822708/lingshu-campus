@@ -402,7 +402,6 @@ export function useGameState() {
         const next = reduceInteractiveAction(snapshot, command);
         if (next === snapshot) return false;
         autoSaveScheduler.cancel();
-        if (command.type === 'begin') cancelGameAI();
         // Write first. A quota error leaves all in-memory state and the RNG untouched.
         localStorage.setItem(
           SAVE_KEY,
@@ -410,6 +409,8 @@ export function useGameState() {
             createGameSave(next.player, next.logs, Date.now(), next.interactive)
           )
         );
+        if (command.type === 'begin' || command.type === 'begin-battle')
+          cancelGameAI();
         playerRef.current = next.player;
         logsRef.current = next.logs;
         interactiveRef.current = next.interactive;
@@ -427,6 +428,59 @@ export function useGameState() {
       }
     },
     [autoSaveScheduler, ownsSave]
+  );
+
+  // Non-battle realm exploration pays once before ordinary-event settlement.
+  const commitRealmEntry = useCallback(
+    (cost: number) => {
+      const current = playerRef.current;
+      try {
+        if (
+          !current ||
+          writesSuspended.current ||
+          interactiveRef.current.pending ||
+          !ownsSave()
+        )
+          return false;
+        if (!Number.isSafeInteger(cost) || cost < 0)
+          throw new Error('副本入场费用无效。');
+        if (current.hp < current.maxHp * 0.3)
+          throw new Error('精力不足三成，无法进入副本。');
+        if (current.spiritStones < cost)
+          throw new Error('学分不足，未扣取副本入场费。');
+        const next = { ...current, spiritStones: current.spiritStones - cost };
+        autoSaveScheduler.cancel();
+        localStorage.setItem(
+          SAVE_KEY,
+          JSON.stringify(
+            createGameSave(
+              next,
+              logsRef.current,
+              Date.now(),
+              interactiveRef.current
+            )
+          )
+        );
+        playerRef.current = next;
+        rawSetPlayer(next);
+        setHasSave(true);
+        setSaveError('');
+        return true;
+      } catch (error) {
+        setSaveError(
+          error instanceof Error
+            ? error.message
+            : '副本入场记录未能保存，请重试。'
+        );
+        return false;
+      }
+    },
+    [autoSaveScheduler, ownsSave]
+  );
+  const getCurrentPlayer = useCallback(() => playerRef.current, []);
+  const hasPendingInteractive = useCallback(
+    () => Boolean(interactiveRef.current.pending) || writesSuspended.current,
+    []
   );
 
   const importGameSave = useCallback(
@@ -465,6 +519,9 @@ export function useGameState() {
     interactive,
     saveError,
     commitInteractive,
+    commitRealmEntry,
+    getCurrentPlayer,
+    hasPendingInteractive,
     importGameSave,
   };
 }

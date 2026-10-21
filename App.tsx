@@ -20,6 +20,7 @@ import { applyDemotion } from './utils/demotion';
 import { playSound, unlockAudio } from './utils/sound';
 import LeaderboardPanel from './components/LeaderboardPanel';
 import { cancelGameAI } from './services/ai/runtime';
+import type { AdventureBattleRequest } from './features/interactive/adventureBattle';
 
 // 导入模块化的 handlers
 import {
@@ -61,6 +62,9 @@ function App() {
     saveGame, // 保存存档
     interactive,
     commitInteractive,
+    commitRealmEntry,
+    getCurrentPlayer,
+    hasPendingInteractive,
     saveError,
     importGameSave,
   } = useGameState();
@@ -249,12 +253,40 @@ function App() {
     setLotteryRewards,
   });
 
+  const startBattle = (request: AdventureBattleRequest) => {
+    if (interactiveActiveRef.current || isDead) return false;
+    // Automatic travel stops at the decision point, including a failed save.
+    setAutoMeditate(false);
+    setAutoAdventure(false);
+    const started = commitInteractive({
+      type: 'begin-battle',
+      id: `battle-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      seed: Math.floor(Math.random() * 0x100000000),
+      request,
+    });
+    setLoading(false);
+    if (started) {
+      interactiveActiveRef.current = true;
+      setLastBattleReplay(null);
+      setBattleReplay(null);
+      setIsBattleModalOpen(false);
+      setIsRealmOpen(false);
+      setIsSectOpen(false);
+      playSound('battle');
+      setCooldown(1);
+    }
+    return started;
+  };
+
   const sectHandlers = useSectHandlers({
     player,
     setPlayer,
     addLog,
     setIsSectOpen,
     setPurchaseSuccess,
+    onStartBattle: startBattle,
+    getCurrentPlayer,
+    isInteractionPending: hasPendingInteractive,
   });
 
   const achievementHandlers = useAchievementHandlers({
@@ -277,20 +309,16 @@ function App() {
       // 复用 shopHandlers 的逻辑
       shopHandlers.handleOpenShop(shopType);
     },
-    onOpenBattleModal: (replay: BattleReplay) => {
-      // 保存最近的战斗数据，用于死亡统计
-      setLastBattleReplay(replay);
-      playSound('battle');
-      // 只有在非自动模式下才打开战斗弹窗
-      if (!autoAdventure) {
-        battleHandlers.openBattleModal(replay);
-      }
-    },
-    skipBattle: autoAdventure, // 自动期末冲刺模式下跳过战斗
+    getCurrentPlayer,
+    isInteractionPending: hasPendingInteractive,
+    onCommitRealmEntry: commitRealmEntry,
+    onStartBattle: startBattle,
     onStartInteractive: () => {
       if (interactiveActiveRef.current || isDead) return true;
       // Keep ordinary events, shops and drops available; the first encounter is guaranteed.
-      if (interactive.nextSeq > 1 && Math.random() >= 0.35) return false;
+      const encountered =
+        interactive.encounterCursor ?? interactive.nextSeq - 1;
+      if (encountered > 0 && Math.random() >= 0.35) return false;
       const started = commitInteractive({
         type: 'begin',
         id: `campus-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -596,6 +624,8 @@ function App() {
     cooldown,
     setIsRealmOpen,
     executeAdventure,
+    getCurrentPlayer,
+    isInteractionPending: hasPendingInteractive,
   });
   const handleEnterRealm = realmHandlers.handleEnterRealm;
   // 冒险行为由 useAdventureHandlers 提供的 handleAdventure 实现

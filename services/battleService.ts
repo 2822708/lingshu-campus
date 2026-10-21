@@ -8,10 +8,7 @@ import {
   EquipmentSlot,
   Item,
 } from '../types';
-import {
-  REALM_ORDER,
-  DISCOVERABLE_RECIPES,
-} from '../constants';
+import { REALM_ORDER, DISCOVERABLE_RECIPES } from '../constants';
 import { generateEnemyName } from './aiService';
 
 const randomId = () => Math.random().toString(36).slice(2, 9);
@@ -211,7 +208,7 @@ const ENEMY_TITLES = [
 ];
 
 // 根据风险等级计算战斗难度
-const getBattleDifficulty = (
+export const getBattleDifficulty = (
   adventureType: AdventureType,
   riskLevel?: '低' | '中' | '高' | '极度危险'
 ): number => {
@@ -240,8 +237,8 @@ const baseBattleChance: Record<AdventureType, number> = {
   secret_realm: 0.45,
 };
 
-const pickOne = <T>(list: T[]): T =>
-  list[Math.floor(Math.random() * list.length)];
+const pickOne = <T>(list: T[], random = Math.random): T =>
+  list[Math.floor(random() * list.length)];
 
 // 搜刮奖励物品名称库（校园版）
 interface LootItem {
@@ -255,7 +252,14 @@ interface LootItem {
 }
 
 const LOOT_ITEMS: Record<
-  'herbs' | 'pills' | 'materials' | 'weapons' | 'armors' | 'accessories' | 'rings' | 'artifacts',
+  | 'herbs'
+  | 'pills'
+  | 'materials'
+  | 'weapons'
+  | 'armors'
+  | 'accessories'
+  | 'rings'
+  | 'artifacts',
   LootItem[]
 > = {
   // 食材类（咖啡豆 / 茶包 / 柠檬片）
@@ -351,9 +355,21 @@ const LOOT_ITEMS: Record<
     { name: '面包板', type: ItemType.Material, rarity: '稀有' as ItemRarity },
     { name: '贴片电容', type: ItemType.Material, rarity: '普通' as ItemRarity },
     { name: '运放芯片', type: ItemType.Material, rarity: '稀有' as ItemRarity },
-    { name: 'STM32 开发板', type: ItemType.Material, rarity: '稀有' as ItemRarity },
-    { name: 'FPGA 实验板', type: ItemType.Material, rarity: '传说' as ItemRarity },
-    { name: '示波器探头', type: ItemType.Material, rarity: '绝版' as ItemRarity },
+    {
+      name: 'STM32 开发板',
+      type: ItemType.Material,
+      rarity: '稀有' as ItemRarity,
+    },
+    {
+      name: 'FPGA 实验板',
+      type: ItemType.Material,
+      rarity: '传说' as ItemRarity,
+    },
+    {
+      name: '示波器探头',
+      type: ItemType.Material,
+      rarity: '绝版' as ItemRarity,
+    },
   ],
   // 装备类（键鼠）
   weapons: [
@@ -779,12 +795,13 @@ function downgradeRarityByRisk(
 }
 
 // 根据敌人强度和类型生成搜刮奖励
-const generateLoot = (
+export const generateBattleLoot = (
   enemyStrength: number,
   adventureType: AdventureType,
   playerRealm: RealmType,
   riskLevel?: '低' | '中' | '高' | '极度危险',
-  realmDrops?: string[] // 🆕 副本"可能掉落"列表，按概率兑现
+  realmDrops?: string[], // 🆕 副本"可能掉落"列表，按概率兑现
+  random = Math.random
 ): AdventureResult['itemObtained'][] => {
   const lootItems: AdventureResult['itemObtained'][] = [];
 
@@ -793,8 +810,8 @@ const generateLoot = (
     enemyStrength < 0.7
       ? 1
       : enemyStrength < 1.0
-        ? 1 + Math.floor(Math.random() * 2)
-        : 2 + Math.floor(Math.random() * 2);
+        ? 1 + Math.floor(random() * 2)
+        : 2 + Math.floor(random() * 2);
 
   // 🆕 副本专属池命中率：风险越高，从专属池抽的比例越大
   // 低 40% / 中 55% / 高 70% / 极度危险 80%
@@ -811,7 +828,7 @@ const generateLoot = (
 
   // 根据敌人强度和类型决定稀有度分布
   const getRarityChance = (): ItemRarity => {
-    const roll = Math.random();
+    const roll = random();
     if (adventureType === 'secret_realm') {
       // 副本：根据风险等级调整稀有度概率
       if (riskLevel === '极度危险') {
@@ -856,8 +873,8 @@ const generateLoot = (
     const targetRarity = getRarityChance();
 
     // 🆕 副本专属池分支：命中则从 realmDrops 抽
-    if (realmDropChance > 0 && Math.random() < realmDropChance) {
-      const dropName = realmDrops![Math.floor(Math.random() * realmDrops!.length)];
+    if (realmDropChance > 0 && random() < realmDropChance) {
+      const dropName = realmDrops![Math.floor(random() * realmDrops!.length)];
       const matched = findItemInGlobalPool(dropName);
       if (matched) {
         const rarity = (matched.rarity as ItemRarity) || '普通';
@@ -879,7 +896,7 @@ const generateLoot = (
     }
 
     // 根据稀有度选择物品类型
-    const itemTypeRoll = Math.random();
+    const itemTypeRoll = random();
     let itemPool: LootItem[];
     let itemType: string;
 
@@ -897,7 +914,7 @@ const generateLoot = (
       itemType = '元件';
     } else if (itemTypeRoll < 0.8) {
       // 20% 装备（键鼠/穿戴/挂件/手环）
-      const equipRoll = Math.random();
+      const equipRoll = random();
       if (equipRoll < 0.25) {
         itemPool = LOOT_ITEMS.weapons;
         itemType = '键鼠';
@@ -934,7 +951,7 @@ const generateLoot = (
       });
 
       if (availableRecipes.length > 0) {
-        const selectedRecipe = pickOne(availableRecipes);
+        const selectedRecipe = pickOne(availableRecipes, random);
         const item: AdventureResult['itemObtained'] & { recipeName?: string } =
           {
             name: `${selectedRecipe.name}配方`,
@@ -963,7 +980,7 @@ const generateLoot = (
         return itemIndex <= targetIndex;
       });
       if (fallbackItems.length > 0) {
-        const selected = pickOne(fallbackItems);
+        const selected = pickOne(fallbackItems, random);
         const item: AdventureResult['itemObtained'] = {
           name: selected.name,
           type: itemType,
@@ -977,7 +994,7 @@ const generateLoot = (
         lootItems.push(item);
       }
     } else {
-      const selected = pickOne(availableItems);
+      const selected = pickOne(availableItems, random);
       const item: AdventureResult['itemObtained'] = {
         name: selected.name,
         type: itemType,
@@ -1034,16 +1051,14 @@ export interface BattleResolution {
 
 const clampMin = (value: number, min: number) => (value < min ? min : value);
 
-const createEnemy = async (player: PlayerStats, adventureType: AdventureType, riskLevel?: '低' | '中' | '高' | '极度危险', realmMinRealm?: RealmType): Promise<{
-  name: string;
-  title: string;
-  realm: RealmType;
-  attack: number;
-  defense: number;
-  maxHp: number;
-  speed: number;
-  strengthMultiplier: number;
-}> => {
+const prepareBattleEnemy = (
+  player: PlayerStats,
+  adventureType: AdventureType,
+  riskLevel?: '低' | '中' | '高' | '极度危险',
+  realmMinRealm?: RealmType,
+  random = Math.random,
+  getBase = getEnemyBaseForRealm
+) => {
   const currentRealmIndex = REALM_ORDER.indexOf(player.realm);
 
   // 如果进入副本且有副本的最低学阶要求，基于副本学阶计算敌人强度
@@ -1054,7 +1069,10 @@ const createEnemy = async (player: PlayerStats, adventureType: AdventureType, ri
     const realmMinIndex = REALM_ORDER.indexOf(realmMinRealm);
     // 敌人学阶基于副本最低学阶，而不是玩家学阶
     const realmOffset = 1; // 副本中敌人比副本要求高1个学阶
-    targetRealmIndex = clampMin(Math.min(REALM_ORDER.length - 1, realmMinIndex + realmOffset), 0);
+    targetRealmIndex = clampMin(
+      Math.min(REALM_ORDER.length - 1, realmMinIndex + realmOffset),
+      0
+    );
 
     // 如果玩家学阶高于副本要求，降低敌人强度（学阶压制）
     if (currentRealmIndex > realmMinIndex) {
@@ -1064,8 +1082,12 @@ const createEnemy = async (player: PlayerStats, adventureType: AdventureType, ri
     }
   } else {
     // 普通副本和机缘副本，按原逻辑
-    const realmOffset = adventureType === 'secret_realm' ? 1 : adventureType === 'lucky' ? -1 : 0;
-    targetRealmIndex = clampMin(Math.min(REALM_ORDER.length - 1, currentRealmIndex + realmOffset), 0);
+    const realmOffset =
+      adventureType === 'secret_realm' ? 1 : adventureType === 'lucky' ? -1 : 0;
+    targetRealmIndex = clampMin(
+      Math.min(REALM_ORDER.length - 1, currentRealmIndex + realmOffset),
+      0
+    );
   }
 
   const realm = REALM_ORDER[targetRealmIndex];
@@ -1075,36 +1097,36 @@ const createEnemy = async (player: PlayerStats, adventureType: AdventureType, ri
   // 普通副本：40%弱敌，50%普通，10%强敌
   // 机缘副本：60%弱敌，35%普通，5%强敌
   // 困难副本：20%弱敌，50%普通，30%强敌
-  const strengthRoll = Math.random();
+  const strengthRoll = random();
   let strengthMultiplier = 1;
   let strengthVariance = { min: 0.85, max: 1.2 };
 
   if (adventureType === 'normal') {
     if (strengthRoll < 0.4) {
       // 弱敌 40%
-      strengthMultiplier = 0.6 + Math.random() * 0.2; // 0.6 - 0.8
+      strengthMultiplier = 0.6 + random() * 0.2; // 0.6 - 0.8
       strengthVariance = { min: 0.6, max: 0.9 };
     } else if (strengthRoll < 0.9) {
       // 普通 50%
-      strengthMultiplier = 0.8 + Math.random() * 0.2; // 0.8 - 1.0
+      strengthMultiplier = 0.8 + random() * 0.2; // 0.8 - 1.0
       strengthVariance = { min: 0.75, max: 1.1 };
     } else {
       // 强敌 10%
-      strengthMultiplier = 1.0 + Math.random() * 0.2; // 1.0 - 1.2
+      strengthMultiplier = 1.0 + random() * 0.2; // 1.0 - 1.2
       strengthVariance = { min: 0.9, max: 1.3 };
     }
   } else if (adventureType === 'lucky') {
     if (strengthRoll < 0.6) {
       // 弱敌 60%
-      strengthMultiplier = 0.5 + Math.random() * 0.2; // 0.5 - 0.7
+      strengthMultiplier = 0.5 + random() * 0.2; // 0.5 - 0.7
       strengthVariance = { min: 0.5, max: 0.85 };
     } else if (strengthRoll < 0.95) {
       // 普通 35%
-      strengthMultiplier = 0.7 + Math.random() * 0.2; // 0.7 - 0.9
+      strengthMultiplier = 0.7 + random() * 0.2; // 0.7 - 0.9
       strengthVariance = { min: 0.65, max: 1.0 };
     } else {
       // 强敌 5%
-      strengthMultiplier = 0.9 + Math.random() * 0.2; // 0.9 - 1.1
+      strengthMultiplier = 0.9 + random() * 0.2; // 0.9 - 1.1
       strengthVariance = { min: 0.8, max: 1.2 };
     }
   } else if (adventureType === 'secret_realm') {
@@ -1112,90 +1134,143 @@ const createEnemy = async (player: PlayerStats, adventureType: AdventureType, ri
     if (riskLevel === '极度危险') {
       // 极度危险：5%弱敌，30%普通，65%强敌
       if (strengthRoll < 0.05) {
-        strengthMultiplier = 0.9 + Math.random() * 0.2; // 0.9 - 1.1
+        strengthMultiplier = 0.9 + random() * 0.2; // 0.9 - 1.1
         strengthVariance = { min: 0.85, max: 1.2 };
       } else if (strengthRoll < 0.35) {
-        strengthMultiplier = 1.1 + Math.random() * 0.2; // 1.1 - 1.3
+        strengthMultiplier = 1.1 + random() * 0.2; // 1.1 - 1.3
         strengthVariance = { min: 1.0, max: 1.4 };
       } else {
-        strengthMultiplier = 1.3 + Math.random() * 0.4; // 1.3 - 1.7
+        strengthMultiplier = 1.3 + random() * 0.4; // 1.3 - 1.7
         strengthVariance = { min: 1.2, max: 1.8 };
       }
     } else if (riskLevel === '高') {
       // 高风险：10%弱敌，40%普通，50%强敌
       if (strengthRoll < 0.1) {
-        strengthMultiplier = 0.8 + Math.random() * 0.2; // 0.8 - 1.0
+        strengthMultiplier = 0.8 + random() * 0.2; // 0.8 - 1.0
         strengthVariance = { min: 0.75, max: 1.1 };
       } else if (strengthRoll < 0.5) {
-        strengthMultiplier = 1.0 + Math.random() * 0.2; // 1.0 - 1.2
+        strengthMultiplier = 1.0 + random() * 0.2; // 1.0 - 1.2
         strengthVariance = { min: 0.9, max: 1.3 };
       } else {
-        strengthMultiplier = 1.2 + Math.random() * 0.3; // 1.2 - 1.5
+        strengthMultiplier = 1.2 + random() * 0.3; // 1.2 - 1.5
         strengthVariance = { min: 1.1, max: 1.6 };
       }
     } else if (riskLevel === '中') {
       // 中风险：20%弱敌，50%普通，30%强敌
       if (strengthRoll < 0.2) {
-        strengthMultiplier = 0.7 + Math.random() * 0.2; // 0.7 - 0.9
+        strengthMultiplier = 0.7 + random() * 0.2; // 0.7 - 0.9
         strengthVariance = { min: 0.65, max: 1.0 };
       } else if (strengthRoll < 0.7) {
-        strengthMultiplier = 0.9 + Math.random() * 0.2; // 0.9 - 1.1
+        strengthMultiplier = 0.9 + random() * 0.2; // 0.9 - 1.1
         strengthVariance = { min: 0.8, max: 1.2 };
       } else {
-        strengthMultiplier = 1.1 + Math.random() * 0.3; // 1.1 - 1.4
+        strengthMultiplier = 1.1 + random() * 0.3; // 1.1 - 1.4
         strengthVariance = { min: 1.0, max: 1.5 };
       }
     } else {
       // 低风险：30%弱敌，55%普通，15%强敌
       if (strengthRoll < 0.3) {
-        strengthMultiplier = 0.6 + Math.random() * 0.2; // 0.6 - 0.8
+        strengthMultiplier = 0.6 + random() * 0.2; // 0.6 - 0.8
         strengthVariance = { min: 0.55, max: 0.9 };
       } else if (strengthRoll < 0.85) {
-        strengthMultiplier = 0.8 + Math.random() * 0.2; // 0.8 - 1.0
+        strengthMultiplier = 0.8 + random() * 0.2; // 0.8 - 1.0
         strengthVariance = { min: 0.75, max: 1.1 };
       } else {
-        strengthMultiplier = 1.0 + Math.random() * 0.2; // 1.0 - 1.2
+        strengthMultiplier = 1.0 + random() * 0.2; // 1.0 - 1.2
         strengthVariance = { min: 0.9, max: 1.3 };
       }
     }
   }
 
-  const variance = () => strengthVariance.min + Math.random() * (strengthVariance.max - strengthVariance.min);
+  const variance = () =>
+    strengthVariance.min +
+    random() * (strengthVariance.max - strengthVariance.min);
   // 应用学阶压制倍率到最终难度
-  const finalDifficulty = baseDifficulty * strengthMultiplier * realmLevelReduction;
+  const finalDifficulty =
+    baseDifficulty * strengthMultiplier * realmLevelReduction;
 
-  // 15%概率使用AI生成敌人名字，失败则使用预设列表
-  let name = pickOne(ENEMY_NAMES);
-  let title = pickOne(ENEMY_TITLES);
-
-  if (Math.random() < 0.15) {
-    try {
-      const aiGenerated = await generateEnemyName(realm, adventureType);
-      if (aiGenerated.name && aiGenerated.title) {
-        name = aiGenerated.name;
-        title = aiGenerated.title;
-      }
-    } catch {
-      // AI生成失败，使用预设列表
-      console.log('AI生成敌人名字失败，使用预设列表');
-    }
-  }
+  const name = pickOne(ENEMY_NAMES, random);
+  const title = pickOne(ENEMY_TITLES, random);
 
   // ===== 敌人数值 = 按境界档位 + 玩家层级查表（与玩家属性完全脱钩）=====
   // 不再读取 player.attack / player.defense / player.maxHp / player.speed
   // 防止玩家装备/传承/旧存档膨胀时敌人也跟着爆炸
-  const enemyBase = getEnemyBaseForRealm(realm, player.realmLevel);
+  const enemyBase = getBase(realm, player.realmLevel);
 
   return {
     name,
     title,
     realm,
-    attack: Math.max(5, Math.round(enemyBase.baseAttack * variance() * finalDifficulty)),
-    defense: Math.max(3, Math.round(enemyBase.baseDefense * variance() * finalDifficulty)),
-    maxHp: Math.max(30, Math.round(enemyBase.baseMaxHp * variance() * finalDifficulty)),
-    speed: Math.max(5, Math.round(enemyBase.baseSpeed * variance() * strengthMultiplier)),
-    strengthMultiplier // 保存强度倍数用于生成奖励
+    finish: (finalName = name, finalTitle = title) => ({
+      name: finalName,
+      title: finalTitle,
+      realm,
+      attack: Math.max(
+        5,
+        Math.round(enemyBase.baseAttack * variance() * finalDifficulty)
+      ),
+      defense: Math.max(
+        3,
+        Math.round(enemyBase.baseDefense * variance() * finalDifficulty)
+      ),
+      maxHp: Math.max(
+        30,
+        Math.round(enemyBase.baseMaxHp * variance() * finalDifficulty)
+      ),
+      speed: Math.max(
+        5,
+        Math.round(enemyBase.baseSpeed * variance() * strengthMultiplier)
+      ),
+      strengthMultiplier, // 保存强度倍数用于生成奖励
+    }),
   };
+};
+
+/** Synchronous preparation for saved turn-based battles; does not call a model. */
+export const createBattleEnemySnapshot = (
+  player: PlayerStats,
+  adventureType: AdventureType,
+  riskLevel?: '低' | '中' | '高' | '极度危险',
+  realmMinRealm?: RealmType,
+  random = Math.random,
+  getBase = getEnemyBaseForRealm
+) =>
+  prepareBattleEnemy(
+    player,
+    adventureType,
+    riskLevel,
+    realmMinRealm,
+    random,
+    getBase
+  ).finish();
+
+/** 旧自动结算入口继续保留；同步数值/掉落生成可由指令制战斗复用。 */
+const createEnemy = async (
+  player: PlayerStats,
+  adventureType: AdventureType,
+  riskLevel?: '低' | '中' | '高' | '极度危险',
+  realmMinRealm?: RealmType
+) => {
+  const prepared = prepareBattleEnemy(
+    player,
+    adventureType,
+    riskLevel,
+    realmMinRealm
+  );
+  let name = prepared.name;
+  let title = prepared.title;
+  if (Math.random() < 0.15) {
+    try {
+      const generated = await generateEnemyName(prepared.realm, adventureType);
+      if (generated.name && generated.title) {
+        name = generated.name;
+        title = generated.title;
+      }
+    } catch {
+      // Keep the historical RNG order: optional name generation precedes stat rolls.
+    }
+  }
+  return prepared.finish(name, title);
 };
 
 const calcDamage = (attack: number, defense: number) => {
@@ -1220,8 +1295,21 @@ export const shouldTriggerBattle = (
   return Math.random() < Math.max(0.05, chance);
 };
 
-export const resolveBattleEncounter = async (player: PlayerStats, adventureType: AdventureType, riskLevel?: '低' | '中' | '高' | '极度危险', realmMinRealm?: RealmType, realmName?: string, realmDescription?: string, realmDrops?: string[]): Promise<BattleResolution> => {
-  const enemy = await createEnemy(player, adventureType, riskLevel, realmMinRealm);
+export const resolveBattleEncounter = async (
+  player: PlayerStats,
+  adventureType: AdventureType,
+  riskLevel?: '低' | '中' | '高' | '极度危险',
+  realmMinRealm?: RealmType,
+  realmName?: string,
+  realmDescription?: string,
+  realmDrops?: string[]
+): Promise<BattleResolution> => {
+  const enemy = await createEnemy(
+    player,
+    adventureType,
+    riskLevel,
+    realmMinRealm
+  );
   const difficulty = getBattleDifficulty(adventureType, riskLevel);
   let playerHp = player.hp;
   let enemyHp = enemy.maxHp;
@@ -1309,7 +1397,7 @@ export const resolveBattleEncounter = async (player: PlayerStats, adventureType:
   // 如果胜利，生成搜刮奖励
   const lootItems: AdventureResult['itemObtained'][] = [];
   if (victory) {
-    const loot = generateLoot(
+    const loot = generateBattleLoot(
       enemy.strengthMultiplier,
       adventureType,
       player.realm,
@@ -1323,7 +1411,13 @@ export const resolveBattleEncounter = async (player: PlayerStats, adventureType:
   type Enemy = Awaited<ReturnType<typeof createEnemy>>;
 
   // 生成更丰富的战斗描述（如果有副本信息，会结合副本特点）
-  const generateBattleSummary = (victory: boolean, enemy: Enemy, hpLoss: number, hasLoot: boolean, realmName?: string): string => {
+  const generateBattleSummary = (
+    victory: boolean,
+    enemy: Enemy,
+    hpLoss: number,
+    hasLoot: boolean,
+    realmName?: string
+  ): string => {
     // 如果有副本名称，生成与副本相关的描述
     if (realmName && adventureType === 'secret_realm') {
       const realmContext = `在${realmName}中，`;
@@ -1341,26 +1435,34 @@ export const resolveBattleEncounter = async (player: PlayerStats, adventureType:
     }
 
     // 默认描述（非副本）
-    const battleScenarios = victory ? [
-      `经过一番激烈的 debug，你最终把${enemy.title}${enemy.name}给拿下了。虽然爆肝了 ${hpLoss} 点精力，但你成功获得了胜利。${hasLoot ? '你仔细搜刮了战利品，发现了一些有用的物品。' : ''}`,
-      `你与${enemy.title}${enemy.name}展开了殊死搏斗，键盘敲得啪啪响。最终，你凭借精湛的姿势将其击败，但也消耗了 ${hpLoss} 点精力。${hasLoot ? '你从敌人身上搜刮到了一些好东西。' : ''}`,
-      `面对${enemy.title}${enemy.name}的疯狂报错，你沉着应对，疯狂按 F5。经过一番苦战，你终于找到破绽，将其一击毙命。虽然损失了 ${hpLoss} 点精力，但胜利的喜悦让你忘记了爆肝的痛苦。${hasLoot ? '你检查了现场，收获颇丰。' : ''}`,
-      `你与${enemy.title}${enemy.name}的战斗异常激烈，双方都拼命输出。最终，你凭借更强的实力将其拿下，但也被其临死反扑的报错糊脸，损失了 ${hpLoss} 点精力。${hasLoot ? '战斗结束后，你搜刮了战利品。' : ''}`,
-      `你掏出装备，与${enemy.title}${enemy.name}展开对决。战斗持续了数个回合，IDE 的报错不断弹出。最终，你技高一筹，成功将其击杀，但精力也损耗了 ${hpLoss} 点。${hasLoot ? '你在敌人身上找到了一些有价值的物品。' : ''}`,
-      `你施展必杀技，与${enemy.title}${enemy.name}展开激战。双方你来我往，commit 推得飞起。最终，你抓住机会，ctrl+S 之后一击必杀。虽然耗费了 ${hpLoss} 点精力，但你的实力也在这场战斗中得到了提升。${hasLoot ? '你仔细搜刮了敌人的遗物。' : ''}`,
-    ] : [
-      `你与${enemy.title}${enemy.name}展开了激烈的战斗，但对方的实力远超你的想象。你拼尽全力抵抗，却依然不敌，只得带着满屏红字撤离，损失了 ${hpLoss} 点精力。`,
-      `面对强大的${enemy.title}${enemy.name}，你奋力迎战。然而，对方的输出太过猛烈，你渐渐落入下风。最终，你不得不放弃战斗，带着濒危的电脑逃离，损失了 ${hpLoss} 点精力。`,
-      `你与${enemy.title}${enemy.name}的战斗异常艰难。对方的速度和报错的密度都远超你的预期，你虽然拼尽全力，却依然无法战胜。为了保全性命，你只能带着濒临崩溃的进度撤离，损失了 ${hpLoss} 点精力。`,
-      `你掏出装备与${enemy.title}${enemy.name}交战，但对方的防御力极强，你的提交全部被拒。眼看局势不妙，你只得放弃战斗，带着残血的进度条撤离，损失了 ${hpLoss} 点精力。`,
-      `你施展必杀技与${enemy.title}${enemy.name}对决，但对方的实力深不可测。经过一番苦战，你意识到无法取胜，只得选择撤退，损失了 ${hpLoss} 点精力。`,
-    ];
+    const battleScenarios = victory
+      ? [
+          `经过一番激烈的 debug，你最终把${enemy.title}${enemy.name}给拿下了。虽然爆肝了 ${hpLoss} 点精力，但你成功获得了胜利。${hasLoot ? '你仔细搜刮了战利品，发现了一些有用的物品。' : ''}`,
+          `你与${enemy.title}${enemy.name}展开了殊死搏斗，键盘敲得啪啪响。最终，你凭借精湛的姿势将其击败，但也消耗了 ${hpLoss} 点精力。${hasLoot ? '你从敌人身上搜刮到了一些好东西。' : ''}`,
+          `面对${enemy.title}${enemy.name}的疯狂报错，你沉着应对，疯狂按 F5。经过一番苦战，你终于找到破绽，将其一击毙命。虽然损失了 ${hpLoss} 点精力，但胜利的喜悦让你忘记了爆肝的痛苦。${hasLoot ? '你检查了现场，收获颇丰。' : ''}`,
+          `你与${enemy.title}${enemy.name}的战斗异常激烈，双方都拼命输出。最终，你凭借更强的实力将其拿下，但也被其临死反扑的报错糊脸，损失了 ${hpLoss} 点精力。${hasLoot ? '战斗结束后，你搜刮了战利品。' : ''}`,
+          `你掏出装备，与${enemy.title}${enemy.name}展开对决。战斗持续了数个回合，IDE 的报错不断弹出。最终，你技高一筹，成功将其击杀，但精力也损耗了 ${hpLoss} 点。${hasLoot ? '你在敌人身上找到了一些有价值的物品。' : ''}`,
+          `你施展必杀技，与${enemy.title}${enemy.name}展开激战。双方你来我往，commit 推得飞起。最终，你抓住机会，ctrl+S 之后一击必杀。虽然耗费了 ${hpLoss} 点精力，但你的实力也在这场战斗中得到了提升。${hasLoot ? '你仔细搜刮了敌人的遗物。' : ''}`,
+        ]
+      : [
+          `你与${enemy.title}${enemy.name}展开了激烈的战斗，但对方的实力远超你的想象。你拼尽全力抵抗，却依然不敌，只得带着满屏红字撤离，损失了 ${hpLoss} 点精力。`,
+          `面对强大的${enemy.title}${enemy.name}，你奋力迎战。然而，对方的输出太过猛烈，你渐渐落入下风。最终，你不得不放弃战斗，带着濒危的电脑逃离，损失了 ${hpLoss} 点精力。`,
+          `你与${enemy.title}${enemy.name}的战斗异常艰难。对方的速度和报错的密度都远超你的预期，你虽然拼尽全力，却依然无法战胜。为了保全性命，你只能带着濒临崩溃的进度撤离，损失了 ${hpLoss} 点精力。`,
+          `你掏出装备与${enemy.title}${enemy.name}交战，但对方的防御力极强，你的提交全部被拒。眼看局势不妙，你只得放弃战斗，带着残血的进度条撤离，损失了 ${hpLoss} 点精力。`,
+          `你施展必杀技与${enemy.title}${enemy.name}对决，但对方的实力深不可测。经过一番苦战，你意识到无法取胜，只得选择撤退，损失了 ${hpLoss} 点精力。`,
+        ];
 
     // 随机选择一个场景描述
     return battleScenarios[Math.floor(Math.random() * battleScenarios.length)];
   };
 
-  const summary = generateBattleSummary(victory, enemy, hpLoss, lootItems.length > 0, realmName);
+  const summary = generateBattleSummary(
+    victory,
+    enemy,
+    hpLoss,
+    lootItems.length > 0,
+    realmName
+  );
 
   const adventureResult: AdventureResult = {
     story: summary,

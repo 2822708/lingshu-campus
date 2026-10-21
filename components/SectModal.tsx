@@ -389,16 +389,18 @@ const SectModal: React.FC<Props> = ({
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      // 一键完成全部：循环每个任务直到每日上限/材料不足
-                      randomTasks.forEach((task) => {
-                        onTask(task);
-                      });
+                      // Challenges need their own manual battle; bulk actions cover ordinary tasks.
+                      randomTasks
+                        .filter((task) => task.type !== 'hunt')
+                        .forEach((task) => {
+                          onTask(task);
+                        });
                     }}
                     className="px-3 py-1.5 bg-npu-network/10 border-purple-500 text-purple-300 hover:bg-npu-network/15 border rounded text-sm flex items-center gap-1.5 transition-colors"
-                    title="一键完成当前所有任务"
+                    title="一键完成非挑战任务；挑战任务请单独进入"
                   >
                     <Zap size={16} />
-                    <span>一键完成</span>
+                    <span>一键完成普通任务</span>
                   </button>
                   <button
                     onClick={handleRefresh}
@@ -431,10 +433,10 @@ const SectModal: React.FC<Props> = ({
                     const today = new Date().toISOString().split('T')[0];
                     const lastReset = player.lastTaskResetDate || today;
                     const taskLimits: Record<string, number> = {
-                      instant: 10,
-                      short: 5,
-                      medium: 3,
-                      long: 2,
+                      instant: 20,
+                      short: 10,
+                      medium: 5,
+                      long: 3,
                     };
                     const limit = taskLimits[task.timeCost];
                     if (limit) {
@@ -520,14 +522,19 @@ const SectModal: React.FC<Props> = ({
                         <div className="text-xs text-npu-muted">
                           耗时: {timeCostText}
                         </div>
+                        {task.type === 'hunt' && (
+                          <div className="text-xs text-npu-muted">
+                            挑战后完成，进入挑战消耗一次任务次数；撤离不发奖励。
+                          </div>
+                        )}
                         {(() => {
                           const today = new Date().toISOString().split('T')[0];
                           const lastReset = player.lastTaskResetDate || today;
                           const taskLimits: Record<string, number> = {
-                            instant: 10,
-                            short: 5,
-                            medium: 3,
-                            long: 2,
+                            instant: 20,
+                            short: 10,
+                            medium: 5,
+                            long: 3,
                           };
                           const limit = taskLimits[task.timeCost];
                           if (limit) {
@@ -556,7 +563,7 @@ const SectModal: React.FC<Props> = ({
                               ] || 0;
                             return (
                               <div className="text-xs text-npu-muted">
-                                今日已完成: {currentCount} / {limit} 次
+                                今日任务次数: {currentCount} / {limit} 次
                               </div>
                             );
                           }
@@ -573,7 +580,11 @@ const SectModal: React.FC<Props> = ({
                             : 'bg-npu-border hover:bg-npu-muted text-npu-text'
                         }`}
                       >
-                        {!canComplete ? '无法完成' : '执行任务'}
+                        {!canComplete
+                          ? '无法执行'
+                          : task.type === 'hunt'
+                            ? '进入挑战'
+                            : '执行任务'}
                       </button>
                     </div>
                   );

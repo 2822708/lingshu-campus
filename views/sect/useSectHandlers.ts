@@ -10,6 +10,7 @@ import {
 import { SECTS, SECT_RANK_REQUIREMENTS } from '../../constants';
 import { RandomSectTask } from '../../services/randomService';
 import { uid } from '../../utils/gameUtils';
+import type { AdventureBattleRequest } from '../../features/interactive/adventureBattle';
 
 interface UseSectHandlersProps {
   player: PlayerStats;
@@ -19,6 +20,9 @@ interface UseSectHandlersProps {
   setPurchaseSuccess: (
     success: { item: string; quantity: number } | null
   ) => void;
+  onStartBattle: (request: AdventureBattleRequest) => boolean;
+  getCurrentPlayer?: () => PlayerStats | null;
+  isInteractionPending?: () => boolean;
 }
 
 /**
@@ -37,10 +41,14 @@ interface UseSectHandlersProps {
  */
 
 export function useSectHandlers({
+  player,
   setPlayer,
   addLog,
   setIsSectOpen,
   setPurchaseSuccess,
+  onStartBattle,
+  getCurrentPlayer,
+  isInteractionPending,
 }: UseSectHandlersProps) {
   const handleJoinSect = (sectId: string, sectName?: string) => {
     // 先尝试从 SECTS 中查找
@@ -84,6 +92,28 @@ export function useSectHandlers({
   };
 
   const handleSectTask = (task: RandomSectTask) => {
+    if (isInteractionPending?.()) return;
+    if (task.type === 'hunt') {
+      const currentPlayer = getCurrentPlayer ? getCurrentPlayer() : player;
+      if (!currentPlayer?.sectId) {
+        addLog('请先加入社团，再接受社团挑战。', 'danger');
+        return;
+      }
+      // Costs and the daily attempt are reserved with the initial battle save;
+      // the ordinary instant-task setter must never award a challenge up front.
+      onStartBattle({
+        adventureType: 'normal',
+        realmName: task.name,
+        realmDescription: task.description,
+        entryCost: task.cost?.spiritStones ?? 0,
+        sectTask: {
+          sectId: currentPlayer.sectId,
+          task,
+          day: new Date().toISOString().split('T')[0],
+        },
+      });
+      return;
+    }
     setPlayer((prev) => {
       // 检查每日任务限制
       const today = new Date().toISOString().split('T')[0];
@@ -208,7 +238,10 @@ export function useSectHandlers({
         .filter(Boolean)
         .join('、');
 
-      addLog(`你完成了社团任务【${task.name}】，获得了 ${rewardText}。`, 'gain');
+      addLog(
+        `你完成了社团任务【${task.name}】，获得了 ${rewardText}。`,
+        'gain'
+      );
 
       return {
         ...prev,

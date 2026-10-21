@@ -1,6 +1,6 @@
-# 南邮修仙传现行架构与功能模块说明
+# 灵枢录现行架构与功能模块说明
 
-本说明基于 2026 年 10 月 15 日的实际源码，记录已落地的模块边界。本轮保留 React Hooks 和 handlers 体系，不实施历史策划中的 Zustand、目录搬迁、九境界或 3v3 方案。
+本说明于 2026 年 10 月 15 日形成，10 月 21 日按全场景战斗接入更新。保留 React Hooks 和 handlers 体系，不实施历史策划中的 Zustand、目录搬迁、九境界或 3v3 方案。
 
 ## 运行结构
 
@@ -24,18 +24,20 @@ flowchart TD
 
 ## 职责与依赖方向
 
-| 模块 | 责任 | 边界约束 |
-| --- | --- | --- |
-| `App.tsx` | 组合屏幕、handlers、自动操作、死亡状态和效果 | 继续承担编排，纯存档迁移已移出 |
-| `hooks/useGameState.ts` | 玩家、日志、设置和开始、继续、删除操作 | React、localStorage、UID 请求与提示保留在此 |
-| `features/save/saveCodec.ts` | 版本判断、导入检查、字段补齐、背包修复、信封创建 | 无 React 状态、localStorage 访问、网络或提示弹窗 |
-| `features/save/autoSaveScheduler.ts` | 最新快照、2 秒尾沿保存、10 秒等待上限、取消 | 不知道玩家结构与存储位置；时钟可注入 |
-| `features/modal/useModalState.ts` | 普通弹窗、移动端面板、商店、强化、通知 | 不接管战斗、死亡、冷却和自动操作 |
-| `views/*/useXxxHandlers.ts` | 自习、升学、物品、装备、课程、配方、角色、商店、副本、室友、抽奖、社团、成就、期末周 | 通过回调更新玩家和日志，由 App 组合 |
-| `views/GameView.tsx` 与 `views/modals/ModalsContainer.tsx` | 页面和按需加载弹窗的组合 | 组件通过 props 获取状态与操作 |
-| `index.css`、`styles/entry.css`、`styles/navigation.css`、`styles/journal.css` | 纸本校园主题变量、入口、导航、档案和手记样式 | 仅影响展示，业务仍由 handlers 与服务处理；见 ADR 0002 |
-| `services/` 与 `utils/` | 战斗、文本、物品推断、角色初始化、音效与网络客户端 | 本轮保留现有依赖，混合职责尚未全部拆分 |
-| `server/leaderboard-server.mjs` | 排行榜和 UID API，以 JSON 文件持久化 | 与浏览器存档独立，游戏可运行不代表接口集成已验证 |
+| 模块                                                                           | 责任                                                                                 | 边界约束                                              |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| `App.tsx`                                                                      | 组合屏幕、handlers、自动操作、死亡状态和效果                                         | 继续承担编排，纯存档迁移已移出                        |
+| `hooks/useGameState.ts`                                                        | 玩家、日志、设置和开始、继续、删除操作                                               | React、localStorage、UID 请求与提示保留在此           |
+| `features/save/saveCodec.ts`                                                   | 版本判断、导入检查、字段补齐、背包修复、信封创建                                     | 无 React 状态、localStorage 访问、网络或提示弹窗      |
+| `features/save/autoSaveScheduler.ts`                                           | 最新快照、2 秒尾沿保存、10 秒等待上限、取消                                          | 不知道玩家结构与存储位置；时钟可注入                  |
+| `features/interactive/battle.ts`                                               | 同一战斗内核、固定随机数、逐轮指令、四类终局                                         | 不写存档、不发奖励、不调用模型                        |
+| `features/interactive/adventureBattle.ts` 与 `state.ts`                        | 场景奖池、费用、社团次数、父行动和一次结算                                           | 纯规则计算，由 useGameState 先保存后展示              |
+| `features/modal/useModalState.ts`                                              | 普通弹窗、移动端面板、商店、强化、通知                                               | 不接管战斗、死亡、冷却和自动操作                      |
+| `views/*/useXxxHandlers.ts`                                                    | 自习、升学、物品、装备、课程、配方、角色、商店、副本、室友、抽奖、社团、成就、期末周 | 通过回调更新玩家和日志，由 App 组合                   |
+| `views/GameView.tsx` 与 `views/modals/ModalsContainer.tsx`                     | 页面和按需加载弹窗的组合                                                             | 组件通过 props 获取状态与操作                         |
+| `index.css`、`styles/entry.css`、`styles/navigation.css`、`styles/journal.css` | 纸本校园主题变量、入口、导航、档案和手记样式                                         | 仅影响展示，业务仍由 handlers 与服务处理；见 ADR 0002 |
+| `services/` 与 `utils/`                                                        | 战斗、文本、物品推断、角色初始化、音效与网络客户端                                   | 本轮保留现有依赖，混合职责尚未全部拆分                |
+| `server/leaderboard-server.mjs`                                                | 排行榜和 UID API，以 JSON 文件持久化                                                 | 与浏览器存档独立，游戏可运行不代表接口集成已验证      |
 
 ## 关键流程
 
@@ -47,7 +49,9 @@ flowchart TD
 
 自动保存：每次更新替换待保存快照；停止操作 2 秒后保存，连续更新则在前台正常计时条件下每周期最多等待 10 秒。关闭自动保存、离开游戏或卸载会取消待保存任务，不额外强制保存。后台节流和异常退出保障未在本轮验证。
 
-期末周：`ActionBar → App → useAdventureHandlers → 战斗或事件生成 → executeAdventureCore → setPlayer`。自习：`App → useMeditationHandlers → 更新绩点与回血增益`。主要业务入口保持不变。
+战斗：`冒险 / 副本 / 社团挑战 → App.startBattle → begin-battle → 固定现场并保存 → InteractiveEncounterModal → 每轮指令 → 父行动一次结算`。三选项机缘可从 choose 进入同一内核。`services/battleService` 的同步敌人/掉落工具继续复用，旧完整自动 resolver 只用于兼容回归。
+
+非战斗事件继续 `useAdventureHandlers → executeAdventureCore → setPlayer`；其中触发的随机副本会通过回调返回统一入口。自习仍为 `App → useMeditationHandlers → 更新绩点与回血增益`。当前验证及存档边界见[全场景战斗接入报告](全场景战斗接入报告-2026-10-21.md)。
 
 ## 旧模块和文档
 

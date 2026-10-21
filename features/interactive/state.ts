@@ -1,5 +1,14 @@
 import type { LogEntry, PlayerStats } from '../../types';
 import { applyDemotion } from '../../utils/demotion';
+import { REALM_ORDER } from '../../constants';
+import {
+  createAdventureBattlePlan,
+  applyAdventureBattleEntry,
+  applyAdventureBattleOutcome,
+  assertAdventureBattlePlan,
+  type AdventureBattleRequest,
+  type AdventureBattlePlan,
+} from './adventureBattle';
 import {
   createInteractiveBattle,
   generateInteractiveEnemy,
@@ -13,6 +22,7 @@ import {
   resolveEncounterChoice,
   type EncounterFacts,
   type InteractiveEncounter,
+  isEncounterId,
 } from './encounters';
 
 export interface InteractiveResult {
@@ -26,11 +36,15 @@ export interface PendingInteractiveAction {
   id: string;
   seq: number;
   seed: number;
-  encounter: InteractiveEncounter;
+  encounter:
+    | InteractiveEncounter
+    | { id: 'adventure-battle'; title: string; story: string; choices: [] };
   phase: 'choice' | 'battle' | 'result';
   choiceId?: string;
   battle?: InteractiveBattleState;
   result?: InteractiveResult;
+  adventurePlan?: AdventureBattlePlan;
+  entryPaid?: number;
 }
 
 export interface InteractiveProgress {
@@ -38,6 +52,8 @@ export interface InteractiveProgress {
   nextSeq: number;
   lastSettledSeq: number;
   facts: EncounterFacts;
+  /** Separate content rotation from the global action/settlement sequence. */
+  encounterCursor?: number;
   pending?: PendingInteractiveAction;
 }
 
@@ -49,6 +65,12 @@ export interface InteractiveSnapshot {
 
 export type InteractiveCommand =
   | { type: 'begin'; id: string; seed: number }
+  | {
+      type: 'begin-battle';
+      id: string;
+      seed: number;
+      request: AdventureBattleRequest;
+    }
   | { type: 'choose'; id: string; choiceId: string }
   | { type: 'battle'; id: string; seq: number; action: BattleAction }
   | { type: 'acknowledge'; id: string };
@@ -58,6 +80,7 @@ export const emptyInteractiveProgress = (): InteractiveProgress => ({
   nextSeq: 1,
   lastSettledSeq: 0,
   facts: {},
+  encounterCursor: 0,
 });
 
 function changes(before: PlayerStats, after: PlayerStats): string[] {
@@ -114,6 +137,71 @@ export function reduceInteractiveAction(
 ): InteractiveSnapshot {
   const progress = snapshot.interactive;
   const pending = progress.pending;
+  if (command.type === 'begin-battle') {
+    if (pending || snapshot.player.hp <= 0) return snapshot;
+    const entryCost = command.request.entryCost ?? 0;
+    if (!Number.isSafeInteger(entryCost) || entryCost < 0)
+      throw new Error('副本入场费用无效。');
+    if (snapshot.player.spiritStones < entryCost)
+      throw new Error('学分不足，未进入副本，也未扣费。');
+    if (command.request.adventureType === 'secret_realm') {
+      if (snapshot.player.hp < snapshot.player.maxHp * 0.3)
+        throw new Error('精力不足三成，请先休息再进入副本。');
+      if (
+        command.request.realmMinRealm &&
+        REALM_ORDER.indexOf(snapshot.player.realm) <
+          REALM_ORDER.indexOf(command.request.realmMinRealm)
+      ) {
+        throw new Error('当前学阶尚未达到该副本的要求。');
+      }
+    }
+    const plan = createAdventureBattlePlan(
+      snapshot.player,
+      command.request,
+      command.seed
+    );
+    assertAdventureBattlePlan(plan);
+    const seq = progress.nextSeq;
+    const player = applyAdventureBattleEntry(snapshot.player, plan);
+    const battle = createInteractiveBattle({
+      id: command.id,
+      player,
+      enemy: plan.enemy,
+      seed: command.seed,
+      behavior: plan.enemy.behavior,
+    });
+    return {
+      ...snapshot,
+      player,
+      interactive: {
+        ...progress,
+        nextSeq: seq + 1,
+        encounterCursor: progress.encounterCursor ?? progress.nextSeq - 1,
+        pending: {
+          id: command.id,
+          seq,
+          seed: command.seed >>> 0,
+          phase: 'battle',
+          encounter: {
+            id: 'adventure-battle',
+            title:
+              command.request.realmName ??
+              command.request.battleEncounter?.name ??
+              (command.request.adventureType === 'lucky'
+                ? '机缘中的挑战'
+                : command.request.adventureType === 'secret_realm'
+                  ? '副本深处的挑战'
+                  : '期末冲刺的挑战'),
+            story: `${plan.story}${entryCost ? `\n入场学分 ${entryCost} 已支付，撤离也不会退还。` : ''}`,
+            choices: [],
+          },
+          adventurePlan: plan,
+          entryPaid: entryCost,
+          battle,
+        },
+      },
+    };
+  }
   if (command.type === 'begin') {
     if (pending || snapshot.player.hp <= 0) return snapshot;
     const seq = progress.nextSeq;
@@ -122,13 +210,16 @@ export function reduceInteractiveAction(
       interactive: {
         ...progress,
         nextSeq: seq + 1,
+        encounterCursor: (progress.encounterCursor ?? seq - 1) + 1,
         pending: {
           id: command.id,
           seq,
           seed: command.seed >>> 0,
           phase: 'choice',
           encounter: createInteractiveEncounter(
-            ENCOUNTER_IDS[(seq - 1) % ENCOUNTER_IDS.length],
+            ENCOUNTER_IDS[
+              (progress.encounterCursor ?? seq - 1) % ENCOUNTER_IDS.length
+            ],
             snapshot.player,
             progress.facts
           ),
@@ -144,7 +235,11 @@ export function reduceInteractiveAction(
     return { ...snapshot, interactive };
   }
   if (command.type === 'choose') {
-    if (pending.phase !== 'choice') return snapshot;
+    if (
+      pending.phase !== 'choice' ||
+      pending.encounter.id === 'adventure-battle'
+    )
+      return snapshot;
     const resolution = resolveEncounterChoice(
       pending.encounter,
       command.choiceId,
@@ -213,6 +308,37 @@ export function reduceInteractiveAction(
   if (battle.outcome === 'ongoing') {
     return { ...snapshot, interactive: { ...progress, pending: advanced } };
   }
+  if (pending.adventurePlan) {
+    const resolution = applyAdventureBattleOutcome(
+      snapshot.player,
+      pending.adventurePlan,
+      battle
+    );
+    if (!resolution) return snapshot;
+    const titles = {
+      victory: '挑战完成',
+      defeat: '力竭，挑战未完成',
+      retreat: '主动撤离',
+      stalemate: '僵持撤离',
+    };
+    const result: InteractiveResult = {
+      title: titles[battle.outcome],
+      text: resolution.feedback,
+      changes: [...resolution.changes],
+    };
+    if (pending.entryPaid)
+      result.changes.push(
+        `入场学分 −${pending.entryPaid}（此前已扣）；本次净学分变化 ${resolution.player.spiritStones - snapshot.player.spiritStones - pending.entryPaid}`
+      );
+    return finishWithDemotion(
+      snapshot,
+      advanced,
+      resolution.player,
+      {},
+      result,
+      now
+    );
+  }
   const choice = pending.encounter.choices.find(
     (item) => item.id === pending.choiceId
   )!;
@@ -240,6 +366,26 @@ export function reduceInteractiveAction(
       ? choice.followUp
       : '你留下了未完成的记录，下次来到这里仍可选择其他办法。',
   };
+  return finishWithDemotion(
+    snapshot,
+    advanced,
+    player,
+    victory
+      ? { ...choice.facts, ...choice.battle?.victoryFacts }
+      : (choice.battle?.unfinishedFacts ?? {}),
+    result,
+    now
+  );
+}
+
+function finishWithDemotion(
+  snapshot: InteractiveSnapshot,
+  pending: PendingInteractiveAction,
+  player: PlayerStats,
+  facts: EncounterFacts,
+  result: InteractiveResult,
+  now: number
+): InteractiveSnapshot {
   let finalPlayer = player;
   if (player.hp <= 0) {
     // Existing demotion is part of the same terminal write, never an intermediate hp=0 save.
@@ -250,16 +396,7 @@ export function reduceInteractiveAction(
       `延毕后：${finalPlayer.realm} ${finalPlayer.realmLevel}级，绩点归零，精力恢复至 ${finalPlayer.hp}`
     );
   }
-  return finish(
-    snapshot,
-    advanced,
-    finalPlayer,
-    victory
-      ? { ...choice.facts, ...choice.battle?.victoryFacts }
-      : (choice.battle?.unfinishedFacts ?? {}),
-    result,
-    now
-  );
+  return finish(snapshot, pending, finalPlayer, facts, result, now);
 }
 
 /** Reject malformed extensions instead of silently discarding a pending action. */
@@ -286,6 +423,9 @@ export function assertInteractiveProgress(
     state.nextSeq >= Number.MAX_SAFE_INTEGER ||
     !natural(state.lastSettledSeq) ||
     state.lastSettledSeq >= state.nextSeq ||
+    (state.encounterCursor !== undefined &&
+      (!natural(state.encounterCursor) ||
+        state.encounterCursor >= state.nextSeq)) ||
     !state.facts ||
     typeof state.facts !== 'object' ||
     Array.isArray(state.facts) ||
@@ -300,6 +440,8 @@ export function assertInteractiveProgress(
   if (pending === undefined) return;
   if (!pending || typeof pending !== 'object')
     throw new Error('待处理机缘无效。');
+  const sceneChoices: InteractiveEncounter['choices'] =
+    pending.encounter?.choices;
   if (
     typeof pending.id !== 'string' ||
     !pending.id ||
@@ -309,15 +451,34 @@ export function assertInteractiveProgress(
     pending.seed > 0xffffffff ||
     !['choice', 'battle', 'result'].includes(pending.phase) ||
     !pending.encounter ||
-    !ENCOUNTER_IDS.includes(pending.encounter.id) ||
+    (!isEncounterId(pending.encounter.id) &&
+      pending.encounter.id !== 'adventure-battle') ||
     typeof pending.encounter.title !== 'string' ||
     typeof pending.encounter.story !== 'string' ||
     !Array.isArray(pending.encounter.choices) ||
-    pending.encounter.choices.length < 2 ||
+    (pending.encounter.id === 'adventure-battle'
+      ? pending.encounter.choices.length !== 0
+      : pending.encounter.choices.length < 2) ||
     pending.encounter.choices.length > 6
   ) {
     throw new Error('待处理机缘不完整，请保留原存档备份。');
   }
+  if (pending.encounter.id === 'adventure-battle') {
+    if (
+      !pending.adventurePlan ||
+      pending.phase === 'choice' ||
+      !natural(pending.entryPaid!) ||
+      pending.entryPaid !== (pending.adventurePlan.request.entryCost ?? 0)
+    )
+      throw new Error('挑战来源或入场记录无效。');
+    assertAdventureBattlePlan(pending.adventurePlan);
+    if (pending.adventurePlan.seed !== pending.seed)
+      throw new Error('战斗计划与现场随机记录不一致。');
+  } else if (
+    pending.adventurePlan !== undefined ||
+    pending.entryPaid !== undefined
+  )
+    throw new Error('机缘与挑战来源冲突。');
   for (const choice of pending.encounter.choices) {
     if (
       typeof choice.id !== 'string' ||
@@ -421,11 +582,33 @@ export function assertInteractiveProgress(
         battle.enemy.behavior
       ) ||
       (pending.phase === 'battle' && battle.outcome !== 'ongoing') ||
-      !pending.encounter.choices.some(
-        (choice) => choice.id === pending.choiceId && choice.battle
-      )
+      (!pending.adventurePlan &&
+        !sceneChoices.some(
+          (choice) => choice.id === pending.choiceId && choice.battle
+        ))
     ) {
       throw new Error('挑战现场不完整，请保留原存档备份。');
+    }
+    if (pending.adventurePlan) {
+      const planned = pending.adventurePlan.enemy;
+      if (
+        [
+          'name',
+          'title',
+          'realm',
+          'behavior',
+          'maxHp',
+          'attack',
+          'defense',
+          'speed',
+        ].some(
+          (key) =>
+            planned[key as keyof typeof planned] !==
+            battle.enemy[key as keyof typeof battle.enemy]
+        )
+      ) {
+        throw new Error('挑战对手与已保存的战斗计划不一致。');
+      }
     }
   }
 }

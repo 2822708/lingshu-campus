@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlayerStats, SecretRealm, RealmType } from '../../types';
+import { REALM_ORDER } from '../../constants';
 
 interface UseRealmHandlersProps {
   player: PlayerStats;
@@ -10,7 +11,17 @@ interface UseRealmHandlersProps {
   loading: boolean;
   cooldown: number;
   setIsRealmOpen: (open: boolean) => void;
-  executeAdventure: (adventureType: 'secret_realm', realmName: string, riskLevel?: '低' | '中' | '高' | '极度危险', realmMinRealm?: RealmType, realmDescription?: string, realmDrops?: string[]) => Promise<void>;
+  executeAdventure: (
+    adventureType: 'secret_realm',
+    realmName: string,
+    riskLevel?: '低' | '中' | '高' | '极度危险',
+    realmMinRealm?: RealmType,
+    realmDescription?: string,
+    realmDrops?: string[],
+    entryCost?: number
+  ) => Promise<void>;
+  isInteractionPending?: () => boolean;
+  getCurrentPlayer?: () => PlayerStats | null;
 }
 
 /**
@@ -30,34 +41,61 @@ interface UseRealmHandlersProps {
 
 export function useRealmHandlers({
   player,
-  setPlayer,
   addLog,
   loading,
   cooldown,
   setIsRealmOpen,
   executeAdventure,
+  isInteractionPending,
+  getCurrentPlayer,
 }: UseRealmHandlersProps) {
+  const entryInFlight = React.useRef(false);
   const handleEnterRealm = async (realm: SecretRealm) => {
-    if (loading || cooldown > 0 || !player) return;
+    if (
+      loading ||
+      cooldown > 0 ||
+      entryInFlight.current ||
+      isInteractionPending?.()
+    )
+      return;
+    const currentPlayer = getCurrentPlayer ? getCurrentPlayer() : player;
+    if (!currentPlayer) return;
 
-    if (player.hp < player.maxHp * 0.3) {
+    if (
+      REALM_ORDER.indexOf(currentPlayer.realm) <
+      REALM_ORDER.indexOf(realm.minRealm)
+    ) {
+      addLog('当前学阶尚未达到该副本的要求。', 'danger');
+      return;
+    }
+
+    if (currentPlayer.hp < currentPlayer.maxHp * 0.3) {
       addLog('你精力见底，此时冲副本简直是送人头！', 'danger');
       return;
     }
 
-    if (player.spiritStones < realm.cost) {
+    if (currentPlayer.spiritStones < realm.cost) {
       addLog('囊中羞涩，学分不够开副本的。', 'danger');
       return;
     }
 
-    setPlayer((prev) => ({
-      ...prev,
-      spiritStones: prev.spiritStones - realm.cost,
-    }));
-    setIsRealmOpen(false); // Close modal
-
-    // Secret Realm Adventure - 传递副本的完整信息
-    await executeAdventure('secret_realm', realm.name, realm.riskLevel, realm.minRealm, realm.description, realm.drops);
+    entryInFlight.current = true;
+    setIsRealmOpen(false);
+    try {
+      // The battle's first persisted state owns the fee. Nonbattle visits save it
+      // before ordinary settlement, so neither path can charge twice or enter free.
+      await executeAdventure(
+        'secret_realm',
+        realm.name,
+        realm.riskLevel,
+        realm.minRealm,
+        realm.description,
+        realm.drops,
+        realm.cost
+      );
+    } finally {
+      entryInFlight.current = false;
+    }
   };
 
   return {
