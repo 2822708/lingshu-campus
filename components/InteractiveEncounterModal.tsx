@@ -10,6 +10,7 @@ import {
 } from '../features/interactive/battle';
 import type { BattleAction } from '../features/interactive/battle';
 import { getEncounterChoiceAvailability } from '../features/interactive/encounters';
+import { BattleRecord, BattleRoundFeedback } from './InteractiveBattleFeedback';
 
 interface InteractiveEncounterModalProps {
   pending: PendingInteractiveAction | null;
@@ -31,11 +32,13 @@ function EnergyLine({
   hp,
   maxHp,
   opponent = false,
+  loss,
 }: {
   name: string;
   hp: number;
   maxHp: number;
   opponent?: boolean;
+  loss?: number;
 }) {
   return (
     <div className="min-w-0">
@@ -54,12 +57,19 @@ function EnergyLine({
         className="h-2 overflow-hidden bg-npu-bg border border-npu-border"
       >
         <div
-          className={`h-full ${opponent ? 'bg-npu-warn' : 'bg-npu-code'}`}
+          className={`interactive-energy-fill h-full ${opponent ? 'bg-npu-warn' : 'bg-npu-code'}`}
           style={{
             width: `${Math.max(0, Math.min(100, (hp / Math.max(1, maxHp)) * 100))}%`,
           }}
         />
       </div>
+      {loss !== undefined && (
+        <p
+          className={`mt-1 text-xs ${loss > 0 ? 'text-npu-warn' : 'text-npu-dim'}`}
+        >
+          {loss > 0 ? `本轮精力 −${loss}` : '本轮未受损耗'}
+        </p>
+      )}
     </div>
   );
 }
@@ -100,16 +110,16 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
         return;
       }
       if (event.key !== 'Tab') return;
-      const buttons = dialogRef.current?.querySelectorAll<HTMLButtonElement>(
-        'button:not([disabled])'
+      const controls = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), summary'
       );
-      if (!buttons?.length) {
+      if (!controls?.length) {
         event.preventDefault();
         focusDialog();
         return;
       }
-      const first = buttons[0];
-      const last = buttons[buttons.length - 1];
+      const first = controls[0];
+      const last = controls[controls.length - 1];
       const active = document.activeElement;
       if (
         event.shiftKey &&
@@ -143,6 +153,18 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
   if (!pending) return null;
   const battle = pending.battle;
   const result = pending.result;
+  const selectedChoice = pending.encounter.choices.find(
+    (choice) => choice.id === pending.choiceId
+  );
+  const latestRound = battle?.rounds.at(-1);
+  const latestLoss = (side: 'player' | 'enemy') =>
+    latestRound?.entries
+      .filter((entry) => entry.attacker !== side)
+      .reduce((total, entry) => total + entry.damage, 0);
+  const entries = battle?.rounds.flatMap((round) => round.entries) ?? [];
+  const totalPrevented = entries
+    .filter((entry) => entry.attacker === 'enemy')
+    .reduce((total, entry) => total + entry.preventedDamage, 0);
 
   return (
     <div
@@ -176,6 +198,11 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
               ? '本次结果已保存，确认后继续校园生活。'
               : '选择与每轮进度会保存，刷新后可继续。其他成长操作暂时暂停。'}
           </p>
+          {selectedChoice && (
+            <p className="mt-2 text-sm font-semibold text-npu-code">
+              你的选择：{selectedChoice.label}
+            </p>
+          )}
         </header>
 
         {error && (
@@ -242,6 +269,12 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
                       {choice.battle ? '胜利总奖励：' : '完成可得：'}
                       {rewards}
                     </span>
+                    {choice.followUp && (
+                      <span className="mt-2 block text-xs leading-5 text-npu-dim">
+                        {choice.battle ? '胜利后续：' : '后续变化：'}
+                        {choice.followUp}
+                      </span>
+                    )}
                     {!availability.available && (
                       <span className="mt-2 block text-xs text-npu-warn">
                         {availability.reason}
@@ -304,12 +337,14 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
                   name="你"
                   hp={battle.player.hp}
                   maxHp={battle.player.maxHp}
+                  loss={latestLoss('player')}
                 />
                 <EnergyLine
                   name={`${battle.enemy.title}${battle.enemy.name}`}
                   hp={battle.enemy.hp}
                   maxHp={battle.enemy.maxHp}
                   opponent
+                  loss={latestLoss('enemy')}
                 />
               </div>
               <p className="mt-3 text-xs text-npu-dim">
@@ -339,25 +374,8 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
                   </p>
                 )}
               </div>
-              <div className="mt-5" aria-live="polite" aria-atomic="true">
-                {battle.rounds.length === 0 ? (
-                  <p className="text-sm text-npu-dim">
-                    先看清对手意图，再选择应对。本轮结果将在出手后产生。
-                  </p>
-                ) : (
-                  <div className="border-t border-npu-border pt-4">
-                    <p className="mb-2 text-xs text-npu-dim">
-                      上一轮 ·{' '}
-                      {BATTLE_ACTION_LABELS[battle.rounds.at(-1)!.action]}
-                    </p>
-                    <p className="text-sm">{battle.rounds.at(-1)!.message}</p>
-                    <ul className="mt-2 space-y-2 text-sm">
-                      {battle.rounds.at(-1)!.entries.map((entry) => (
-                        <li key={entry.id}>{entry.description}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              <div className="mt-4">
+                <BattleRecord battle={battle} />
               </div>
               <p className="mt-4 text-xs text-npu-dim">
                 已完成 {battle.completedRounds} /{' '}
@@ -366,6 +384,20 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
               </p>
             </div>
             <footer className="max-h-[45dvh] shrink-0 overflow-y-auto overscroll-contain border-t border-npu-border bg-npu-panel px-5 py-4 md:px-7">
+              <div className="mb-3" aria-live="polite" aria-atomic="true">
+                {latestRound ? (
+                  <div
+                    key={latestRound.commandSeq}
+                    className="interactive-feedback-arrival"
+                  >
+                    <BattleRoundFeedback round={latestRound} compact />
+                  </div>
+                ) : (
+                  <p className="text-xs leading-5 text-npu-dim">
+                    第 1 轮待出手 · 看清上方意图，选择应对。结果会显示在这里。
+                  </p>
+                )}
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {(['attack', 'defend', 'break'] as const).map((action) => (
                   <button
@@ -378,7 +410,7 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
                     onClick={() =>
                       onCommand(pending.id, battle.commandSeq + 1, action)
                     }
-                    className="min-h-12 border border-npu-code px-2 py-2 text-sm font-semibold text-npu-code hover:bg-npu-bg disabled:border-npu-border disabled:text-npu-muted disabled:opacity-60"
+                    className="interactive-action-button min-h-12 border border-npu-code px-2 py-2 text-sm font-semibold text-npu-code hover:bg-npu-bg disabled:border-npu-border disabled:text-npu-muted disabled:opacity-60"
                     title={actionDescriptions[action]}
                   >
                     {BATTLE_ACTION_LABELS[action]}
@@ -427,21 +459,52 @@ const InteractiveEncounterModal: React.FC<InteractiveEncounterModalProps> = ({
         {pending.phase === 'result' && result && (
           <>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 md:px-7">
-              <h3 className="font-serif text-lg font-semibold">
+              <h3 className="font-serif text-xl font-semibold text-npu-code">
                 {result.title}
               </h3>
+              {latestRound && (
+                <div className="mt-3">
+                  <p className="mb-2 text-xs font-semibold text-npu-dim">
+                    最后一次行动
+                  </p>
+                  <BattleRoundFeedback round={latestRound} terminal />
+                </div>
+              )}
               <p className="mt-3 whitespace-pre-line text-sm leading-7">
                 {result.text}
               </p>
-              <ul className="mt-4 space-y-2 border-y border-npu-border py-4 text-sm">
+              <p className="mt-5 text-xs font-semibold tracking-wider text-npu-dim">
+                本次结算
+              </p>
+              <ul className="mt-2 grid gap-2 border-y border-npu-border py-4 text-sm sm:grid-cols-2">
                 {result.changes.map((change, index) => (
-                  <li key={`${index}-${change}`}>{change}</li>
+                  <li
+                    key={`${index}-${change}`}
+                    className="border-l-2 border-npu-code bg-npu-bg px-3 py-2 font-semibold"
+                  >
+                    {change}
+                  </li>
                 ))}
               </ul>
               {result.followUp && (
-                <p className="mt-4 text-sm text-npu-code">
-                  后续线索：{result.followUp}
+                <p className="mt-4 border-l-2 border-npu-code pl-3 text-sm leading-6 text-npu-code">
+                  下次会怎样：{result.followUp}
                 </p>
+              )}
+              {battle && (
+                <section
+                  className="mt-6 border-t border-npu-border pt-4"
+                  aria-label="本场挑战经过"
+                >
+                  <h4 className="text-sm font-semibold">本场回顾</h4>
+                  <p className="mt-1 text-xs leading-6 text-npu-dim">
+                    完成 {battle.completedRounds} 轮 · 防守累计减免{' '}
+                    {totalPrevented} 点损耗
+                  </p>
+                  <div className="mt-4">
+                    <BattleRecord battle={battle} />
+                  </div>
+                </section>
               )}
             </div>
             <footer className="shrink-0 border-t border-npu-border px-5 py-4 md:px-7">

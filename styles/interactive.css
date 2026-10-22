@@ -1,0 +1,30 @@
+/* 只呈现已保存的战斗结果；动态效果服从全局减少动画设置。 */
+.interactive-energy-fill {
+  transition: width 260ms ease-out;
+}
+
+.interactive-action-button {
+  transition:
+    background-color 120ms ease-out,
+    transform 120ms ease-out;
+}
+
+.interactive-action-button:active:not(:disabled) {
+  transform: translateY(1px);
+  background: var(--npu-bg);
+}
+
+.interactive-feedback-arrival {
+  animation: interactive-feedback-arrival 220ms ease-out;
+}
+
+@keyframes interactive-feedback-arrival {
+  from {
+    opacity: 0.55;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

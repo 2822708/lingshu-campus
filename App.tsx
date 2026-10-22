@@ -997,14 +997,19 @@ function App() {
         pending={interactive.pending ?? null}
         player={player}
         error={saveError}
-        onChoose={(id, choiceId) =>
-          commitInteractive({ type: 'choose', id, choiceId })
-        }
-        onCommand={(id, seq, action) =>
-          commitInteractive({ type: 'battle', id, seq, action })
-        }
+        onChoose={(id, choiceId) => {
+          if (commitInteractive({ type: 'choose', id, choiceId }))
+            playSound('confirm');
+        }}
+        onCommand={(id, seq, action) => {
+          if (commitInteractive({ type: 'battle', id, seq, action }))
+            playSound(action === 'retreat' ? 'confirm' : 'battle');
+        }}
         onAcknowledge={(id) => {
-          if (commitInteractive({ type: 'acknowledge', id })) setCooldown(1);
+          if (commitInteractive({ type: 'acknowledge', id })) {
+            playSound('confirm');
+            setCooldown(1);
+          }
         }}
       />
     </>
