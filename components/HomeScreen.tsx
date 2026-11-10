@@ -12,6 +12,7 @@ interface HomeScreenProps {
   onNewGame: () => void;
   onContinueGame: () => void;
   onDeleteSave: () => void;
+  onChooseMode?: () => void;
 }
 
 interface SavePreview {
@@ -38,6 +39,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onNewGame,
   onContinueGame,
   onDeleteSave,
+  onChooseMode,
 }) => {
   const [preview, setPreview] = useState<SavePreview | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -105,12 +107,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             className="paper-entry-cover-title"
             aria-labelledby="home-title"
           >
-            <p className="paper-entry-eyebrow">校园生活 · 文字冒险</p>
+            <p className="paper-entry-eyebrow">工科学园 · 修行档案</p>
             <h1 id="home-title">{CAMPUS_THEME.title.split(' · ')[0]}</h1>
             <p className="paper-entry-subtitle">{CAMPUS_THEME.subtitle}</p>
             <div className="paper-entry-title-rule" />
             <p className="paper-entry-intro">
-              一份关于学业、社团与校园日常的成长档案。
+              以课程悟道，以实验炼器，和同门一起走过校园修行。
             </p>
             <div className="paper-entry-cover-caption">
               {CAMPUS_THEME.motto}
@@ -199,6 +201,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 {hasSave ? '新建成长档案' : '开始我的校园生活'}
               </button>
               <p className="paper-entry-small-note">进度保存在当前浏览器中。</p>
+              {onChooseMode && (
+                <button className="paper-entry-link" onClick={onChooseMode}>
+                  ← 返回模式选择
+                </button>
+              )}
             </div>
           </section>
         </main>

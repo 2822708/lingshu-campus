@@ -1,0 +1,196 @@
+/* 单行手牌：空间不足时横向错叠，保持牌宽、字号和悬停查看。 */
+.ct-app:has(.ct-hand-layout) {
+  width: min(1440px, calc(100% - 32px));
+}
+.ct-table:is([data-phase='battle'], [data-phase='discard']) {
+  grid-template-rows: 28px 136px 42px minmax(0, 1fr);
+}
+.ct-hand-area {
+  position: relative;
+  z-index: 5;
+  overflow: visible;
+  user-select: none;
+}
+.ct-hand-layout {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  scroll-snap-type: none;
+  isolation: isolate;
+}
+.ct-hand-layout[data-measured='false'] {
+  visibility: hidden;
+}
+.ct-hand-layout > .ct-card-slot {
+  position: absolute;
+  left: var(--ct-card-x);
+  top: var(--ct-card-y);
+  z-index: var(--ct-card-order);
+  width: var(--ct-card-width);
+  height: var(--ct-card-height);
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  overflow: visible;
+  outline: none;
+}
+.ct-hand-layout > .ct-card-slot:focus-within {
+  z-index: 50;
+}
+.ct-hand-layout > .ct-card-slot[data-pointer-active='true'] {
+  z-index: 51;
+}
+.ct-hand-layout .ct-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  flex: 0 0 100%;
+  padding: 8px 10px;
+  overflow: hidden;
+  transform: none;
+  transform-origin: center top;
+  translate: 0 0;
+  scale: 1;
+  border-radius: 3px 5px 4px 2px;
+  box-shadow: 2px 3px 0 #c8cdbb;
+  transition:
+    scale 150ms ease,
+    box-shadow 150ms ease,
+    border-color 120ms;
+}
+.ct-hand-layout
+  > .ct-card-slot:is([data-pointer-active='true'], :focus-within)
+  .ct-card {
+  height: var(--ct-card-expanded-height);
+  /* 位移立即到安全位置，再轻微缩放；避免展开高度在动画途中撑出页面。 */
+  transform: none;
+  translate: var(--ct-card-hover-x) var(--ct-card-hover-y);
+  scale: 1.045;
+  box-shadow:
+    0 8px 18px #263c3040,
+    2px 3px 0 #b7c0a6;
+  border-color: #486d4d;
+}
+/* Hover selection follows the original fan positions, not the raised paint box. */
+.ct-hand-layout > .ct-card-slot .ct-card:hover {
+  transform: none;
+}
+.ct-hand-layout .ct-card:focus-visible,
+.ct-hand-layout > .ct-card-slot:focus-visible .ct-card {
+  outline: 2px solid #ad7933;
+  outline-offset: 2px;
+}
+.ct-hand-layout .ct-card-heading {
+  gap: 7px;
+  line-height: 1.2;
+}
+.ct-hand-layout .ct-card-heading strong {
+  font-size: 16px;
+  line-height: 1.25;
+}
+.ct-hand-layout .ct-card-cost {
+  flex-basis: 23px;
+  min-height: 24px;
+  font-size: 17px;
+}
+.ct-hand-layout .ct-card-kind {
+  font-size: 10px;
+  line-height: 1.3;
+  margin: 4px 0;
+}
+.ct-hand-layout .ct-card-description {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.ct-hand-layout .ct-card-preview,
+.ct-hand-layout .ct-card-source .ct-card-preview {
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 5px;
+  padding-top: 4px;
+}
+.ct-hand-layout .ct-card-action,
+.ct-hand-layout .ct-card-source .ct-card-action {
+  font-size: 11px;
+  line-height: 1.3;
+  padding-top: 5px;
+}
+.ct-hand-layout .ct-card:disabled {
+  color: #5f6558;
+  background: #eeeee4;
+}
+.ct-hand-layout .ct-card:disabled .ct-card-preview {
+  color: #64705b;
+}
+.ct-hand-layout[data-compact='true'] .ct-card-description,
+.ct-hand-layout[data-compact='true'] .ct-card-kind {
+  display: none;
+}
+.ct-hand-layout[data-compact='true']
+  > .ct-card-slot:is([data-pointer-active='true'], :focus-within)
+  .ct-card-description,
+.ct-hand-layout[data-compact='true']
+  > .ct-card-slot:is([data-pointer-active='true'], :focus-within)
+  .ct-card-kind {
+  display: block;
+}
+.ct-reward-cards.ct-hand-layout {
+  margin: 0;
+  padding: 0;
+}
+.ct-reward-hint {
+  display: inline;
+  margin-left: 5px;
+}
+@media (max-width: 540px) {
+  .ct-app:has(.ct-hand-layout) {
+    width: calc(100% - 16px);
+  }
+  .ct-table:is([data-phase='battle'], [data-phase='discard']) {
+    grid-template-rows: 26px 128px 38px minmax(0, 1fr);
+  }
+  .ct-hand-heading {
+    grid-template-rows: 14px 14px;
+  }
+  .ct-hand-heading h3,
+  .ct-hand-heading h3 small,
+  .ct-hand-heading p,
+  .ct-hand-hint {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+  .ct-hand-layout .ct-card-heading strong {
+    font-size: 15px;
+  }
+}
+@media (max-height: 640px) {
+  .ct-table:is([data-phase='battle'], [data-phase='discard']) {
+    grid-template-rows: 24px 104px 32px minmax(0, 1fr);
+    gap: 3px;
+  }
+}
+@media (max-height: 520px) {
+  .ct-table:is([data-phase='battle'], [data-phase='discard']) {
+    grid-template-rows: 22px minmax(54px, 0.32fr) 28px minmax(0, 1fr);
+    gap: 2px;
+  }
+  .ct-hand-area {
+    grid-template-rows: 18px minmax(0, 1fr) 32px;
+  }
+  .ct-table[data-phase='discard'] .ct-hand-area {
+    grid-template-rows: 18px minmax(0, 1fr) 36px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ct-hand-layout .ct-card {
+    transition: none;
+  }
+}

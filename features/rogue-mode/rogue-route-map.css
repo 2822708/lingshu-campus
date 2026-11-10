@@ -1,0 +1,331 @@
+.rm-app .rm-content.rm-content--route {
+  overflow: hidden;
+  padding-block: 10px;
+  gap: 8px;
+}
+
+.rm-content--route > .rm-route,
+.rm-notebook-body--route > .rm-route {
+  flex: 1 1 0;
+}
+
+.rm-app .rm-notebook-body--route {
+  display: flex;
+  overflow: hidden;
+  padding-top: 8px;
+}
+
+.rm-route {
+  --map-ink: #2b4236;
+  --map-paper: #f9f6e9;
+  --map-muted: #62705b;
+  --map-border: #b8c1aa;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: min(100%, 780px);
+  margin-inline: auto;
+  color: var(--map-ink);
+  background: var(--map-paper);
+  border: 1px solid var(--map-border);
+  box-shadow: 0 2px 0 #dcdcc9;
+}
+
+.rm-route-heading,
+.rm-route-footer {
+  flex: none;
+  padding: 8px 14px;
+}
+
+.rm-route-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--map-border);
+}
+
+.rm-route .rm-route-heading p,
+.rm-route .rm-route-footer p {
+  margin: 0;
+}
+
+.rm-route .rm-route-heading h2 {
+  margin: 0;
+  font:
+    700 19px/1.25 SimSun,
+    serif;
+}
+
+.rm-route-kicker,
+.rm-route-position,
+.rm-route-footer > p {
+  color: var(--map-muted);
+  font-size: 11px;
+}
+
+.rm-route-position {
+  text-align: right;
+}
+
+.rm-route-position strong {
+  display: block;
+  color: #365f44;
+  font-size: 12px;
+}
+
+.rm-route-viewport {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #a6b196 transparent;
+}
+
+.rm-route-viewport:focus-visible {
+  outline: 2px solid #b3823c;
+  outline-offset: -2px;
+}
+
+.rm-route-canvas {
+  position: relative;
+  height: 100%;
+  min-height: 460px;
+  isolation: isolate;
+  background-image:
+    radial-gradient(ellipse at 50% 12%, #d7aa671b, transparent 40%),
+    linear-gradient(90deg, #8a99751a 1px, transparent 1px),
+    linear-gradient(#8a997517 1px, transparent 1px);
+  background-size:
+    auto,
+    20px 20px,
+    20px 20px;
+}
+
+.rm-route-edges {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.rm-route-edges line {
+  stroke: #8a987a;
+  stroke-width: 1.2;
+  stroke-dasharray: 2 4;
+  stroke-linecap: round;
+}
+
+.rm-route-edges line[data-edge-state='skipped'] {
+  stroke-opacity: 0.32;
+}
+
+.rm-route-edges line[data-edge-state='available'] {
+  stroke: #447854;
+  stroke-width: 2.3;
+  stroke-dasharray: 3 4;
+}
+
+.rm-route-edges line[data-edge-state='traveled'] {
+  stroke: #365e47;
+  stroke-width: 2.4;
+  stroke-dasharray: none;
+}
+
+.rm-route-floor {
+  position: absolute;
+  left: 4%;
+  transform: translateY(-50%);
+  color: #707c65;
+  font:
+    11px/1.2 Georgia,
+    serif;
+}
+
+.rm-route-floor[data-focus='true'] {
+  color: #355e42;
+  font-weight: 700;
+}
+
+.rm-route [data-kind='battle'] {
+  --node-ink: #595e42;
+}
+.rm-route [data-kind='elite'] {
+  --node-ink: #99553c;
+}
+.rm-route [data-kind='event'] {
+  --node-ink: #78674a;
+}
+.rm-route [data-kind='shop'] {
+  --node-ink: #715924;
+}
+.rm-route [data-kind='camp'] {
+  --node-ink: #45705a;
+}
+.rm-route [data-kind='boss'] {
+  --node-ink: #923f3e;
+}
+
+.rm-route .rm-route-node {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #b3b9a2;
+  border-radius: 50%;
+  background: #f8f5e8;
+  color: var(--node-ink);
+  font: inherit;
+}
+
+.rm-route-node > svg {
+  width: 18px;
+  height: 18px;
+}
+
+.rm-route .rm-route-node[data-kind='boss'] {
+  border-color: #c3a17b;
+  border-radius: 8px;
+  background: #f0e4d0;
+}
+
+.rm-route .rm-route-node[data-state='available'] {
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #497750;
+  background: #f3fae9;
+  box-shadow: 0 0 0 3px #cfdfc2;
+  cursor: pointer;
+}
+
+.rm-route .rm-route-node[data-state='available']:hover,
+.rm-route .rm-route-node[data-state='available']:focus-visible {
+  background: #e2efd4;
+  border-color: #244d35;
+}
+
+.rm-route .rm-route-node[data-state='available']:focus-visible {
+  outline: 2px solid #aa7335;
+  outline-offset: 4px;
+}
+
+.rm-route .rm-route-node[data-state='visited'] {
+  border-color: #8ca287;
+  background: #e6ead9;
+}
+
+.rm-route .rm-route-node[data-state='current'] {
+  z-index: 1;
+  border-color: #305c44;
+  background: #3e6951;
+  color: #fffdf0;
+  box-shadow: 0 0 0 3px #c0d3b4;
+}
+
+.rm-route .rm-route-node[data-state='locked'] {
+  opacity: 0.78;
+}
+
+.rm-route .rm-route-node[data-skipped='true'] {
+  opacity: 0.43;
+}
+
+.rm-route-node-label,
+.rm-route-origin {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #37533c;
+  font:
+    600 10px/1.15 'Microsoft YaHei',
+    sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.rm-route-node-label {
+  top: calc(100% + 4px);
+  padding: 1px 3px;
+  background: #f9f6e9e8;
+}
+
+.rm-route-node[data-kind='boss'] .rm-route-node-label {
+  top: auto;
+  bottom: calc(100% + 4px);
+  color: #873e37;
+}
+
+.rm-route-origin {
+  bottom: 8px;
+  color: var(--map-muted);
+  font-weight: 400;
+}
+
+.rm-route-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--map-border);
+}
+
+.rm-route .rm-route-footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rm-route .rm-route-footer li {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  color: var(--node-ink);
+  font-size: 11px;
+}
+
+.rm-route-footer li > svg {
+  width: 13px;
+  height: 13px;
+}
+
+.rm-app .rm-route-launch {
+  border: 1px solid #a9b89d;
+  padding-inline: 7px;
+  color: #345f44;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .rm-route-heading,
+  .rm-route-footer {
+    padding: 6px 8px;
+  }
+  .rm-route .rm-route-heading h2 {
+    font-size: 16px;
+  }
+  .rm-route-canvas {
+    min-height: 620px;
+  }
+  .rm-route .rm-route-node[data-state='available'] {
+    width: 44px;
+    height: 44px;
+  }
+  .rm-route .rm-route-footer ul {
+    gap: 3px 8px;
+  }
+  .rm-route .rm-route-footer li {
+    font-size: 10px;
+  }
+}

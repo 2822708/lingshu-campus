@@ -6,7 +6,11 @@
 
 ```mermaid
 flowchart TD
-  Entry[index.tsx] --> App[App 页面与操作编排]
+  Entry[index.tsx] --> Choose[GameEntry 模式选择]
+  Choose --> App[App 校园页面与操作编排]
+  Choose --> Rogue[rogue-mode 独立远征]
+  Rogue --> RogueSave[独立存档 lingshu-rogue-run-v1]
+  Rogue --> Cards[共享 card-battle 纯内核与展示]
   App --> State[useGameState 玩家 日志 设置 屏幕]
   App --> Modal[useModalState 弹窗与关联状态]
   App --> Handlers[views 功能 handlers]
@@ -21,6 +25,8 @@ flowchart TD
 ```
 
 `constants.ts`、`npu-data.ts` 提供玩法数据，`types.ts` 定义共享协议。实际学阶为大一、大二、大三、大四、硕士、博士、院士。AI 默认关闭，以本地事件运行；开启后的 AI 请求与排行榜请求属于不同的网络边界。
+
+2026-10-31增加独立肉鸽模块。`GameEntry`只挂载所选模式，远征不导入主角色、成长Hook、校园存档或经济服务。`features/rogue-mode/catalog.ts`维护职业、初始牌组、原创卡面、遗物和节点；`engine.ts`负责50节点状态机与奖励；`persistence.ts`负责限长校验、旧快照比较和损坏档备份；`RogueMode.tsx`先保存再展示。共享卡战仅承接冻结的生命、牌组、遗物效果和敌方行动循环。详见[隔离决策](adr/0007-independent-rogue-mode.md)。
 
 ## 职责与依赖方向
 
@@ -62,6 +68,16 @@ flowchart TD
 
 历史诊断后续清理已完成，见同目录的历史问题修复报告。`hooks/useLatestRef.ts` 为长生命周期回调提供提交后的最新值，自动操作与升学检查仍按原状态字段触发。设置持久化现已与玩家自动存档解耦：关闭自动保存后，音效等设置仍单独保存。
 
+## 正式卡牌副本（2026-10-27）
+
+大厅主动入场使用 `App → begin-dungeon → features/card-dungeon → features/card-battle → 父行动结算`，替换该入口的逐轮战斗。`sources/loadout` 只处理真实课程、实际装备和简历配置；`numericAdapter` 将原战斗计划适配为冻结牌面；卡战引擎只处理纯指令、牌区和战斗精力，不读存储、不发物品、不调用模型。共享 `shared.ts`、模板和展示组件也供独立试作使用，三场试作的角色与奖励状态不进入主游戏。
+
+2026-10-30的新入口模式为 `entryMode: 'rogue'`：`offers.ts` 生成三个同学阶、不同风险的报价；`rogueLoadout.ts` 从真实可用来源确定性抽取本场简历，并通过牌区交换展示开局来源牌。`SecretRealmModal`只展示三个选择和刷新；旧准备模块不再处于主入口链路。自动简历存在 `pending.dungeon.entryLoadout`，不覆盖全局旧手配；断点恢复按该冻结简历校验，旧现场没有此字段时回退原规则。主入口直接开战，已有的非战斗探索现场仍可读取及完成。详见[决策记录](adr/0006-rogue-dungeon-entry.md)。
+
+`features/interactive/state.ts` 仍负责入场扣费、命令序号、一次终局与延毕；`useGameState` 取得页面写入权，先保存完整快照再发布界面。新大厅非战斗探索复用 `utils/adventureResult.ts` 的原资源规则，费用与探索结果一次落盘。旧 `executeAdventureCore` 也使用此共享更新函数，其他入口行为不变。互动协议2增加简历及卡战现场，旧协议1现场读入后继续旧引擎；外层存档版本和业务ID不变。详见[正式接入报告](卡牌副本正式接入报告-2026-10-27.md)。
+
 ## 后续整理顺序
+
+2026-10-29卡战内容扩充：`features/card-battle/enemies.ts`定义敌人行动循环，入场时复制进战斗快照；`engine.ts`负责机制与精确来袭预览。`card-dungeon/equipment.ts`统一现有装备与特性的匹配，`budgets.ts`供牌面和装备共用最终角色预算，`numericAdapter.ts`继续保留旧导出路径。背包与装备栏仅读取特性说明，副本特性不参与旧逐轮战斗。新增战术不进入独立试作奖励池。详见[内容扩充报告](战斗内容与装备机制扩充-2026-10-29.md)。
 
 先修复检查中的真实缺陷，再处理装备效果转换与商店售价的单一来源、稳定日志回调、统一排行榜和 UID 客户端配置。之后再评估清理旧 Hook 与拆分 `constants.ts`。每次提取都应核对输入输出、默认值及随机调用顺序，避免为目录整齐替换实际业务实现。

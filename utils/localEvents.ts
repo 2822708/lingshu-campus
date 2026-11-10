@@ -26,9 +26,6 @@ const realmMultiplier = (player: PlayerStats) => {
   return 1 + realmIndex * 0.3 + (player.realmLevel - 1) * 0.1;
 };
 
-const randInt = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
-
 const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 // ========================================================================
@@ -55,317 +52,317 @@ type RewardBuilder = (
 // 可用宠物 ID（来自 constants.ts 的 PET_TEMPLATES）
 const PET_IDS = ['pet-spirit-fox', 'pet-thunder-tiger', 'pet-phoenix'] as const;
 
-/** 概率判定：约 X% 的概率触发 */
-const prob = (pct: number) => Math.random() < pct;
-
 interface Template {
   story: StoryBuilder;
   reward: RewardBuilder;
 }
 
-// ============ normal（日常刷副本）============
-const normalTemplates: Template[] = [
-  {
-    story: () =>
-      `你在图书馆三楼靠窗的位置坐下，参考书堆得比山高。远处传来低沉的叹息声——一位同学正和一道题较劲，草稿纸铺了一桌。你循声望去，悄悄观察了一会儿，思路忽然被打开。`,
-    reward: (m) => ({
-      hpChange: -randInt(0, 3),
-      expChange: randInt(8, 18) * Math.max(1, m),
-      spiritStonesChange: randInt(0, 5),
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `凌晨两点，你穿过空旷的校园去赶 deadline。路灯在身后投下长长的影子，空气中弥漫着消毒水和咖啡的味道。突然一个熬红了眼的同学从阴影里冲出来，朝你扔来一份调试到一半的代码。你抓起键盘迎战，几个来回后终于稳住局势。`,
-    reward: (m) => ({
-      hpChange: -randInt(5, 15),
-      expChange: randInt(15, 35) * Math.max(1, m),
-      spiritStonesChange: randInt(0, 8),
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `食堂一楼高峰期，你端着餐盘找位置，发现一个靠窗的空位。桌面上留着一张纸条：「抽到这个位子的人，今天绩点+1」。你笑着坐下，啃了口鸡腿。`,
-    reward: (m) => ({
-      hpChange: randInt(2, 6),
-      expChange: randInt(5, 12) * Math.max(1, m),
-      spiritStonesChange: randInt(0, 3),
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `你漫步在主楼走廊，突然注意到实验室门缝里塞着一份 U 盘，贴着「绝版资料」的标签。你小心翼翼地取出，插进电脑一看——是学长整理的真题集，还附了详细的解答思路。`,
-    reward: (m) => ({
-      hpChange: 0,
-      expChange: randInt(20, 40) * Math.max(1, m),
-      spiritStonesChange: randInt(2, 10),
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `在快递站取完包裹，你看到一个穿实验服的同学蹲在地上，对着三个一模一样的小板子发呆。你蹲下来帮他辨认丝印层，他塞给你两块「报废芯片」作为答谢。`,
-    reward: (m) => ({
-      hpChange: -randInt(0, 2),
-      expChange: randInt(5, 12) * Math.max(1, m),
-      spiritStonesChange: randInt(0, 3),
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `自习室靠墙的位置空出了一个插座位。你立刻占了，插上电脑，空调嗡嗡作响，键盘声此起彼伏。两个小时很快过去，效率奇高。`,
-    reward: (m) => ({
-      hpChange: randInt(2, 5),
-      expChange: randInt(15, 25) * Math.max(1, m),
-      spiritStonesChange: 0,
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `你推开实验室的门，里面光线昏暗，空调嗡嗡作响。走到实验室中央时，示波器突然冒烟，无数根杜邦线从桌面上弹起，向你袭来。你虽然勉强躲过，但也受了不轻的伤。`,
-    reward: (m) => ({
-      hpChange: -randInt(10, 25),
-      expChange: randInt(8, 15) * Math.max(1, m),
-      spiritStonesChange: 0,
-      eventColor: 'danger',
-    }),
-  },
-  {
-    story: () =>
-      `深夜的主楼走廊里，保安的巡逻脚步声让你心神不宁。荧光灯忽闪忽亮，能见度极低。你强行打起精神护住资料，才从这诡异的环境中脱身，精力略有损耗。`,
-    reward: (m) => ({
-      hpChange: -randInt(3, 8),
-      expChange: randInt(5, 10) * Math.max(1, m),
-      spiritStonesChange: 0,
-      eventColor: 'danger',
-    }),
-  },
-  {
-    story: () =>
-      `你在一处人满为患的实验室里挤位置，两侧堆满了示波器和焊台。突然一台示波器冒烟，冒出呛人的烟雾。你立即运转大脑，与这场突发状况展开激烈对决，经过一番苦战修好了它。`,
-    reward: (m) => ({
-      hpChange: -randInt(5, 12),
-      expChange: randInt(15, 25) * Math.max(1, m),
-      spiritStonesChange: randInt(2, 6),
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `你正在背单词，突然听到身后传来脚步声。转身一看，是一位白发苍苍的老教授，神采奕奕。他看你资质不错，便传授了你一套独门学习方法，给了你一些珍贵的笔记。`,
-    reward: (m) => ({
-      hpChange: 0,
-      expChange: randInt(20, 35) * Math.max(1, m),
-      spiritStonesChange: randInt(3, 8),
-      eventColor: 'special',
-    }),
-  },
-  {
-    story: () =>
-      `你在校史馆闲逛，看到一个旧展柜里摆着一台 8086 CPU，旁边立着铭牌「学园早期的教学样机」。你拍了张照发朋友圈，集齐了 27 个赞。`,
-    reward: (m) => ({
-      hpChange: 0,
-      expChange: randInt(8, 15) * Math.max(1, m),
-      spiritStonesChange: 0,
-      eventColor: 'normal',
-    }),
-  },
-  {
-    story: () =>
-      `操场夜跑跑道上，你遇到了正在刷圈的体育部学长。他拍了拍你的肩膀说「小子体能不错」，然后从口袋里掏出一瓶宝矿力塞给你。`,
-    reward: (m) => ({
-      hpChange: randInt(5, 10),
-      expChange: randInt(5, 10) * Math.max(1, m),
-      spiritStonesChange: 0,
-      eventColor: 'gain',
-    }),
-  },
-  {
-    story: () =>
-      `教学楼天台上，你看到一群人在调试无人机。原来是航模社在测试新机。你主动帮忙扶了一下桨叶，社长送了你一张社团招新传单。`,
-    reward: (m) => ({
-      hpChange: -randInt(0, 2),
-      expChange: randInt(5, 12) * Math.max(1, m),
-      spiritStonesChange: 0,
-      eventColor: 'normal',
-    }),
-  },
-  {
-    story: () =>
-      `雨后的快递柜前，你看到地上掉着一份盖着「学园代码赛报名表」的快递。你把它送回快递站，老板送了你一个备用充电宝。`,
-    reward: (m) => ({
-      hpChange: 0,
-      expChange: randInt(5, 10) * Math.max(1, m),
-      spiritStonesChange: randInt(0, 2),
-      eventColor: 'gain',
-    }),
-  },
-];
-
-// ============ lucky（大机缘）============
-// 收益范围显著高于 normal，事件颜色为 special
-const luckyTemplates: Template[] = [
-  {
-    story: () =>
-      `你在自习时，窗外突然乌云密布，雷电交加。一道紫色闪光从天而降将你笼罩其中。你感受到一股强大的学习动力涌入体内，思维瞬间清晰，多日未解的难题瞬间精进。`,
-    reward: (m) => ({
-      hpChange: randInt(5, 15),
-      expChange: randInt(120, 250) * Math.max(1, m),
-      spiritStonesChange: randInt(30, 80),
-      eventColor: 'special',
-    }),
-  },
-  {
-    story: () =>
-      `你误入一处通宵实验室，里面堆满了焊台和元器件，墙上贴满了看不懂的电路图，散发着咖啡和焊锡的味道。经过一番探索，你解开了一个小型电路，获得了其中调试好的一块开发板。`,
-    reward: (m) => ({
-      hpChange: -randInt(0, 5),
-      expChange: randInt(150, 300) * Math.max(1, m),
-      spiritStonesChange: randInt(50, 100),
-      eventColor: 'special',
-    }),
-  },
-  {
-    story: () =>
-      `你蹲在机房角落系鞋带，抬头看见机房角落的柜子里露出一角——是一台闲置的旗舰级开发板，外壳贴着「程序设计研习队共享设备」。值班同学核对登记后，借给你继续调试。`,
-    reward: (m) => ({
-      hpChange: 0,
-      expChange: randInt(200, 400) * Math.max(1, m),
-      spiritStonesChange: randInt(80, 150),
-      eventColor: 'special',
-    }),
-  },
-  {
-    story: () =>
-      `路过图书馆门口的旧书摊，你被一本发黄的小册子吸引——《学园课程习题集（进阶篇）》。摊主看你识货，开价不菲，但你掏空了钱包。`,
-    reward: (m) => ({
-      hpChange: 0,
-      expChange: randInt(180, 350) * Math.max(1, m),
-      spiritStonesChange: -randInt(20, 50),
-      eventColor: 'special',
-    }),
-  },
-  {
-    story: () =>
-      `校庆日的抽奖环节，你随手抽了一张票，居然是一等奖——实验室全天免费使用权（限本人）。`,
-    reward: (m) => ({
-      hpChange: 0,
-      expChange: randInt(250, 500) * Math.max(1, m),
-      spiritStonesChange: randInt(100, 200),
-      eventColor: 'special',
-    }),
-  },
-];
-
-// ============ secret_realm（副本）============
-// 风险越高，奖励越高、伤害越大
-const realmTemplates: Record<
-  '低' | '中' | '高' | '极度危险',
-  Template[]
-> = {
-  低: [
-    {
-      story: () =>
-        `你推开实验室的玻璃门，进入一间被暖黄色灯光笼罩的深夜实验室。示波器屏幕上跳动着规律的波形，空气中弥漫着焊锡和咖啡的味道。导师端着咖啡走进，朝你点了点头，递过来一份调试好的工程模板。`,
-      reward: (m) => ({
-        hpChange: -randInt(0, 5),
-        expChange: randInt(50, 100) * Math.max(1, m),
-        spiritStonesChange: randInt(20, 50),
-        eventColor: 'gain',
-      }),
-    },
-    {
-      story: () =>
-        `社团招新现场，人来人往但热闹不危险。你路过展位时被热情的学长拉住，扫码加群领到了一份学园程序设计赛习题集。`,
-      reward: (m) => ({
-        hpChange: 0,
-        expChange: randInt(60, 120) * Math.max(1, m),
-        spiritStonesChange: randInt(15, 40),
-        eventColor: 'gain',
-      }),
-    },
-  ],
-  中: [
-    {
-      story: () =>
-        `期末考场里翻卷子声此起彼伏，时间一分一秒流逝。你奋笔疾书，最后一道大题突然卡壳。深吸一口气，回想起老师讲过的某条定理，写下了关键一步——稳稳拿下。`,
-      reward: (m) => ({
-        hpChange: -randInt(8, 15),
-        expChange: randInt(100, 200) * Math.max(1, m),
-        spiritStonesChange: randInt(40, 80),
-        eventColor: 'gain',
-      }),
-    },
-    {
-      story: () =>
-        `实验室深夜档，导师随时可能 @ 你。你小心翼翼地测试代码，突然编译器报错——是引用了未公开的内网接口。你立刻换成公开 API，跑通了实验，逃过一劫。`,
-      reward: (m) => ({
-        hpChange: -randInt(5, 12),
-        expChange: randInt(120, 220) * Math.max(1, m),
-        spiritStonesChange: randInt(30, 70),
-        eventColor: 'gain',
-      }),
-    },
-  ],
-  高: [
-    {
-      story: () =>
-        `答辩现场，评委连续追问细节，空气凝固。你镇定自若，把 PPT 第 27 页的实验数据一一解释清楚，最后一位评委终于点头。`,
-      reward: (m) => ({
-        hpChange: -randInt(15, 25),
-        expChange: randInt(200, 400) * Math.max(1, m),
-        spiritStonesChange: randInt(80, 150),
-        eventColor: 'gain',
-      }),
-    },
-    {
-      story: () =>
-        `竞赛最后一天，所有东西都还没做完。你和队友连续调试 14 小时，最终在提交截止前 10 分钟跑通了全部测试用例。`,
-      reward: (m) => ({
-        hpChange: -randInt(20, 35),
-        expChange: randInt(250, 450) * Math.max(1, m),
-        spiritStonesChange: randInt(100, 180),
-        eventColor: 'gain',
-      }),
-    },
-  ],
-  极度危险: [
-    {
-      story: () =>
-        `毕业前最后一周，所有 deadline 撞在一起。你连续四天每天只睡两小时，第 5 天终于把最后一篇报告提交——但人也快倒了。`,
-      reward: (m) => ({
-        hpChange: -randInt(40, 60),
-        expChange: randInt(400, 800) * Math.max(1, m),
-        spiritStonesChange: randInt(200, 400),
-        eventColor: 'special',
-      }),
-    },
-    {
-      story: () =>
-        `毕业答辩前夜，PPT 还没改完，参考文献格式乱了，致谢写了一半。你通宵到天亮，第 6 场答辩前一秒保存成功——你已几近虚脱。`,
-      reward: (m) => ({
-        hpChange: -randInt(50, 80),
-        expChange: randInt(500, 1000) * Math.max(1, m),
-        spiritStonesChange: randInt(250, 500),
-        eventColor: 'special',
-      }),
-    },
-  ],
-};
-
-// ========================================================================
-// 入口函数
-// ========================================================================
 export function generateLocalAdventureEvent(
   player: PlayerStats,
   adventureType: 'normal' | 'lucky' | 'secret_realm' = 'normal',
-  riskLevel?: '低' | '中' | '高' | '极度危险'
+  riskLevel?: '低' | '中' | '高' | '极度危险',
+  random: () => number = Math.random
 ): AdventureResult {
+  const randInt = (min: number, max: number) =>
+    Math.floor(random() * (max - min + 1)) + min;
+  const pick = <T>(arr: T[]): T => arr[Math.floor(random() * arr.length)];
+  const prob = (pct: number) => random() < pct;
+
+  // ============ normal（日常刷副本）============
+  const normalTemplates: Template[] = [
+    {
+      story: () =>
+        `你在图书馆三楼靠窗的位置坐下，参考书堆得比山高。远处传来低沉的叹息声——一位同学正和一道题较劲，草稿纸铺了一桌。你循声望去，悄悄观察了一会儿，思路忽然被打开。`,
+      reward: (m) => ({
+        hpChange: -randInt(0, 3),
+        expChange: randInt(8, 18) * Math.max(1, m),
+        spiritStonesChange: randInt(0, 5),
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `凌晨两点，你穿过空旷的校园去赶 deadline。路灯在身后投下长长的影子，空气中弥漫着消毒水和咖啡的味道。突然一个熬红了眼的同学从阴影里冲出来，朝你扔来一份调试到一半的代码。你抓起键盘迎战，几个来回后终于稳住局势。`,
+      reward: (m) => ({
+        hpChange: -randInt(5, 15),
+        expChange: randInt(15, 35) * Math.max(1, m),
+        spiritStonesChange: randInt(0, 8),
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `食堂一楼高峰期，你端着餐盘找位置，发现一个靠窗的空位。桌面上留着一张纸条：「抽到这个位子的人，今天绩点+1」。你笑着坐下，啃了口鸡腿。`,
+      reward: (m) => ({
+        hpChange: randInt(2, 6),
+        expChange: randInt(5, 12) * Math.max(1, m),
+        spiritStonesChange: randInt(0, 3),
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `你漫步在主楼走廊，突然注意到实验室门缝里塞着一份 U 盘，贴着「绝版资料」的标签。你小心翼翼地取出，插进电脑一看——是学长整理的真题集，还附了详细的解答思路。`,
+      reward: (m) => ({
+        hpChange: 0,
+        expChange: randInt(20, 40) * Math.max(1, m),
+        spiritStonesChange: randInt(2, 10),
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `在快递站取完包裹，你看到一个穿实验服的同学蹲在地上，对着三个一模一样的小板子发呆。你蹲下来帮他辨认丝印层，他塞给你两块「报废芯片」作为答谢。`,
+      reward: (m) => ({
+        hpChange: -randInt(0, 2),
+        expChange: randInt(5, 12) * Math.max(1, m),
+        spiritStonesChange: randInt(0, 3),
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `自习室靠墙的位置空出了一个插座位。你立刻占了，插上电脑，空调嗡嗡作响，键盘声此起彼伏。两个小时很快过去，效率奇高。`,
+      reward: (m) => ({
+        hpChange: randInt(2, 5),
+        expChange: randInt(15, 25) * Math.max(1, m),
+        spiritStonesChange: 0,
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `你推开实验室的门，里面光线昏暗，空调嗡嗡作响。走到实验室中央时，示波器突然冒烟，无数根杜邦线从桌面上弹起，向你袭来。你虽然勉强躲过，但也受了不轻的伤。`,
+      reward: (m) => ({
+        hpChange: -randInt(10, 25),
+        expChange: randInt(8, 15) * Math.max(1, m),
+        spiritStonesChange: 0,
+        eventColor: 'danger',
+      }),
+    },
+    {
+      story: () =>
+        `深夜的主楼走廊里，保安的巡逻脚步声让你心神不宁。荧光灯忽闪忽亮，能见度极低。你强行打起精神护住资料，才从这诡异的环境中脱身，精力略有损耗。`,
+      reward: (m) => ({
+        hpChange: -randInt(3, 8),
+        expChange: randInt(5, 10) * Math.max(1, m),
+        spiritStonesChange: 0,
+        eventColor: 'danger',
+      }),
+    },
+    {
+      story: () =>
+        `你在一处人满为患的实验室里挤位置，两侧堆满了示波器和焊台。突然一台示波器冒烟，冒出呛人的烟雾。你立即运转大脑，与这场突发状况展开激烈对决，经过一番苦战修好了它。`,
+      reward: (m) => ({
+        hpChange: -randInt(5, 12),
+        expChange: randInt(15, 25) * Math.max(1, m),
+        spiritStonesChange: randInt(2, 6),
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `你正在背单词，突然听到身后传来脚步声。转身一看，是一位白发苍苍的老教授，神采奕奕。他看你资质不错，便传授了你一套独门学习方法，给了你一些珍贵的笔记。`,
+      reward: (m) => ({
+        hpChange: 0,
+        expChange: randInt(20, 35) * Math.max(1, m),
+        spiritStonesChange: randInt(3, 8),
+        eventColor: 'special',
+      }),
+    },
+    {
+      story: () =>
+        `你在校史馆闲逛，看到一个旧展柜里摆着一台 8086 CPU，旁边立着铭牌「学园早期的教学样机」。你拍了张照发朋友圈，集齐了 27 个赞。`,
+      reward: (m) => ({
+        hpChange: 0,
+        expChange: randInt(8, 15) * Math.max(1, m),
+        spiritStonesChange: 0,
+        eventColor: 'normal',
+      }),
+    },
+    {
+      story: () =>
+        `操场夜跑跑道上，你遇到了正在刷圈的体育部学长。他拍了拍你的肩膀说「小子体能不错」，然后从口袋里掏出一瓶宝矿力塞给你。`,
+      reward: (m) => ({
+        hpChange: randInt(5, 10),
+        expChange: randInt(5, 10) * Math.max(1, m),
+        spiritStonesChange: 0,
+        eventColor: 'gain',
+      }),
+    },
+    {
+      story: () =>
+        `教学楼天台上，你看到一群人在调试无人机。原来是航模社在测试新机。你主动帮忙扶了一下桨叶，社长送了你一张社团招新传单。`,
+      reward: (m) => ({
+        hpChange: -randInt(0, 2),
+        expChange: randInt(5, 12) * Math.max(1, m),
+        spiritStonesChange: 0,
+        eventColor: 'normal',
+      }),
+    },
+    {
+      story: () =>
+        `雨后的快递柜前，你看到地上掉着一份盖着「学园代码赛报名表」的快递。你把它送回快递站，老板送了你一个备用充电宝。`,
+      reward: (m) => ({
+        hpChange: 0,
+        expChange: randInt(5, 10) * Math.max(1, m),
+        spiritStonesChange: randInt(0, 2),
+        eventColor: 'gain',
+      }),
+    },
+  ];
+
+  // ============ lucky（大机缘）============
+  // 收益范围显著高于 normal，事件颜色为 special
+  const luckyTemplates: Template[] = [
+    {
+      story: () =>
+        `你在自习时，窗外突然乌云密布，雷电交加。一道紫色闪光从天而降将你笼罩其中。你感受到一股强大的学习动力涌入体内，思维瞬间清晰，多日未解的难题瞬间精进。`,
+      reward: (m) => ({
+        hpChange: randInt(5, 15),
+        expChange: randInt(120, 250) * Math.max(1, m),
+        spiritStonesChange: randInt(30, 80),
+        eventColor: 'special',
+      }),
+    },
+    {
+      story: () =>
+        `你误入一处通宵实验室，里面堆满了焊台和元器件，墙上贴满了看不懂的电路图，散发着咖啡和焊锡的味道。经过一番探索，你解开了一个小型电路，获得了其中调试好的一块开发板。`,
+      reward: (m) => ({
+        hpChange: -randInt(0, 5),
+        expChange: randInt(150, 300) * Math.max(1, m),
+        spiritStonesChange: randInt(50, 100),
+        eventColor: 'special',
+      }),
+    },
+    {
+      story: () =>
+        `你蹲在机房角落系鞋带，抬头看见机房角落的柜子里露出一角——是一台闲置的旗舰级开发板，外壳贴着「程序设计研习队共享设备」。值班同学核对登记后，借给你继续调试。`,
+      reward: (m) => ({
+        hpChange: 0,
+        expChange: randInt(200, 400) * Math.max(1, m),
+        spiritStonesChange: randInt(80, 150),
+        eventColor: 'special',
+      }),
+    },
+    {
+      story: () =>
+        `路过图书馆门口的旧书摊，你被一本发黄的小册子吸引——《学园课程习题集（进阶篇）》。摊主看你识货，开价不菲，但你掏空了钱包。`,
+      reward: (m) => ({
+        hpChange: 0,
+        expChange: randInt(180, 350) * Math.max(1, m),
+        spiritStonesChange: -randInt(20, 50),
+        eventColor: 'special',
+      }),
+    },
+    {
+      story: () =>
+        `校庆日的抽奖环节，你随手抽了一张票，居然是一等奖——实验室全天免费使用权（限本人）。`,
+      reward: (m) => ({
+        hpChange: 0,
+        expChange: randInt(250, 500) * Math.max(1, m),
+        spiritStonesChange: randInt(100, 200),
+        eventColor: 'special',
+      }),
+    },
+  ];
+
+  // ============ secret_realm（副本）============
+  // 风险越高，奖励越高、伤害越大
+  const realmTemplates: Record<'低' | '中' | '高' | '极度危险', Template[]> = {
+    低: [
+      {
+        story: () =>
+          `你推开实验室的玻璃门，进入一间被暖黄色灯光笼罩的深夜实验室。示波器屏幕上跳动着规律的波形，空气中弥漫着焊锡和咖啡的味道。导师端着咖啡走进，朝你点了点头，递过来一份调试好的工程模板。`,
+        reward: (m) => ({
+          hpChange: -randInt(0, 5),
+          expChange: randInt(50, 100) * Math.max(1, m),
+          spiritStonesChange: randInt(20, 50),
+          eventColor: 'gain',
+        }),
+      },
+      {
+        story: () =>
+          `社团招新现场，人来人往但热闹不危险。你路过展位时被热情的学长拉住，扫码加群领到了一份学园程序设计赛习题集。`,
+        reward: (m) => ({
+          hpChange: 0,
+          expChange: randInt(60, 120) * Math.max(1, m),
+          spiritStonesChange: randInt(15, 40),
+          eventColor: 'gain',
+        }),
+      },
+    ],
+    中: [
+      {
+        story: () =>
+          `期末考场里翻卷子声此起彼伏，时间一分一秒流逝。你奋笔疾书，最后一道大题突然卡壳。深吸一口气，回想起老师讲过的某条定理，写下了关键一步——稳稳拿下。`,
+        reward: (m) => ({
+          hpChange: -randInt(8, 15),
+          expChange: randInt(100, 200) * Math.max(1, m),
+          spiritStonesChange: randInt(40, 80),
+          eventColor: 'gain',
+        }),
+      },
+      {
+        story: () =>
+          `实验室深夜档，导师随时可能 @ 你。你小心翼翼地测试代码，突然编译器报错——是引用了未公开的内网接口。你立刻换成公开 API，跑通了实验，逃过一劫。`,
+        reward: (m) => ({
+          hpChange: -randInt(5, 12),
+          expChange: randInt(120, 220) * Math.max(1, m),
+          spiritStonesChange: randInt(30, 70),
+          eventColor: 'gain',
+        }),
+      },
+    ],
+    高: [
+      {
+        story: () =>
+          `答辩现场，评委连续追问细节，空气凝固。你镇定自若，把 PPT 第 27 页的实验数据一一解释清楚，最后一位评委终于点头。`,
+        reward: (m) => ({
+          hpChange: -randInt(15, 25),
+          expChange: randInt(200, 400) * Math.max(1, m),
+          spiritStonesChange: randInt(80, 150),
+          eventColor: 'gain',
+        }),
+      },
+      {
+        story: () =>
+          `竞赛最后一天，所有东西都还没做完。你和队友连续调试 14 小时，最终在提交截止前 10 分钟跑通了全部测试用例。`,
+        reward: (m) => ({
+          hpChange: -randInt(20, 35),
+          expChange: randInt(250, 450) * Math.max(1, m),
+          spiritStonesChange: randInt(100, 180),
+          eventColor: 'gain',
+        }),
+      },
+    ],
+    极度危险: [
+      {
+        story: () =>
+          `毕业前最后一周，所有 deadline 撞在一起。你连续四天每天只睡两小时，第 5 天终于把最后一篇报告提交——但人也快倒了。`,
+        reward: (m) => ({
+          hpChange: -randInt(40, 60),
+          expChange: randInt(400, 800) * Math.max(1, m),
+          spiritStonesChange: randInt(200, 400),
+          eventColor: 'special',
+        }),
+      },
+      {
+        story: () =>
+          `毕业答辩前夜，PPT 还没改完，参考文献格式乱了，致谢写了一半。你通宵到天亮，第 6 场答辩前一秒保存成功——你已几近虚脱。`,
+        reward: (m) => ({
+          hpChange: -randInt(50, 80),
+          expChange: randInt(500, 1000) * Math.max(1, m),
+          spiritStonesChange: randInt(250, 500),
+          eventColor: 'special',
+        }),
+      },
+    ],
+  };
+
+  // ========================================================================
+  // 入口函数
+  // ========================================================================
   const m = realmMultiplier(player);
 
   let template: Template;
@@ -397,10 +394,7 @@ export function generateLocalAdventureEvent(
         : 0.08;
 
   if (prob(baseLotteryChance)) {
-    const tickets =
-      adventureType === 'lucky'
-        ? randInt(2, 5)
-        : randInt(1, 3);
+    const tickets = adventureType === 'lucky' ? randInt(2, 5) : randInt(1, 3);
     result.lotteryTicketsChange = tickets;
   }
 
@@ -424,13 +418,34 @@ export function generateLocalAdventureEvent(
 // 升级文案本地版（替换 AI 版的 generateBreakthroughFlavorText）
 // ========================================================================
 const breakthroughSuccessTexts: Record<string, string[]> = {
-  大一: ['你顺利完成了大一第一学期的所有课程，GPA 还算看得过去。', '迎新训练顺利结束，专业课也都通过了，你的学园生活正式步入正轨。'],
-  大二: ['大二的专业课难度上来了，但你还扛得住，成功升入大三。', '金工实习没出大错，模电没挂，你成功晋级大三。'],
-  大三: ['保研的种子在大三埋下——绩点稳住了，竞赛也有了成绩。', '你熬过了大三上最难的课设，进入大四。'],
-  大四: ['毕业论文顺利通过答辩，你拿到学位证了！', '校招拿到 offer，毕业设计也过了，你正式毕业。'],
-  硕士: ['你顺利通过了硕士答辩，拿到硕士学位。', '论文发出来了，导师签字同意，你硕士毕业。'],
-  博士: ['你的博士论文获得通过，博士学位授予。', '你熬过漫长的博士生涯，终于站上了答辩讲台。'],
-  院士: ['学园为你的长期研习成果授予最高荣誉，你的成长档案翻开了新的一页。', '你的研究成果获得学园认可，被授予游戏中的院士荣誉称号。'],
+  大一: [
+    '你顺利完成了大一第一学期的所有课程，GPA 还算看得过去。',
+    '迎新训练顺利结束，专业课也都通过了，你的学园生活正式步入正轨。',
+  ],
+  大二: [
+    '大二的专业课难度上来了，但你还扛得住，成功升入大三。',
+    '金工实习没出大错，模电没挂，你成功晋级大三。',
+  ],
+  大三: [
+    '保研的种子在大三埋下——绩点稳住了，竞赛也有了成绩。',
+    '你熬过了大三上最难的课设，进入大四。',
+  ],
+  大四: [
+    '毕业论文顺利通过答辩，你拿到学位证了！',
+    '校招拿到 offer，毕业设计也过了，你正式毕业。',
+  ],
+  硕士: [
+    '你顺利通过了硕士答辩，拿到硕士学位。',
+    '论文发出来了，导师签字同意，你硕士毕业。',
+  ],
+  博士: [
+    '你的博士论文获得通过，博士学位授予。',
+    '你熬过漫长的博士生涯，终于站上了答辩讲台。',
+  ],
+  院士: [
+    '学园为你的长期研习成果授予最高荣誉，你的成长档案翻开了新的一页。',
+    '你的研究成果获得学园认可，被授予游戏中的院士荣誉称号。',
+  ],
 };
 
 const breakthroughFailTexts: string[] = [
@@ -440,7 +455,10 @@ const breakthroughFailTexts: string[] = [
   '论文被打回，你需要大改。',
 ];
 
-export function generateLocalBreakthroughText(realm: string, success: boolean): string {
+export function generateLocalBreakthroughText(
+  realm: string,
+  success: boolean
+): string {
   if (success) {
     const pool = breakthroughSuccessTexts[realm] || [
       `你顺利升入了${realm}，新阶段开始。`,

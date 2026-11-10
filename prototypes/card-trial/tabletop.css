@@ -1,0 +1,452 @@
+/* 纸桌布局层：角色、批注与手牌各有位置，不影响出牌顺序或结算。 */
+.ct-app {
+  max-width: 1040px;
+}
+.ct-header {
+  border-bottom: 1px solid #7d8977;
+  padding-right: 18px;
+}
+.ct-header h1 {
+  letter-spacing: 0.2em;
+}
+.ct-header-stamp {
+  transform: rotate(5deg);
+}
+.ct-route {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 20px;
+  border: 0;
+  margin: 4px 0 22px;
+  align-items: baseline;
+}
+.ct-route span {
+  padding: 5px 9px;
+  border-bottom-width: 1px;
+  transform: rotate(-1deg);
+}
+.ct-route span:nth-child(2) {
+  transform: translateY(4px) rotate(1deg);
+}
+.ct-route span:nth-child(3) {
+  transform: rotate(-2deg);
+}
+.ct-route [aria-current] {
+  background: #faf8ef;
+  box-shadow: 2px 3px 0 #d7d4c7;
+}
+.ct-table {
+  border: 0;
+  padding: 0 10px;
+  background: transparent;
+}
+.ct-table-heading {
+  border: 0;
+  padding-bottom: 0;
+}
+.ct-table-heading h2 {
+  font-size: 23px;
+}
+.ct-seed-label {
+  margin-top: 9px;
+  border-bottom: 1px dashed #b9bcab;
+}
+.ct-combatants {
+  position: relative;
+  isolation: isolate;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 70px;
+  padding: 12px 18px 23px;
+  align-items: start;
+}
+.ct-combatants::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 132px;
+  left: 8%;
+  width: 83%;
+  height: 35px;
+  border-bottom: 2px solid #c1c5b2;
+  border-radius: 50%;
+  transform: rotate(-3deg);
+}
+.ct-student,
+.ct-opponent {
+  position: relative;
+  min-width: 0;
+  border: 0;
+  padding: 0 20px;
+}
+.ct-student {
+  margin-top: 24px;
+}
+.ct-opponent {
+  margin-top: 0;
+}
+.ct-student h3,
+.ct-opponent h3 {
+  font-family: 'Songti SC', SimSun, serif;
+  font-size: 20px;
+  margin: 0 0 7px;
+}
+.ct-student h3::after {
+  content: ' / 执笔人';
+  font:
+    11px 'Microsoft YaHei',
+    sans-serif;
+  color: #7c8573;
+}
+.ct-opponent > .ct-section-label {
+  font-size: 10px;
+}
+.ct-combatants .ct-actor {
+  max-width: 100%;
+}
+.ct-duel-mark {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-9deg);
+  font:
+    17px 'Songti SC',
+    SimSun,
+    serif;
+  letter-spacing: 0.2em;
+  color: #8b8d77;
+  border-top: 1px solid #aab09b;
+  border-bottom: 1px solid #aab09b;
+  padding: 5px 0;
+}
+.ct-played-note {
+  position: absolute;
+  z-index: 6;
+  top: 128px;
+  left: calc(50% - 48px);
+  padding: 8px 12px;
+  background: #fffdf4;
+  color: var(--ct-green);
+  border: 1px solid #aeb59f;
+  box-shadow: 2px 3px 0 #d3d5c4;
+  font:
+    700 14px 'Songti SC',
+    SimSun,
+    serif;
+  pointer-events: none;
+  animation: ct-card-note 440ms ease-out both;
+}
+.ct-combatants[data-action='attack'] .ct-played-note {
+  --ct-note-x: 65px;
+  --ct-note-r: 13deg;
+  color: var(--ct-rust);
+}
+.ct-meter meter {
+  height: 6px;
+  transform: rotate(-0.4deg);
+}
+.ct-stats {
+  gap: 24px;
+  margin: 9px 0 5px;
+}
+.ct-stats dd {
+  font-size: 22px;
+}
+.ct-incoming {
+  margin-top: 6px;
+  color: #6e7666;
+  font-size: 12px;
+}
+.ct-intent {
+  background: #faf8ef;
+  border: 0;
+  border-left: 2px solid #ae795a;
+  box-shadow: 2px 3px 0 #d7d4c8;
+  padding: 9px 12px;
+  margin: 9px -7px 0 3px;
+  transform: rotate(0.7deg);
+}
+.ct-intent strong {
+  font-size: 13px;
+}
+.ct-intent span {
+  font-size: 12px;
+}
+.ct-feedback {
+  position: relative;
+  margin: 5px 9% 0 4%;
+  min-height: 72px;
+  padding: 10px 16px 12px;
+  border: 0;
+  border-left: 3px solid #919d78;
+  background: #f5f3e8;
+  box-shadow: 1px 2px 0 #d5d4c7;
+}
+.ct-feedback-title {
+  display: block;
+  margin-top: 3px;
+  font-size: 15px;
+  color: #385743;
+}
+.ct-motion-caption[data-action='attack'] .ct-feedback-title,
+.ct-motion-caption[data-action='enemy-turn'] .ct-feedback-title {
+  color: #914e37;
+}
+.ct-motion-caption p:last-child {
+  font-weight: 400;
+  color: #5c6858;
+  line-height: 1.65;
+}
+.ct-hand-area {
+  padding-top: 23px;
+}
+.ct-hand-heading {
+  padding: 0 3px;
+  margin-bottom: 18px;
+}
+.ct-hand {
+  gap: 14px;
+  padding: 4px 5px 9px;
+}
+.ct-card-slot {
+  --ct-card-tilt: -2deg;
+  --ct-card-lift: 5px;
+}
+.ct-card-slot:nth-child(4n + 2) {
+  --ct-card-tilt: -0.7deg;
+  --ct-card-lift: 0px;
+}
+.ct-card-slot:nth-child(4n + 3) {
+  --ct-card-tilt: 1deg;
+  --ct-card-lift: 0px;
+}
+.ct-card-slot:nth-child(4n) {
+  --ct-card-tilt: 2.3deg;
+  --ct-card-lift: 6px;
+}
+.ct-hand .ct-card {
+  transform: translateY(var(--ct-card-lift)) rotate(var(--ct-card-tilt));
+  box-shadow: 2px 4px 0 #cccdbd;
+  border-radius: 2px 4px 3px 1px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 120ms;
+}
+.ct-hand .ct-card:hover:not(:disabled),
+.ct-hand .ct-card:focus-visible {
+  transform: translateY(-7px) rotate(0);
+  box-shadow: 3px 8px 0 #c7cbb8;
+}
+.ct-card-slot:focus-within,
+.ct-card-slot:hover {
+  position: relative;
+  z-index: 2;
+}
+.ct-card:active:not(:disabled) {
+  scale: 0.98;
+}
+.ct-turn-controls {
+  padding: 24px 5px 3px;
+}
+.ct-turn-controls .ct-primary {
+  transform: rotate(-1deg);
+  box-shadow: 3px 3px 0 #bdc3ad;
+}
+.ct-rewards,
+.ct-result {
+  margin-top: 20px;
+  padding: 20px;
+  background: #faf8ef;
+  border-top: 2px solid #8a987b;
+}
+.ct-reward-cards > button:nth-child(2) {
+  transform: rotate(1deg);
+}
+.ct-table[data-phase='reward'] .ct-actor-enemy .ct-actor-figure,
+.ct-table[data-phase='complete'] .ct-actor-enemy .ct-actor-figure,
+.ct-table[data-phase='defeat'] .ct-actor-player .ct-actor-figure {
+  opacity: 0.55;
+}
+@keyframes ct-card-note {
+  0% {
+    opacity: 0;
+    transform: translate(-45px, 42px) rotate(-12deg) scale(0.85);
+  }
+  38% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-4deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--ct-note-x, 0px), -25px)
+      rotate(var(--ct-note-r, 3deg)) scale(0.92);
+  }
+}
+@media (max-width: 850px) {
+  .ct-table {
+    padding: 0 4px;
+  }
+  .ct-combatants {
+    gap: 36px;
+    padding: 10px 0 22px;
+  }
+  .ct-student,
+  .ct-opponent {
+    padding: 0 12px;
+  }
+  .ct-hand {
+    gap: 19px 16px;
+  }
+}
+@media (max-width: 540px) {
+  .ct-header {
+    padding-right: 3px;
+  }
+  .ct-route {
+    flex-wrap: nowrap;
+    gap: 5px;
+    margin-bottom: 18px;
+  }
+  .ct-route span {
+    min-width: 0;
+    padding: 4px 6px;
+    flex: 1;
+  }
+  .ct-table {
+    padding: 0 2px;
+  }
+  .ct-table-heading h2 {
+    font-size: 19px;
+  }
+  .ct-combatants {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    padding: 9px 0 14px;
+  }
+  .ct-combatants::before {
+    top: 99px;
+    left: 2%;
+    width: 94%;
+    height: 12px;
+  }
+  .ct-duel-mark {
+    font-size: 12px;
+    letter-spacing: 0;
+    top: 61px;
+    padding: 3px 0;
+  }
+  .ct-played-note {
+    left: calc(50% - 36px);
+    top: 89px;
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  .ct-combatants[data-action='attack'] .ct-played-note {
+    --ct-note-x: 25px;
+  }
+  .ct-student,
+  .ct-opponent {
+    padding: 0 3px;
+    border: 0;
+  }
+  .ct-student {
+    margin-top: 16px;
+  }
+  .ct-student h3,
+  .ct-opponent h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .ct-student h3::after {
+    font-size: 9px;
+  }
+  .ct-meter > div {
+    font-size: 11px;
+    gap: 2px;
+  }
+  .ct-stats {
+    flex-wrap: wrap;
+    gap: 0 12px;
+    margin: 5px 0;
+  }
+  .ct-stats > div {
+    gap: 5px;
+  }
+  .ct-stats dt,
+  .ct-stats dd span {
+    font-size: 11px;
+  }
+  .ct-stats dd {
+    font-size: 18px;
+  }
+  .ct-incoming {
+    font-size: 10px;
+    margin-top: 4px;
+    line-height: 1.7;
+  }
+  .ct-incoming strong {
+    font-size: 14px;
+  }
+  .ct-enemy-block {
+    margin: 4px 0;
+    font-size: 10px;
+  }
+  .ct-intent {
+    margin: 6px -2px 0 0;
+    padding: 6px;
+  }
+  .ct-intent strong {
+    font-size: 11px;
+  }
+  .ct-intent span,
+  .ct-intent p {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  .ct-feedback {
+    margin: 2px 7px 0 2px;
+    padding: 9px 11px;
+  }
+  .ct-feedback-title {
+    font-size: 13px;
+  }
+  .ct-hand-area {
+    padding-top: 17px;
+  }
+  .ct-hand-heading {
+    margin-bottom: 10px;
+  }
+  .ct-hand {
+    gap: 14px 9px;
+    padding: 3px 2px 8px;
+  }
+  .ct-card-slot {
+    --ct-card-tilt: -1deg;
+    --ct-card-lift: 3px;
+  }
+  .ct-card-slot:nth-child(2n) {
+    --ct-card-tilt: 1deg;
+    --ct-card-lift: 0px;
+  }
+  .ct-hand .ct-card {
+    min-height: 218px;
+  }
+  .ct-rewards,
+  .ct-result {
+    padding: 15px 12px;
+    margin-top: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ct-played-note {
+    display: none;
+  }
+  .ct-hand .ct-card,
+  .ct-hand .ct-card:hover:not(:disabled),
+  .ct-hand .ct-card:focus-visible,
+  .ct-card:active:not(:disabled) {
+    transform: none;
+    scale: none;
+    transition: none;
+  }
+}

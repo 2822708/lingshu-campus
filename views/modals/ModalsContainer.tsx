@@ -1,5 +1,12 @@
 import React, { Suspense } from 'react';
-import { PlayerStats, Shop, GameSettings, Item } from '../../types';
+import {
+  PlayerStats,
+  Shop,
+  GameSettings,
+  Item,
+  type SecretRealm,
+} from '../../types';
+import type { CardLoadout } from '../../features/card-dungeon/loadout';
 import { BattleReplay } from '../../services/battleService';
 import { CultivationArt, Recipe } from '../../types';
 import { RandomSectTask } from '../../services/randomService';
@@ -58,6 +65,18 @@ const ModalLoading = () => (
  */
 
 interface ModalsContainerProps {
+  cardLoadout?: CardLoadout;
+  cardDungeonError?: string;
+  onSaveCardLoadout?: (next: CardLoadout, expectedRevision: number) => boolean;
+  onEnterCardDungeon?: (
+    offerId: string,
+    batchRevision: string,
+    loadoutRevision: number
+  ) => boolean | void;
+  onRealmOffersChange?: (batch: {
+    revision: string;
+    offers: SecretRealm[];
+  }) => void;
   onImportSave: (save: GameSave) => void;
   player: PlayerStats;
   settings: GameSettings;
@@ -185,6 +204,11 @@ export default function ModalsContainer({
   modals,
   modalState,
   handlers,
+  cardLoadout,
+  cardDungeonError,
+  onSaveCardLoadout,
+  onEnterCardDungeon,
+  onRealmOffersChange,
 }: ModalsContainerProps) {
   return (
     <Suspense fallback={<ModalLoading />}>
@@ -260,6 +284,11 @@ export default function ModalsContainer({
         onClose={() => handlers.setIsRealmOpen(false)}
         player={player}
         onEnter={handlers.handleEnterRealm}
+        cardLoadout={cardLoadout}
+        onSaveCardLoadout={onSaveCardLoadout}
+        onEnterCardDungeon={onEnterCardDungeon}
+        onOffersChange={onRealmOffersChange}
+        error={cardDungeonError}
       />
 
       <CharacterModal

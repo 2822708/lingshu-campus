@@ -3,6 +3,7 @@ import React from 'react';
 import { EquipmentSlot, Item, PlayerStats } from '../types';
 import { ShieldCheck, X } from 'lucide-react';
 import { getItemStats } from '../utils/itemUtils';
+import { getDungeonEquipmentTraits } from '../features/card-dungeon/equipment';
 
 interface Props {
   equippedItems: Partial<Record<EquipmentSlot, string>>;
@@ -17,6 +18,11 @@ const EquipmentPanel: React.FC<Props> = ({
   player,
   onUnequip,
 }) => {
+  const battleTraits = new Map(
+    getDungeonEquipmentTraits({ ...player, inventory, equippedItems }).map(
+      (trait) => [trait.sourceId, trait]
+    )
+  );
   const getItemById = (id: string | undefined): Item | null => {
     if (!id) return null;
     return inventory.find((item) => item.id === id) || null;
@@ -67,6 +73,7 @@ const EquipmentPanel: React.FC<Props> = ({
           const isNatal = item ? item.id === player.natalArtifactId : false;
           const stats = item ? getItemStats(item, isNatal) : null;
           const rarity = item?.rarity || '普通';
+          const battleTrait = item ? battleTraits.get(item.id) : undefined;
 
           return (
             <div
@@ -107,6 +114,13 @@ const EquipmentPanel: React.FC<Props> = ({
                           <div className="text-green-400">血 +{stats.hp}</div>
                         )}
                       </div>
+                    )}
+                    {battleTrait && (
+                      <p className="mt-2 text-xs text-npu-code leading-relaxed">
+                        <strong>卡牌副本特性</strong>
+                        <br />
+                        {battleTrait.description}
+                      </p>
                     )}
                   </div>
                   <button

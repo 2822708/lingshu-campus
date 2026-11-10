@@ -62,7 +62,8 @@ export function repairSavedInventory(inventory: Item[] | undefined): Item[] {
       item.name,
       item.type,
       item.description || '',
-      item.isEquippable
+      item.isEquippable,
+      item.equipmentSlot
     );
     if (
       inferred.type === item.type &&

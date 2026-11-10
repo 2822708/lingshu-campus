@@ -69,12 +69,36 @@ export const inferItemTypeAndSlot = (
   name: string,
   currentType: ItemType | '防具',
   description: string,
-  currentIsEquippable?: boolean
+  currentIsEquippable?: boolean,
+  currentSlot?: EquipmentSlot
 ): {
   type: ItemType;
   isEquippable: boolean;
   equipmentSlot?: EquipmentSlot;
 } => {
+  // 外设与饰品的合法槽位不因用途描述改变；穿戴类仍沿用旧档错槽修复。
+  const declaredSlots: Partial<Record<ItemType, readonly EquipmentSlot[]>> = {
+    [ItemType.Ring]: [
+      EquipmentSlot.Ring1,
+      EquipmentSlot.Ring2,
+      EquipmentSlot.Ring3,
+      EquipmentSlot.Ring4,
+    ],
+    [ItemType.Accessory]: [EquipmentSlot.Accessory1, EquipmentSlot.Accessory2],
+    [ItemType.Artifact]: [EquipmentSlot.Artifact1, EquipmentSlot.Artifact2],
+  };
+  if (
+    currentIsEquippable &&
+    currentSlot &&
+    currentType !== '防具' &&
+    declaredSlots[currentType]?.includes(currentSlot)
+  ) {
+    return {
+      type: currentType,
+      isEquippable: true,
+      equipmentSlot: currentSlot,
+    };
+  }
   const nameLower = name.toLowerCase();
   const descLower = description.toLowerCase();
   const combined = nameLower + descLower;
@@ -118,7 +142,9 @@ export const inferItemTypeAndSlot = (
   }
 
   // 手部装备（手套/护腕/键盘手托）
-  if (combined.match(/手套|护腕|手部|腕托|半指手套|全指手套|电竞手套|键盘手托/)) {
+  if (
+    combined.match(/手套|护腕|手部|腕托|半指手套|全指手套|电竞手套|键盘手托/)
+  ) {
     return {
       type: ItemType.Armor,
       isEquippable: true,
@@ -166,7 +192,11 @@ export const inferItemTypeAndSlot = (
   }
 
   // 手环（智能手环/运动手环）
-  if (combined.match(/手环|腕表|手表|运动表|智能环|计步环|小米手环|华为手环|苹果表/)) {
+  if (
+    combined.match(
+      /手环|腕表|手表|运动表|智能环|计步环|小米手环|华为手环|苹果表/
+    )
+  ) {
     // 随机分配一个手环槽位
     const ringSlots = [
       EquipmentSlot.Ring1,
@@ -198,7 +228,9 @@ export const inferItemTypeAndSlot = (
     combined.match(
       /显示器|扩展坞|数位板|坞站|硬盘|充电器|充电宝|路由器|摄像头|麦克风|音箱|投影仪|打印机|扫描仪|集线器|风冷|水冷|压感笔|显示器支架|屏幕挂灯|人体工学椅|数位屏|手柄/
     ) &&
-    !combined.match(/键盘|鼠标|键鼠|薄膜键盘|机械键盘|静电容|光轴|轴体|青轴|红轴|茶轴|黑轴/) // 确保不包含键鼠关键词
+    !combined.match(
+      /键盘|鼠标|键鼠|薄膜键盘|机械键盘|静电容|光轴|轴体|青轴|红轴|茶轴|黑轴/
+    ) // 确保不包含键鼠关键词
   ) {
     const artifactSlots = [EquipmentSlot.Artifact1, EquipmentSlot.Artifact2];
     return {

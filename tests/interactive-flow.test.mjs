@@ -376,7 +376,7 @@ test('损坏扩展应拒绝导入，不能悄悄抹掉现场或接受无效冷�
     [
       '扩展版本',
       (progress) => {
-        progress.version = 2;
+        progress.version = 3;
       },
     ],
     [

@@ -1,14 +1,30 @@
-import React, { useState, useMemo } from 'react';
-import { PlayerStats, RealmType, SecretRealm } from '../types';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { PlayerStats, SecretRealm } from '../types';
 import { REALM_ORDER } from '../constants';
-import { generateRandomRealms } from '../services/randomService';
-import { X, Mountain, Gem, Ticket, RefreshCw } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
+import type { CardLoadout } from '../features/card-dungeon/loadout';
+import { generateRogueDungeonOffers } from '../features/card-dungeon/offers';
+import '../features/card-dungeon/ui/rogue-entry.css';
 
+export interface SecretRealmOfferBatch {
+  revision: string;
+  offers: SecretRealm[];
+}
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   player: PlayerStats;
-  onEnter: (realm: SecretRealm) => void;
+  error?: string;
+  onEnter?: (realm: SecretRealm) => void;
+  onEnterCardDungeon?: (
+    offerId: string,
+    batchRevision: string,
+    loadoutRevision: number
+  ) => boolean | void;
+  onOffersChange?: (batch: SecretRealmOfferBatch) => void;
+  cardLoadout?: CardLoadout;
+  /** Kept for older hosts; the three-choice entrance has no preparation step. */
+  onSaveCardLoadout?: (next: CardLoadout, expectedRevision: number) => boolean;
 }
 
 const SecretRealmModal: React.FC<Props> = ({
@@ -16,159 +32,214 @@ const SecretRealmModal: React.FC<Props> = ({
   onClose,
   player,
   onEnter,
+  error,
+  onEnterCardDungeon,
+  onOffersChange,
+  cardLoadout,
 }) => {
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // 将手动刷新批次与随机结果一同缓存，普通重渲染不会重新抽取。
-  const { realms: availableRealms } = useMemo(() => {
-    return { refreshKey, realms: generateRandomRealms(player.realm, 6) };
-  }, [player.realm, refreshKey]);
-
+  const [entryError, setEntryError] = useState('');
+  const dialog = useRef<HTMLElement>(null);
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  }, [onClose]);
+  // Ordinary player updates do not reroll choices or invalidate their prices.
+  const batch = useMemo<SecretRealmOfferBatch>(
+    () => ({
+      revision: `dungeon-${player.realm}-${refreshKey}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      offers: generateRogueDungeonOffers(player.realm),
+    }),
+    [player.realm, refreshKey]
+  );
+  useEffect(() => {
+    if (isOpen) onOffersChange?.(batch);
+  }, [batch, isOpen, onOffersChange]);
+  useEffect(() => {
+    if (!isOpen) setEntryError('');
+  }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const element = dialog.current;
+    const oldFocus = document.activeElement;
+    const firstChoice = element?.querySelector<HTMLButtonElement>(
+      '.cd-route-card:not([disabled])'
+    );
+    const fallback = element?.querySelector<HTMLButtonElement>(
+      'button:not([disabled])'
+    );
+    (firstChoice ?? fallback ?? element)?.focus();
+    const trap = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        close.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const controls = [
+        ...(element?.querySelectorAll<HTMLButtonElement>(
+          'button:not([disabled])'
+        ) ?? []),
+      ];
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!first) {
+        event.preventDefault();
+        element?.focus();
+      } else if (
+        event.shiftKey &&
+        (document.activeElement === first || document.activeElement === element)
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last ||
+          !element?.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const contain = (event: FocusEvent) => {
+      if (event.target instanceof Node && !element?.contains(event.target)) {
+        const currentChoice = element?.querySelector<HTMLButtonElement>(
+          '.cd-route-card:not([disabled])'
+        );
+        const currentFallback = element?.querySelector<HTMLButtonElement>(
+          'button:not([disabled])'
+        );
+        (currentChoice ?? currentFallback ?? element)?.focus();
+      }
+    };
+    document.addEventListener('keydown', trap, true);
+    document.addEventListener('focusin', contain);
+    return () => {
+      document.removeEventListener('keydown', trap, true);
+      document.removeEventListener('focusin', contain);
+      if (oldFocus instanceof HTMLElement && oldFocus.isConnected)
+        oldFocus.focus();
+    };
+  }, [isOpen]);
   if (!isOpen) return null;
-
-  const getRealmIndex = (r: RealmType) => REALM_ORDER.indexOf(r);
-
-  const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
-
+  const enoughEnergy = player.hp > 0 && player.hp >= player.maxHp * 0.3;
+  const currentRealm = REALM_ORDER.indexOf(player.realm);
+  function enter(realm: SecretRealm) {
+    setEntryError('');
+    if (onEnterCardDungeon) {
+      if (
+        onEnterCardDungeon(
+          realm.id,
+          batch.revision,
+          cardLoadout?.revision ?? 0
+        ) === false
+      )
+        setEntryError('本次挑战尚未开始。请查看保存提示，或刷新选择后重试。');
+    } else onEnter?.(realm);
+  }
   return (
-    <div
-      className="fixed inset-0 paper-overlay flex items-end md:items-center justify-center z-50 p-0 md:p-4 touch-manipulation font-mono"
-      onClick={onClose}
-    >
-      <div
-        className="bg-npu-panel w-full h-[80vh] md:h-auto md:max-w-4xl border-0 md:border border-npu-border flex flex-col md:max-h-[85vh]"
-        onClick={(e) => e.stopPropagation()}
+    <div className="cd-route-overlay" onClick={onClose}>
+      <section
+        className="cd-route-dialog"
+        ref={dialog}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="考研副本列表"
+        onClick={(event) => event.stopPropagation()}
       >
-        <div className="p-3 md:p-4 border-b border-npu-border flex justify-between items-center bg-npu-bg">
-          <h3 className="text-lg md:text-xl text-npu-code flex items-center gap-2">
-            <Mountain size={18} className="md:w-5 md:h-5" /> 副本列表
-          </h3>
-          <div className="flex items-center gap-2">
+        <header className="cd-route-heading">
+          <div>
+            <p>考研副本 · 三选一</p>
+            <h3>选择下一场挑战</h3>
+          </div>
+          <div className="cd-route-actions">
             <button
-              onClick={handleRefresh}
-              className="px-3 py-1.5 bg-npu-panel hover:bg-npu-code hover:text-npu-bg text-npu-code border border-npu-code text-sm flex items-center gap-1.5 transition-colors min-h-[44px] md:min-h-0 touch-manipulation"
+              type="button"
               title="刷新副本列表"
+              aria-label="刷新副本列表"
+              onClick={() => {
+                setEntryError('');
+                setRefreshKey((value) => value + 1);
+              }}
             >
-              <RefreshCw size={16} />
-              <span className="hidden md:inline">刷新</span>
+              <RefreshCw size={14} aria-hidden="true" /> 刷新
             </button>
             <button
-              onClick={onClose}
+              type="button"
+              className="cd-route-close"
               aria-label="关闭"
-              className="text-npu-dim active:text-npu-text min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+              onClick={onClose}
             >
-              <X size={24} />
+              <X size={21} aria-hidden="true" />
             </button>
           </div>
-        </div>
-
-        <div className="p-3 md:p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {availableRealms.map((realm) => {
-            const playerRealmIndex = getRealmIndex(player.realm);
-            const reqRealmIndex = getRealmIndex(realm.minRealm);
-            const isRealmEnough = playerRealmIndex >= reqRealmIndex;
+        </header>
+        <p className="cd-route-intro">
+          从已学课程与穿戴装备中抽牌，每局随机战术。选一项，直接开战。
+        </p>
+        {(error || entryError) && (
+          <p className="cd-route-message" role="alert">
+            {error || entryError}
+          </p>
+        )}
+        {!enoughEnergy && (
+          <p className="cd-route-message" role="status">
+            精力不足三成，请先恢复后挑战。
+          </p>
+        )}
+        <div className="cd-route-options" aria-label="本次三个副本选择">
+          {batch.offers.map((realm, index) => {
+            const locked = currentRealm < REALM_ORDER.indexOf(realm.minRealm);
             const canAfford = player.spiritStones >= realm.cost;
-            const locked = !isRealmEnough;
-
+            const disabled =
+              locked ||
+              !canAfford ||
+              !enoughEnergy ||
+              (!onEnterCardDungeon && !onEnter);
+            const reason = locked
+              ? '学阶不足'
+              : !canAfford
+                ? '学分不足'
+                : !enoughEnergy
+                  ? '精力不足'
+                  : '进入挑战';
             return (
-              <div
+              <button
+                type="button"
                 key={realm.id}
-                className={`
-                  relative border flex flex-col p-5 transition-colors duration-200 group
-                  ${
-                    locked
-                      ? 'bg-npu-bg border-npu-border opacity-60'
-                      : 'bg-npu-bg border-npu-border hover:border-npu-code'
-                  }
-                `}
+                className="cd-route-card"
+                data-risk={realm.riskLevel}
+                data-testid="dungeon-offer"
+                disabled={disabled}
+                onClick={() => enter(realm)}
+                aria-label={`${realm.name}，${realm.riskLevel}风险，报名消耗${realm.cost}学分，${reason}`}
               >
-                <div className="flex justify-between items-start mb-2">
-                  <h4
-                    className={`text-xl font-bold ${locked ? 'text-npu-muted' : 'text-npu-text group-hover:text-npu-code'}`}
-                  >
-                    {realm.name}
-                  </h4>
-                  <span
-                    className={`
-                    text-xs px-2 py-0.5 border
-                    ${
-                      realm.riskLevel === '极度危险'
-                        ? 'text-npu-warn border-npu-warn/60 bg-npu-warn/10'
-                        : realm.riskLevel === '高'
-                          ? 'text-npu-iot border-npu-iot/60 bg-npu-iot/10'
-                          : 'text-npu-circuit border-npu-circuit/60 bg-npu-circuit/10'
-                    }
-                  `}
-                  >
-                    {realm.riskLevel}风险
-                  </span>
-                </div>
-
-                <p className="text-sm text-npu-muted mb-4 h-12">
+                <span className="cd-route-top">
+                  <span className="cd-route-number">0{index + 1}</span>
+                  <span className="cd-route-risk">{realm.riskLevel}风险</span>
+                </span>
+                <strong className="cd-route-name">{realm.name}</strong>
+                <span className="cd-route-description">
                   {realm.description}
-                </p>
-
-                <div className="bg-npu-panel p-3 border border-npu-border mb-4 flex-1">
-                  <div className="text-xs text-npu-muted mb-2 font-bold uppercase tracking-wider flex items-center gap-1">
-                    <Gem size={12} /> {'// 可能掉落'}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {realm.drops.map((drop, i) => (
-                      <span
-                        key={i}
-                        className="text-xs text-npu-code/80 bg-npu-code/10 border border-npu-code/20 px-1.5 py-0.5"
-                      >
-                        {drop}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-auto space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-npu-muted">学阶要求</span>
-                    <span
-                      className={
-                        isRealmEnough ? 'text-npu-text' : 'text-npu-warn'
-                      }
-                    >
-                      {realm.minRealm}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-npu-muted">报名消耗</span>
-                    <span
-                      className={canAfford ? 'text-npu-code' : 'text-npu-warn'}
-                    >
-                      {realm.cost} 学分
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => onEnter(realm)}
-                    disabled={locked || !canAfford}
-                    className={`
-                       w-full py-2.5 font-bold text-sm flex items-center justify-center gap-2 mt-4 transition-colors
-                       ${
-                         locked || !canAfford
-                           ? 'bg-npu-panel text-npu-muted cursor-not-allowed border border-npu-border'
-                           : 'bg-npu-code/10 text-npu-code border border-npu-code hover:bg-npu-code hover:text-npu-bg'
-                       }
-                     `}
-                  >
-                    {locked ? '学阶不足' : !canAfford ? '学分不足' : '进入副本'}
-                    {!locked && canAfford && <Ticket size={16} />}
-                  </button>
-                </div>
-              </div>
+                </span>
+                <span className="cd-route-drops">
+                  <small>可能获得</small>
+                  <span>{realm.drops.join(' · ')}</span>
+                </span>
+                <span className="cd-route-cost">
+                  <span>
+                    <b>{realm.cost}</b> 学分
+                  </span>
+                  <span>{disabled ? reason : '选择 →'}</span>
+                </span>
+              </button>
             );
           })}
         </div>
-      </div>
+      </section>
     </div>
   );
 };
-
 export default SecretRealmModal;

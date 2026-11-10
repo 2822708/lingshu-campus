@@ -27,6 +27,7 @@ import {
 } from '../features/save/saveOwner';
 import {
   assertInteractiveProgress,
+  normalizeInteractiveProgress,
   emptyInteractiveProgress,
   reduceInteractiveAction,
   type InteractiveCommand,
@@ -37,6 +38,19 @@ import {
   getAIContextEpoch,
   isAIContextCurrent,
 } from '../services/ai/runtime';
+
+/** Keep the original bytes before the first write with the new interaction envelope. */
+function backupPreCardSave(raw: string | null) {
+  if (!raw) return;
+  const saved = JSON.parse(raw);
+  if (saved.interactive?.version === 2) return;
+  if (!isSaveCompatible(saved))
+    throw new Error('原存档版本无法识别，请先备份。');
+  if (saved.interactive !== undefined)
+    assertInteractiveProgress(saved.interactive);
+  const key = `${SAVE_KEY}:pre-card-v2`;
+  if (localStorage.getItem(key) === null) localStorage.setItem(key, raw);
+}
 
 /** 当前屏幕状态 */
 export type Screen = 'home' | 'create' | 'playing';
@@ -214,15 +228,12 @@ export function useGameState() {
       if (!isAIContextCurrent(actionEpoch)) return;
       if (localStorage.getItem(SAVE_KEY) !== raw)
         throw new Error('等待期间存档发生变化，请重新继续游戏。');
-      const progress =
-        savedData.interactive === undefined
-          ? emptyInteractiveProgress()
-          : savedData.interactive;
-      assertInteractiveProgress(progress);
+      const progress = normalizeInteractiveProgress(savedData.interactive);
       if (savedData.logs !== undefined && !Array.isArray(savedData.logs))
         throw new Error('存档日志无效。');
 
       const loadedPlayer = restoreSavedPlayer(savedData.player, newName);
+      backupPreCardSave(raw);
       interactiveRef.current = progress;
       setInteractive(progress);
       playerRef.current = loadedPlayer;
@@ -401,6 +412,7 @@ export function useGameState() {
         };
         const next = reduceInteractiveAction(snapshot, command);
         if (next === snapshot) return false;
+        assertInteractiveProgress(next.interactive);
         autoSaveScheduler.cancel();
         // Write first. A quota error leaves all in-memory state and the RNG untouched.
         localStorage.setItem(
@@ -409,7 +421,11 @@ export function useGameState() {
             createGameSave(next.player, next.logs, Date.now(), next.interactive)
           )
         );
-        if (command.type === 'begin' || command.type === 'begin-battle')
+        if (
+          command.type === 'begin' ||
+          command.type === 'begin-battle' ||
+          command.type === 'begin-dungeon'
+        )
           cancelGameAI();
         playerRef.current = next.player;
         logsRef.current = next.logs;
@@ -489,7 +505,12 @@ export function useGameState() {
         throw new Error('请先处理当前机缘，再导入存档。');
       autoSaveScheduler.cancel();
       cancelGameAI();
-      localStorage.setItem(SAVE_KEY, JSON.stringify(saved));
+      const normalized = {
+        ...saved,
+        interactive: normalizeInteractiveProgress(saved.interactive),
+      };
+      backupPreCardSave(localStorage.getItem(SAVE_KEY));
+      localStorage.setItem(SAVE_KEY, JSON.stringify(normalized));
       writesSuspended.current = true;
     },
     [autoSaveScheduler, ownsSave]

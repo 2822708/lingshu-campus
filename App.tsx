@@ -5,7 +5,9 @@ import React, {
   useRef,
   useMemo,
 } from 'react';
-import { Item, ShopType, LogEntry } from './types';
+import { Item, ShopType, LogEntry, type SecretRealm } from './types';
+import CardBattleView from './features/card-battle/ui/CardBattleView';
+import type { CardLoadout } from './features/card-dungeon/loadout';
 import { useModalState } from './features/modal/useModalState';
 import StartScreen from './components/StartScreen';
 import HomeScreen from './components/HomeScreen';
@@ -44,7 +46,7 @@ import {
   ModalsContainer, // 弹窗容器
 } from './views';
 
-function App() {
+function App({ onChooseMode }: { onChooseMode?: () => void } = {}) {
   // 使用自定义hooks管理游戏状态
   const {
     screen, // 当前屏幕（home/create/playing）
@@ -272,6 +274,73 @@ function App() {
       setIsBattleModalOpen(false);
       setIsRealmOpen(false);
       setIsSectOpen(false);
+      playSound('battle');
+      setCooldown(1);
+    }
+    return started;
+  };
+
+  const realmOffersRef = useRef<{
+    revision: string;
+    offers: SecretRealm[];
+  } | null>(null);
+  const registerRealmOffers = useCallback(
+    (batch: { revision: string; offers: SecretRealm[] }) => {
+      realmOffersRef.current = {
+        revision: batch.revision,
+        offers: batch.offers.map((offer) => ({
+          ...offer,
+          drops: [...offer.drops],
+        })),
+      };
+    },
+    []
+  );
+  const saveCardLoadout = useCallback(
+    (loadout: CardLoadout, expectedRevision: number) =>
+      commitInteractive({
+        type: 'save-card-loadout',
+        loadout,
+        expectedRevision,
+      }),
+    [commitInteractive]
+  );
+  const enterCardDungeon = (
+    offerId: string,
+    batchRevision: string,
+    loadoutRevision: number
+  ) => {
+    if (
+      interactiveActiveRef.current ||
+      isDead ||
+      loading ||
+      cooldownRef.current > 0
+    )
+      return false;
+    const batch = realmOffersRef.current;
+    const realm =
+      batch?.revision === batchRevision
+        ? batch.offers.find((offer) => offer.id === offerId)
+        : undefined;
+    if (!realm) return false;
+    setAutoMeditate(false);
+    setAutoAdventure(false);
+    const started = commitInteractive({
+      type: 'begin-dungeon',
+      id: `dungeon-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      seed: Math.floor(Math.random() * 0x100000000),
+      realm,
+      batchRevision,
+      loadoutRevision,
+      entryMode: 'rogue',
+    });
+    if (started) {
+      interactiveActiveRef.current = true;
+      setLoading(false);
+      setLastBattleReplay(null);
+      setBattleReplay(null);
+      setIsBattleModalOpen(false);
+      setIsRealmOpen(false);
       playSound('battle');
       setCooldown(1);
     }
@@ -760,6 +829,7 @@ function App() {
           onNewGame={() => setScreen('create')}
           onContinueGame={handleContinueGame}
           onDeleteSave={handleDeleteSave}
+          onChooseMode={onChooseMode}
         />
       </>
     );
@@ -791,6 +861,7 @@ function App() {
         onNewGame={() => setScreen('create')}
         onContinueGame={handleContinueGame}
         onDeleteSave={handleDeleteSave}
+        onChooseMode={onChooseMode}
       />
     );
   }
@@ -801,7 +872,7 @@ function App() {
         inert={interactiveActive}
         aria-hidden={interactiveActive || undefined}
       >
-        {saveError && !interactiveActive && (
+        {saveError && !interactiveActive && !isRealmOpen && (
           <p
             role="alert"
             className="fixed top-3 left-3 right-3 z-[100] mx-auto max-w-lg border border-npu-border bg-npu-panel p-3 text-center text-sm text-npu-warn"
@@ -897,6 +968,11 @@ function App() {
 
         <ModalsContainer
           player={player}
+          cardLoadout={interactive.cardLoadout}
+          onSaveCardLoadout={saveCardLoadout}
+          onEnterCardDungeon={enterCardDungeon}
+          onRealmOffersChange={registerRealmOffers}
+          cardDungeonError={saveError}
           onImportSave={importGameSave}
           settings={settings}
           setItemActionLog={setItemActionLog}
@@ -993,8 +1069,44 @@ function App() {
           }}
         />
       </div>
+      {interactive.pending?.cardRun && (
+        <CardBattleView
+          state={interactive.pending.cardRun}
+          title={interactive.pending.encounter.title}
+          story={interactive.pending.encounter.story}
+          error={saveError}
+          result={interactive.pending.result}
+          onAcknowledge={() => {
+            if (
+              interactive.pending &&
+              commitInteractive({
+                type: 'acknowledge',
+                id: interactive.pending.id,
+              })
+            ) {
+              playSound('confirm');
+              setCooldown(1);
+            }
+          }}
+          onCommand={(action) => {
+            const pending = interactive.pending;
+            if (
+              pending?.cardRun &&
+              commitInteractive({
+                type: 'card',
+                id: pending.id,
+                seq: pending.cardRun.commandSeq + 1,
+                action,
+              })
+            )
+              playSound(action.type === 'play' ? 'battle' : 'confirm');
+          }}
+        />
+      )}
       <InteractiveEncounterModal
-        pending={interactive.pending ?? null}
+        pending={
+          interactive.pending?.cardRun ? null : (interactive.pending ?? null)
+        }
         player={player}
         error={saveError}
         onChoose={(id, choiceId) => {

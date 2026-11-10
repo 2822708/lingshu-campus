@@ -21,6 +21,7 @@ import { RARITY_MULTIPLIERS } from '../constants';
 import EquipmentPanel from './EquipmentPanel';
 import BatchDiscardModal from './BatchDiscardModal';
 import { neutralizeCampusText } from '../utils/campusText';
+import { getEquipmentBattleDefinition } from '../features/card-dungeon/equipment';
 
 interface Props {
   isOpen: boolean;
@@ -687,6 +688,7 @@ const InventoryModal: React.FC<Props> = ({
                   const stats = getItemStats(item);
                   const rarity = item.rarity || '普通';
                   const level = item.level || 0;
+                  const battleTrait = getEquipmentBattleDefinition(item);
 
                   return (
                     <div
@@ -730,6 +732,13 @@ const InventoryModal: React.FC<Props> = ({
                         <p className="text-xs text-npu-muted italic mb-3">
                           {neutralizeCampusText(item.description)}
                         </p>
+
+                        {battleTrait && (
+                          <div className="text-xs text-npu-code mb-3 border-l-2 border-npu-code/40 pl-2">
+                            <strong>卡牌副本特性</strong>
+                            <p className="mt-1">{battleTrait.description}</p>
+                          </div>
+                        )}
 
                         {item.isNatal && (
                           <div className="text-xs text-npu-code mb-2 flex items-center gap-1">

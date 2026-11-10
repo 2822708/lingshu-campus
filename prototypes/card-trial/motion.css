@@ -1,0 +1,353 @@
+.ct-actor {
+  --ct-direction: 1;
+  position: relative;
+  width: auto;
+  height: clamp(108px, 15vw, 162px);
+  aspect-ratio: 1;
+  margin: -6px auto 5px;
+  pointer-events: none;
+  isolation: isolate;
+}
+.ct-actor-enemy {
+  --ct-direction: -1;
+}
+.ct-actor-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.ct-actor-image-frame {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(#000 0 92%, transparent 100%);
+}
+.ct-actor-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 12%;
+  user-select: none;
+}
+.ct-actor-figure {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 87%;
+}
+.ct-actor .ct-actor-pencil {
+  transform-origin: 70% 56%;
+}
+.ct-actor-scene.is-attacking .ct-actor-figure {
+  animation: ct-actor-lunge 420ms ease-out both;
+}
+.ct-actor-scene.is-attacking .ct-actor-pencil {
+  animation: ct-actor-pencil 420ms ease-out both;
+}
+.ct-actor-scene.is-hit .ct-actor-image-frame {
+  animation: ct-actor-hit 390ms 85ms ease-out both;
+}
+.ct-actor-scene.is-downed .ct-actor-figure {
+  animation: ct-actor-down 540ms ease-out both;
+}
+.ct-actor-scene.is-charging .ct-actor-figure {
+  animation: ct-actor-charge 500ms ease-out both;
+}
+.ct-effect-swipe {
+  position: absolute;
+  top: 37%;
+  left: 67%;
+  width: 60px;
+  height: 43px;
+  animation: ct-effect-swipe 380ms ease-out both;
+}
+.ct-actor-enemy .ct-effect-swipe {
+  left: 0;
+  transform: scaleX(-1);
+}
+.ct-effect-swipe i {
+  position: absolute;
+  left: 0;
+  width: 58px;
+  height: 6px;
+  border-top: 3px solid #9a4d37;
+  transform: rotate(-21deg);
+}
+.ct-effect-swipe i + i {
+  top: 12px;
+  width: 39px;
+  left: 9px;
+  border-top-width: 2px;
+  opacity: 0.65;
+}
+.ct-effect-shield {
+  position: absolute;
+  z-index: -1;
+  top: 20%;
+  left: 23%;
+  width: 56%;
+  height: 64%;
+  border: 3px solid #698d79;
+  border-radius: 45% 45% 60% 60%;
+  animation: ct-effect-shield 480ms ease-out both;
+}
+.ct-effect-number {
+  position: absolute;
+  z-index: 3;
+  left: 58%;
+  top: 14%;
+  font:
+    800 clamp(23px, 3vw, 34px)/1 'Songti SC',
+    SimSun,
+    serif;
+  white-space: nowrap;
+  animation: ct-effect-float 450ms 120ms ease-out both;
+  text-shadow: 2px 2px #fffdf4;
+}
+.ct-effect-damage {
+  color: #aa4935;
+}
+.ct-effect-heal {
+  color: #426f4c;
+  left: 64%;
+}
+.ct-effect-note {
+  position: absolute;
+  z-index: 4;
+  bottom: 24%;
+  left: 47%;
+  padding: 2px 6px;
+  border-bottom: 1px solid currentColor;
+  color: #355d4b;
+  background: #faf8efee;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  animation: ct-effect-note 480ms 60ms ease-out both;
+}
+.ct-effect-block {
+  bottom: 38%;
+  color: #446b5b;
+}
+.ct-effect-block-gain {
+  left: 36%;
+  bottom: 5%;
+}
+.ct-effect-draw {
+  bottom: 13%;
+  left: 48%;
+}
+.ct-effect-charge {
+  bottom: 29%;
+  left: 60%;
+  color: #997245;
+}
+.ct-effect-break {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  color: #a65b42;
+}
+.ct-effect-break i {
+  position: absolute;
+  width: 11px;
+  height: 17px;
+  border: 2px solid #8b9b83;
+  background: #f1efe4;
+  top: 43%;
+  left: 45%;
+  animation: ct-effect-shard 480ms ease-out both;
+  --ct-shard-x: -20px;
+  --ct-shard-y: -18px;
+  --ct-shard-r: -38deg;
+}
+.ct-effect-break i:nth-child(2) {
+  left: 55%;
+  --ct-shard-x: 25px;
+  --ct-shard-y: -12px;
+  --ct-shard-r: 46deg;
+}
+.ct-effect-break i:nth-child(3) {
+  top: 55%;
+  --ct-shard-x: 5px;
+  --ct-shard-y: 20px;
+  --ct-shard-r: 18deg;
+}
+.ct-effect-break b {
+  position: absolute;
+  top: 19%;
+  left: 28%;
+  font-size: 13px;
+  white-space: nowrap;
+  animation: ct-effect-float 450ms 120ms ease-out both;
+}
+@keyframes ct-actor-lunge {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  32% {
+    transform: translateX(calc(var(--ct-direction) * -4px))
+      rotate(calc(var(--ct-direction) * -4deg));
+  }
+  55% {
+    transform: translateX(calc(var(--ct-direction) * 22px))
+      rotate(calc(var(--ct-direction) * 7deg));
+  }
+}
+@keyframes ct-actor-pencil {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(17deg);
+  }
+}
+@keyframes ct-actor-hit {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  22% {
+    transform: translateX(calc(var(--ct-direction) * -10px)) rotate(-5deg);
+  }
+  47% {
+    transform: translateX(5px) rotate(4deg);
+  }
+  70% {
+    transform: translateX(-3px) rotate(-2deg);
+  }
+}
+@keyframes ct-actor-down {
+  0% {
+    opacity: 1;
+    transform: rotate(0);
+  }
+  30% {
+    transform: translateX(calc(var(--ct-direction) * -7px)) rotate(-5deg);
+  }
+  100% {
+    opacity: 0.55;
+    transform: translateY(9px) rotate(calc(var(--ct-direction) * -13deg));
+  }
+}
+@keyframes ct-actor-charge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-7px) rotate(-3deg);
+  }
+}
+@keyframes ct-effect-swipe {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  42% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: calc(var(--ct-direction) * 13px) -4px;
+  }
+}
+@keyframes ct-effect-shield {
+  0% {
+    opacity: 0;
+    scale: 0.78;
+  }
+  35% {
+    opacity: 0.85;
+    scale: 1.06;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.16;
+  }
+}
+@keyframes ct-effect-float {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.8) rotate(-8deg);
+  }
+  24%,
+  65% {
+    opacity: 1;
+  }
+  35% {
+    transform: translateY(-7px) scale(1.12) rotate(2deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(1);
+  }
+}
+@keyframes ct-effect-note {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  20%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-13px);
+  }
+}
+@keyframes ct-effect-shard {
+  0% {
+    opacity: 0.9;
+    transform: translate(0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--ct-shard-x), var(--ct-shard-y))
+      rotate(var(--ct-shard-r));
+  }
+}
+@media (max-width: 520px) {
+  .ct-actor {
+    height: 101px;
+    margin: -3px auto 2px;
+  }
+  .ct-effect-number {
+    font-size: 25px;
+  }
+  .ct-effect-note {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+  .ct-effect-swipe {
+    width: 39px;
+  }
+  .ct-effect-swipe i {
+    width: 39px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ct-actor *,
+  .ct-actor *::before,
+  .ct-actor *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .ct-effect-swipe,
+  .ct-effect-shield,
+  .ct-effect-break i {
+    display: none;
+  }
+  .ct-effect-number,
+  .ct-effect-note,
+  .ct-effect-break b {
+    opacity: 1;
+    transform: none;
+  }
+  .ct-actor-scene.is-downed .ct-actor-figure {
+    opacity: 0.55;
+  }
+}

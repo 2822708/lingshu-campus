@@ -23,6 +23,7 @@ try {
     entryPoints: testFiles.map((name) => join(root, 'tests', name)),
     outdir: temporary,
     bundle: true,
+    loader: { '.svg': 'dataurl' },
     platform: 'node',
     format: 'esm',
     outExtension: { '.js': '.mjs' },

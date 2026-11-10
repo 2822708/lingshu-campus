@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+/outputs/
 
 # Environment variables
 # 注意：.env.example / .env.production / .env.development 是模板文件，应该提交

@@ -1280,10 +1280,10 @@ const calcDamage = (attack: number, defense: number) => {
   return Math.round(Math.max(minDamage, base) * randomFactor);
 };
 
-export const shouldTriggerBattle = (
+export const getBattleChance = (
   player: PlayerStats,
   adventureType: AdventureType
-): boolean => {
+): number => {
   const base = baseBattleChance[adventureType] ?? 0.2;
   const realmBonus = REALM_ORDER.indexOf(player.realm) * 0.015;
   const speedBonus = (player.speed || 0) * 0.0004;
@@ -1292,8 +1292,13 @@ export const shouldTriggerBattle = (
     0.75,
     base + realmBonus + speedBonus - luckMitigation
   );
-  return Math.random() < Math.max(0.05, chance);
+  return Math.max(0.05, chance);
 };
+
+export const shouldTriggerBattle = (
+  player: PlayerStats,
+  adventureType: AdventureType
+): boolean => Math.random() < getBattleChance(player, adventureType);
 
 export const resolveBattleEncounter = async (
   player: PlayerStats,

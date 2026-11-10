@@ -574,6 +574,28 @@ export function applyAdventureBattleOutcome(
   battle: InteractiveBattleState
 ): { player: PlayerStats; feedback: string; changes: string[] } | null {
   if (battle.outcome === 'ongoing') return null;
+  return applyAdventureOutcome(player, plan, {
+    battleId: battle.id,
+    outcome: battle.outcome,
+    hpAfterRaw: battle.player.hp,
+  });
+}
+
+/** Both battle engines settle through the same original economy. */
+export function applyAdventureOutcome(
+  player: PlayerStats,
+  plan: AdventureBattlePlan,
+  input: {
+    battleId: string;
+    outcome: 'victory' | 'defeat' | 'retreat' | 'stalemate';
+    hpAfterRaw: number;
+  }
+): { player: PlayerStats; feedback: string; changes: string[] } {
+  const battle = {
+    id: input.battleId,
+    outcome: input.outcome,
+    player: { hp: input.hpAfterRaw },
+  };
   const victory = battle.outcome === 'victory';
   const defeated = battle.outcome === 'defeat';
   const reward = victory

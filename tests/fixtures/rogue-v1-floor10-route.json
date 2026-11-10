@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "runId": "check-vanguard-steady-17",
+  "seed": 17,
+  "rngState": 1224613321,
+  "seq": 44,
+  "jobId": "vanguard",
+  "starterId": "steady",
+  "floor": 10,
+  "cleared": 9,
+  "phase": "route",
+  "hp": 78,
+  "maxHp": 84,
+  "gold": 132,
+  "deck": [
+    {
+      "id": "check-vanguard-steady-17:starter:0",
+      "cardId": "strike",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:1",
+      "cardId": "strike",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:2",
+      "cardId": "strike",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:3",
+      "cardId": "strike",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:4",
+      "cardId": "guard",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:5",
+      "cardId": "guard",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:6",
+      "cardId": "guard",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:7",
+      "cardId": "break",
+      "level": 2
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:8",
+      "cardId": "prepare",
+      "level": 0
+    },
+    {
+      "id": "check-vanguard-steady-17:starter:9",
+      "cardId": "pressure",
+      "level": 0
+    }
+  ],
+  "relics": [
+    "edge",
+    "buckler",
+    "carapace"
+  ],
+  "rooms": [
+    {
+      "id": "check-vanguard-steady-17:room:10:0",
+      "name": "钟塔守望",
+      "description": "观察蓄力预告，挡住重击后再集中进攻。",
+      "enemy": {
+        "name": "钟塔守望",
+        "title": "章节BOSS",
+        "realm": "第1章",
+        "hp": 73,
+        "maxHp": 73,
+        "attack": 14,
+        "defense": 3,
+        "speed": 9,
+        "behavior": "balanced",
+        "archetype": "duelist",
+        "pattern": [
+          {
+            "type": "adjust",
+            "name": "敲响前奏",
+            "description": "本轮蓄力，下一轮发动重击。",
+            "damageMultiplier": 0.15
+          },
+          {
+            "type": "strong",
+            "name": "钟摆重锤",
+            "description": "本轮集中重击，准备防护或先行击破。",
+            "damageMultiplier": 1.4
+          },
+          {
+            "type": "adjust",
+            "name": "摆锤回落",
+            "description": "重击后的间隙，适合整理手牌。",
+            "damageMultiplier": 0.35
+          }
+        ]
+      }
+    }
+  ],
+  "history": [
+    {
+      "floor": 1,
+      "kind": "battle",
+      "label": "战斗胜利"
+    },
+    {
+      "floor": 2,
+      "kind": "battle",
+      "label": "战斗胜利"
+    },
+    {
+      "floor": 3,
+      "kind": "event",
+      "label": "事件处理完成"
+    },
+    {
+      "floor": 4,
+      "kind": "elite",
+      "label": "战斗胜利并处理遗物"
+    },
+    {
+      "floor": 5,
+      "kind": "camp",
+      "label": "休整完成"
+    },
+    {
+      "floor": 6,
+      "kind": "battle",
+      "label": "战斗胜利"
+    },
+    {
+      "floor": 7,
+      "kind": "shop",
+      "label": "商店交易结束"
+    },
+    {
+      "floor": 8,
+      "kind": "elite",
+      "label": "战斗胜利"
+    },
+    {
+      "floor": 9,
+      "kind": "camp",
+      "label": "休整完成"
+    }
+  ],
+  "lastMessage": "已强化「破阵」。"
+}

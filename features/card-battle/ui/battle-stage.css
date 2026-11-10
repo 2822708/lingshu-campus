@@ -1,0 +1,258 @@
+/* Combat stage: actors share a baseline; the opponent owns its intent callout. */
+.cd-battle .cd-arena {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  align-content: normal;
+  gap: 20%;
+  padding: 4px 7% 9px;
+  border-bottom: 0;
+  background:
+    radial-gradient(ellipse at 23% 83%, #c9c9b32e, transparent 32%),
+    radial-gradient(ellipse at 78% 83%, #b9957421, transparent 32%);
+}
+.cd-battle .cd-arena::after {
+  content: '';
+  position: absolute;
+  inset: auto 3% 6px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #a5af94 20% 80%, transparent);
+  pointer-events: none;
+}
+.cd-battle .cd-student,
+.cd-battle .cd-enemy {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  grid-template-rows: auto auto minmax(28px, auto);
+  align-content: end;
+  gap: 3px;
+  z-index: 1;
+}
+.cd-battle .cd-student {
+  justify-self: start;
+}
+.cd-battle .cd-enemy {
+  justify-self: end;
+}
+.cd-battle .cd-arena .ct-actor {
+  width: 100%;
+  height: clamp(44px, calc(100cqh - 64px), 600px);
+  max-width: none;
+  aspect-ratio: auto;
+  margin: 0;
+}
+.cd-battle .ct-actor-art {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%;
+  translate: none;
+}
+.cd-battle .ct-actor-image-frame {
+  mask-image: linear-gradient(#000 0 96%, transparent 100%);
+}
+.cd-battle .cd-energy {
+  width: min(100%, 242px);
+  justify-self: center;
+}
+.cd-battle .cd-energy > span {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.cd-battle .cd-energy meter {
+  height: 8px;
+  margin-top: 1px;
+}
+.cd-battle .cd-arena article > p {
+  width: min(100%, 260px);
+  min-height: 28px;
+  justify-self: center;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.35;
+}
+.cd-battle .cd-duel-mark {
+  display: none;
+}
+.cd-battle .cd-enemy-intent {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 10%;
+  width: clamp(180px, 19cqw, 236px);
+  margin: 0;
+  padding: 9px 12px;
+  border: 0;
+  border-left: 2px solid #a36a4c;
+  background: #f3eddf;
+  box-shadow: 3px 3px 0 #a8996c12;
+}
+.cd-battle .cd-enemy-intent::after {
+  content: '';
+  position: absolute;
+  right: -7px;
+  top: 18px;
+  border-block: 7px solid transparent;
+  border-left: 7px solid #f3eddf;
+}
+.cd-battle .cd-enemy-plan > strong,
+.cd-battle .cd-enemy-intent > strong {
+  font-size: 23px;
+}
+.cd-battle .cd-enemy-forecast {
+  column-gap: 9px;
+  row-gap: 2px;
+  margin-top: 5px;
+  font-size: 11px;
+}
+.cd-battle .cd-expected-loss {
+  flex-basis: 100%;
+}
+.cd-battle .cd-expected-loss b {
+  font-size: 25px;
+}
+.cd-battle .cd-enemy-plan-description {
+  margin-top: 5px !important;
+  display: block;
+  font-size: 11px;
+}
+.cd-battle .cd-hand-area {
+  border-top: 1px solid #c2c9b5;
+}
+
+@media (max-width: 900px) {
+  .cd-battle .cd-arena {
+    gap: 9%;
+    padding-inline: 3%;
+  }
+  .cd-battle .cd-student,
+  .cd-battle .cd-enemy {
+    position: static;
+    max-width: 270px;
+  }
+  .cd-battle .cd-enemy-intent {
+    top: 3px;
+    right: 2%;
+    width: min(62%, 370px);
+    padding: 5px 9px;
+  }
+  .cd-battle .cd-enemy-intent::after {
+    display: none;
+  }
+  .cd-battle .cd-enemy-plan {
+    gap: 5px;
+  }
+  .cd-battle .cd-enemy-plan > strong,
+  .cd-battle .cd-enemy-intent > strong {
+    font-size: 18px;
+  }
+  .cd-battle .cd-enemy-forecast {
+    column-gap: 7px;
+    row-gap: 0;
+    margin-top: 1px;
+    font-size: 10px;
+    line-height: 1.3;
+  }
+  .cd-battle .cd-expected-loss {
+    flex-basis: auto;
+  }
+  .cd-battle .cd-expected-loss b {
+    font-size: 17px;
+  }
+  .cd-battle .cd-enemy-plan-description {
+    display: none;
+  }
+  .cd-battle .cd-arena .ct-actor {
+    height: clamp(44px, calc(100cqh - 136px), 380px);
+  }
+}
+
+@media (max-width: 600px) {
+  .cd-battle .cd-arena {
+    padding: 2px 2% 4px;
+    gap: 8%;
+  }
+  .cd-battle .cd-arena::after {
+    inset-inline: 0;
+    bottom: 2px;
+  }
+  .cd-battle .cd-student,
+  .cd-battle .cd-enemy {
+    grid-template-rows: auto auto minmax(28px, auto);
+    gap: 2px;
+  }
+  .cd-battle .cd-energy > span {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+  .cd-battle .cd-energy meter {
+    height: 6px;
+  }
+  .cd-battle .cd-arena article > p {
+    font-size: 9px;
+    min-height: 28px;
+    line-height: 1.35;
+  }
+  .cd-battle .cd-enemy-intent {
+    width: 100%;
+    right: 0;
+    top: 1px;
+    padding: 3px 6px;
+    border-left-width: 2px;
+    box-shadow: none;
+  }
+  .cd-battle .cd-enemy-plan {
+    display: inline-flex;
+    margin-right: 9px;
+  }
+  .cd-battle .cd-enemy-plan > strong,
+  .cd-battle .cd-enemy-intent > strong {
+    font-size: 17px;
+  }
+  .cd-battle .cd-enemy-forecast {
+    display: inline-flex;
+    margin-top: 0;
+    vertical-align: baseline;
+  }
+  .cd-battle .cd-arena .ct-actor {
+    height: clamp(44px, calc(100cqh - 118px), 360px);
+  }
+}
+
+@media (max-height: 650px) and (min-width: 901px) {
+  .cd-battle .cd-enemy-intent {
+    top: 2%;
+    padding: 5px 9px;
+  }
+  .cd-battle .cd-enemy-plan > strong {
+    font-size: 20px;
+  }
+  .cd-battle .cd-enemy-plan-description {
+    display: none;
+  }
+}
+
+@media (max-height: 500px) and (max-width: 900px) {
+  .cd-battle .cd-arena .ct-actor {
+    height: clamp(36px, calc(100cqh - 100px), 180px);
+  }
+  .cd-battle .cd-enemy-intent {
+    width: 100%;
+    right: 0;
+    padding-block: 2px;
+  }
+  .cd-battle .cd-enemy-plan > strong {
+    font-size: 15px;
+  }
+  .cd-battle .cd-enemy-forecast {
+    column-gap: 5px;
+  }
+  .cd-battle .cd-hand-area {
+    grid-template-rows: 25px 192px;
+  }
+  .cd-battle:has(.cd-save-error) .cd-hand-area,
+  .cd-battle[data-phase='discard'] .cd-hand-area {
+    grid-template-rows: 25px 176px;
+  }
+}
