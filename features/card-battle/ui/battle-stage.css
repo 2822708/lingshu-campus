@@ -256,3 +256,118 @@
     grid-template-rows: 25px 176px;
   }
 }
+
+.cd-card-compact-kind {
+  display: none;
+}
+
+.cd-battle[data-compact-hand] {
+  overflow-y: auto;
+}
+.cd-battle[data-compact-hand] .cd-arena {
+  flex-basis: clamp(158px, 34dvh, 240px);
+  min-height: 158px;
+}
+.cd-battle[data-compact-hand] .cd-hand-area {
+  grid-template-rows: minmax(30px, auto) auto;
+  gap: 5px;
+}
+.cd-battle[data-compact-hand] .ct-hand-layout {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  height: auto;
+  max-width: 490px;
+  justify-self: center;
+  visibility: visible;
+}
+.cd-battle[data-compact-hand] .ct-hand-layout > .ct-card-slot {
+  position: static;
+  display: block;
+  width: auto;
+  height: auto;
+}
+.cd-battle[data-compact-hand][data-shape] .ct-hand-layout .ct-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3px;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  padding: 4px;
+  text-align: center;
+  translate: none;
+  scale: 1;
+  box-shadow: 1px 2px 0 #c8cdbb;
+}
+.cd-battle[data-compact-hand] .ct-hand-layout .ct-card-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.cd-battle[data-compact-hand] .ct-hand-layout .ct-card-heading strong {
+  font-size: 12px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.cd-battle[data-compact-hand] .ct-hand-layout .ct-card-cost {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  font-size: 12px;
+}
+.cd-battle[data-compact-hand] .cd-card-compact-kind {
+  display: block;
+  font-size: 10px;
+  line-height: 1.2;
+}
+.cd-battle[data-compact-hand] .ct-card[data-unplayable] {
+  background: #ebece3;
+}
+.cd-battle[data-compact-hand]
+  .ct-card
+  :is(
+    .ct-card-kind,
+    .ct-card-description,
+    .ct-card-preview,
+    .ct-card-scaling,
+    .ct-card-action
+  ) {
+  display: none;
+}
+@media (max-width: 360px) {
+  .cd-battle[data-compact-hand] .ct-hand-layout {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.cd-battle[data-card-open] > :not(.cd-notebook),
+.cd-battle:is([data-card-open], [data-route-open]) .ct-hand-layout {
+  visibility: hidden;
+}
+.cd-battle .cd-notebook[data-kind='card'] {
+  position: fixed;
+  inset: 12px;
+  margin: auto;
+  width: min(440px, calc(100% - 24px));
+  height: fit-content;
+  max-height: calc(100% - 24px);
+  box-shadow:
+    0 0 0 100vmax #263c3055,
+    3px 4px 0 #cdd0bd;
+}
+.cd-card-details {
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+}
+.cd-card-details .cd-primary:disabled {
+  background: #e5e7dc;
+  color: #565f52;
+  border-color: #b0b4a8;
+  box-shadow: none;
+}

@@ -1,6 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { CardBattleAction, CardBattleState } from '../types';
+import type {
+  CardBattleAction,
+  CardBattleState,
+  ResolvedBattleCard,
+} from '../types';
 import {
   getCardBattleIncomingPreview,
   getCardBattlePlayableReason,
@@ -26,6 +30,33 @@ export interface CardBattleViewProps {
   onCommand: (action: CardBattleAction) => void;
   result?: { title: string; text: string; changes: string[] };
   onAcknowledge?: () => void;
+}
+
+const COMPACT_HAND_QUERY =
+  '(max-width: 600px), (max-width: 1000px) and (pointer: coarse) and (hover: none)';
+const CARD_KIND_LABELS = { attack: '进攻', defense: '防御', utility: '准备' };
+
+function describeCardPreview(state: CardBattleState, card: ResolvedBattleCard) {
+  const preview = getCardBattlePreview(state, card.id);
+  return (
+    [
+      preview.actualDamage > 0 ? `命中 ${preview.actualDamage}` : '',
+      preview.block ? `防护 +${preview.block}` : '',
+      preview.heal ? `恢复 +${preview.heal}` : '',
+      preview.draw ? `抽牌 ${preview.draw}` : '',
+      preview.nextAttackBonus ? `蓄势 +${preview.nextAttackBonus}` : '',
+      preview.clearsGuard ? '清除固守' : '',
+      card.clearEnemyBlock && state.enemy.thorns ? '解除反震' : '',
+      card.expose ? '制造破绽' : '',
+      preview.counter ? `反击 +${preview.counter}` : '',
+      preview.retainBlock ? `留盾上限 ${preview.retainBlock}` : '',
+      preview.focusGain ? `专注 +${preview.focusGain}` : '',
+      preview.blockConsumed ? `消耗防护 ${preview.blockConsumed}` : '',
+      preview.reflectedDamage ? `自身反震损耗 ${preview.reflectedDamage}` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ') || '准备下一步'
+  );
 }
 
 /** Feedback derives only from committed snapshots; restoring a save never replays it. */
@@ -167,19 +198,44 @@ export function CardBattleView({
   const hintId = useId();
   const dialog = useRef<HTMLDivElement>(null);
   const routeButton = useRef<HTMLButtonElement>(null);
-  const routeClose = useRef<HTMLButtonElement>(null);
+  const cardButton = useRef<HTMLButtonElement>(null);
+  const notebookClose = useRef<HTMLButtonElement>(null);
   const previous = useRef(state);
   const [cue, setCue] = useState<BattleActorCue | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
   const [retreatConfirmation, setRetreatConfirmation] = useState(false);
-  const [notebook, setNotebook] = useState<
-    'rules' | 'log' | 'deck' | 'gear' | 'route' | null
-  >(null);
+  const [previewCardId, setPreviewCardId] = useState<string | null>(null);
+  const [compactHand, setCompactHand] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      Boolean(window.matchMedia?.(COMPACT_HAND_QUERY).matches)
+  );
   useEffect(() => {
-    if (notebook !== 'route') return;
-    const trigger = routeButton.current;
-    routeClose.current?.focus();
-    return () => trigger?.focus();
+    const query = window.matchMedia?.(COMPACT_HAND_QUERY);
+    if (!query) return;
+    const update = () => setCompactHand(query.matches);
+    update();
+    if (!query.addEventListener) {
+      query.addListener(update);
+      return () => query.removeListener(update);
+    }
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+  const [notebook, setNotebook] = useState<
+    'rules' | 'log' | 'deck' | 'gear' | 'route' | 'card' | null
+  >(null);
+  const modalNotebook = notebook === 'route' || notebook === 'card';
+  useEffect(() => {
+    if (notebook !== 'route' && notebook !== 'card') return;
+    const trigger =
+      notebook === 'route' ? routeButton.current : cardButton.current;
+    const battle = dialog.current;
+    notebookClose.current?.focus();
+    return () => {
+      if (trigger?.isConnected && !trigger.disabled) trigger.focus();
+      else if (battle?.isConnected) battle.focus();
+    };
   }, [notebook]);
   useEffect(() => {
     const before = previous.current;
@@ -203,7 +259,9 @@ export function CardBattleView({
       }
       if (event.key !== 'Tab') return;
       const scope =
-        element?.querySelector('.cd-notebook[data-kind="route"]') ?? element;
+        element?.querySelector(
+          '.cd-notebook:is([data-kind="route"], [data-kind="card"])'
+        ) ?? element;
       const controls = [
         ...(scope?.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [tabindex="0"]'
@@ -247,6 +305,13 @@ export function CardBattleView({
   const discarding = state.phase === 'discard';
   const active = state.phase === 'battle' || discarding;
   const discardCount = Math.max(0, state.hand.length - 10);
+  const previewCard =
+    notebook === 'card' && previewCardId && state.hand.includes(previewCardId)
+      ? state.cards.find((card) => card.id === previewCardId)
+      : undefined;
+  const previewBlocked = previewCard
+    ? getCardBattlePlayableReason(state, previewCard.id)
+    : undefined;
   const incoming = getCardBattleIncomingPreview(state);
   const prevented = incoming.prevented;
   const expectedLoss = incoming.damage;
@@ -284,15 +349,15 @@ export function CardBattleView({
         ref={dialog}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={
-          notebook === 'route' ? `${headingId}-route` : headingId
-        }
+        aria-labelledby={modalNotebook ? `${headingId}-${notebook}` : headingId}
         tabIndex={-1}
         data-phase={state.phase}
         data-focus={state.player.energy === 0 ? 'empty' : 'ready'}
         data-shape="portrait-4-3"
         data-mode={mode}
         data-route-open={notebook === 'route' || undefined}
+        data-card-open={notebook === 'card' || undefined}
+        data-compact-hand={compactHand || undefined}
       >
         <header className="cd-battle-header">
           <div>
@@ -564,7 +629,9 @@ export function CardBattleView({
                   ? `选 ${discardCount} 张弃牌（已选 ${selection.length}），再结束回合`
                   : state.player.energy === 0
                     ? '专注已用尽，可以结束回合'
-                    : '未出手牌保留 · 悬停或聚焦查看'}
+                    : compactHand
+                      ? '点牌查看 · 确认出牌'
+                      : '未出手牌保留 · 悬停或聚焦查看'}
               </p>
             </div>
             <HandLayout
@@ -575,15 +642,16 @@ export function CardBattleView({
               {state.hand.map((id) => {
                 const card = state.cards.find((value) => value.id === id)!;
                 const reason = getCardBattlePlayableReason(state, id);
-                const preview = getCardBattlePreview(state, id);
                 const selected = selection.includes(id);
                 return (
                   <div
                     key={id}
                     className="ct-card-slot"
-                    tabIndex={reason && !discarding ? 0 : undefined}
+                    tabIndex={
+                      reason && !discarding && !compactHand ? 0 : undefined
+                    }
                     aria-label={
-                      reason && !discarding
+                      reason && !discarding && !compactHand
                         ? `${card.name}，${reason}，${viewText(card.description)}`
                         : undefined
                     }
@@ -591,61 +659,41 @@ export function CardBattleView({
                     <button
                       type="button"
                       className={`ct-card cd-card-${card.kind}${selected ? ' is-selected' : ''}`}
-                      disabled={!active || (!discarding && Boolean(reason))}
-                      aria-pressed={discarding ? selected : undefined}
-                      onClick={() =>
-                        discarding
-                          ? toggleDiscard(id)
-                          : onCommand({ type: 'play', cardId: id })
+                      disabled={
+                        !active ||
+                        (!compactHand && !discarding && Boolean(reason))
                       }
+                      data-unplayable={
+                        (!discarding && Boolean(reason)) || undefined
+                      }
+                      aria-pressed={discarding ? selected : undefined}
+                      onClick={(event) => {
+                        if (discarding) toggleDiscard(id);
+                        else if (compactHand) {
+                          cardButton.current = event.currentTarget;
+                          setPreviewCardId(id);
+                          setNotebook('card');
+                        } else onCommand({ type: 'play', cardId: id });
+                      }}
                       aria-label={`${card.name}，消耗 ${card.cost} 专注，${viewText(card.description)}${discarding ? (selected ? '，已选择弃置' : '，选择弃置') : ''}`}
                     >
                       <span className="ct-card-heading">
                         <span className="ct-card-cost">{card.cost}</span>
                         <strong>{card.name}</strong>
                       </span>
+                      <span className="cd-card-compact-kind" aria-hidden="true">
+                        {selected ? '已选弃置' : CARD_KIND_LABELS[card.kind]}
+                      </span>
                       <span className="ct-card-kind">
-                        {
-                          { attack: '进攻', defense: '防御', utility: '准备' }[
-                            card.kind
-                          ]
-                        }{' '}
-                        · {sourceText(card.sourceLabel)}
+                        {CARD_KIND_LABELS[card.kind]} ·{' '}
+                        {sourceText(card.sourceLabel)}
                         {card.exhaust ? ' · 本场一次' : ''}
                       </span>
                       <span className="ct-card-description">
                         {viewText(card.description)}
                       </span>
                       <span className="ct-card-preview">
-                        {[
-                          preview.actualDamage > 0
-                            ? `命中 ${preview.actualDamage}`
-                            : '',
-                          preview.block ? `防护 +${preview.block}` : '',
-                          preview.heal ? `恢复 +${preview.heal}` : '',
-                          preview.draw ? `抽牌 ${preview.draw}` : '',
-                          preview.nextAttackBonus
-                            ? `蓄势 +${preview.nextAttackBonus}`
-                            : '',
-                          preview.clearsGuard ? '清除固守' : '',
-                          card.clearEnemyBlock && state.enemy.thorns
-                            ? '解除反震'
-                            : '',
-                          card.expose ? '制造破绽' : '',
-                          preview.counter ? `反击 +${preview.counter}` : '',
-                          preview.retainBlock
-                            ? `留盾上限 ${preview.retainBlock}`
-                            : '',
-                          preview.focusGain ? `专注 +${preview.focusGain}` : '',
-                          preview.blockConsumed
-                            ? `消耗防护 ${preview.blockConsumed}`
-                            : '',
-                          preview.reflectedDamage
-                            ? `自身反震损耗 ${preview.reflectedDamage}`
-                            : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' · ') || '准备下一步'}
+                        {describeCardPreview(state, card)}
                       </span>
                       {card.scalingLabel && (
                         <span className="ct-card-scaling">
@@ -741,11 +789,17 @@ export function CardBattleView({
         {notebook && (
           <section
             className="cd-notebook"
-            data-kind={notebook === 'route' ? 'route' : undefined}
-            aria-label={notebook === 'route' ? '本章路线' : '作战笔记'}
+            data-kind={modalNotebook ? notebook : undefined}
+            aria-label={
+              notebook === 'route'
+                ? '本章路线'
+                : notebook === 'card'
+                  ? '手牌详情'
+                  : '作战笔记'
+            }
           >
             <header>
-              <h3 id={notebook === 'route' ? `${headingId}-route` : undefined}>
+              <h3 id={modalNotebook ? `${headingId}-${notebook}` : undefined}>
                 {
                   {
                     rules: rogue ? '试炼战斗规则' : '作答规则',
@@ -753,11 +807,12 @@ export function CardBattleView({
                     deck: `本场${deckLabel}`,
                     gear: rogue ? '本局法器' : '本场装备特性',
                     route: '本章路线',
+                    card: previewCard?.name ?? '手牌详情',
                   }[notebook]
                 }
               </h3>
               <button
-                ref={notebook === 'route' ? routeClose : undefined}
+                ref={modalNotebook ? notebookClose : undefined}
                 onClick={() => setNotebook(null)}
               >
                 返回牌桌 ×
@@ -765,6 +820,37 @@ export function CardBattleView({
             </header>
             {notebook === 'route' ? (
               routeMap
+            ) : notebook === 'card' ? (
+              previewCard && (
+                <div className="cd-card-details">
+                  <p>
+                    {previewCard.cost} 专注 ·{' '}
+                    {sourceText(previewCard.sourceLabel)}
+                    {previewCard.exhaust && ' · 本场一次'}
+                  </p>
+                  <p>{viewText(previewCard.description)}</p>
+                  <p>
+                    <strong>{describeCardPreview(state, previewCard)}</strong>
+                  </p>
+                  {previewCard.scalingLabel && (
+                    <p>{viewText(previewCard.scalingLabel)}</p>
+                  )}
+                  {previewBlocked && <p role="status">{previewBlocked}</p>}
+                  <button
+                    type="button"
+                    className="cd-primary"
+                    disabled={
+                      state.phase !== 'battle' || Boolean(previewBlocked)
+                    }
+                    onClick={() => {
+                      setNotebook(null);
+                      onCommand({ type: 'play', cardId: previewCard.id });
+                    }}
+                  >
+                    确认出牌
+                  </button>
+                </div>
+              )
             ) : notebook === 'rules' ? (
               <>
                 {archetype && (
