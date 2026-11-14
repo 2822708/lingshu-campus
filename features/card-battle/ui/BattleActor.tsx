@@ -1,4 +1,5 @@
-import type { CardEnemyArchetype } from '../types';
+import type { CSSProperties } from 'react';
+import type { CardEnemyArchetype, ResolvedBattleCard } from '../types';
 import { TrialConstruct } from './TrialConstruct';
 
 /** Shared presentation cue. It contains no game state or storage dependency. */
@@ -6,6 +7,7 @@ export interface BattleActorCue {
   key: string;
   action: string;
   actor: 'player' | 'enemy' | 'none';
+  playedCard?: Pick<ResolvedBattleCard, 'name' | 'kind' | 'cost'>;
   playerDamage: number;
   enemyDamage: number;
   playerBlock: number;
@@ -31,6 +33,7 @@ interface BattleActorProps {
 }
 
 type PortraitId = 'player' | 'duelist' | 'sentinel';
+const IMPACT_ANGLES = [-152, -113, -66, -31, 3, 47, 111, 156];
 
 // Static URLs are bundled by Vite for both entry points and remain SSR-safe.
 const PORTRAITS: Record<PortraitId, string> = {
@@ -126,7 +129,17 @@ export function BattleActor({
           <span className="ct-effect-shield" />
         )}
         {damage > 0 && (
-          <b className="ct-effect-number ct-effect-damage">−{damage}</b>
+          <>
+            <span className="ct-impact">
+              {IMPACT_ANGLES.map((angle) => (
+                <i
+                  key={angle}
+                  style={{ '--ct-spark-angle': `${angle}deg` } as CSSProperties}
+                />
+              ))}
+            </span>
+            <b className="ct-effect-number ct-effect-damage">−{damage}</b>
+          </>
         )}
         {blocked > 0 && (
           <span className="ct-effect-note ct-effect-block">挡住 {blocked}</span>

@@ -1,0 +1,274 @@
+/* Layers are decorative and live only over the arena, away from hand input. */
+.cd-strike-trail,
+.cd-played-card,
+.ct-impact {
+  position: absolute;
+  pointer-events: none;
+}
+
+.cd-strike-trail {
+  --cd-strike-ink: #417968;
+  --cd-strike-start: -80%;
+  --cd-strike-end: 80%;
+  inset: 34% 29% auto;
+  z-index: 2;
+  height: clamp(30px, 14%, 58px);
+  transform: rotate(-8deg);
+  animation: cd-strike-cross 410ms cubic-bezier(0.18, 0.68, 0.31, 1) both;
+}
+.cd-strike-trail[data-from='enemy'] {
+  --cd-strike-ink: #b75a36;
+  --cd-strike-start: 80%;
+  --cd-strike-end: -80%;
+  transform: rotate(8deg);
+}
+.cd-strike-trail i {
+  position: absolute;
+  inset: 0;
+  background: var(--cd-strike-ink);
+  clip-path: polygon(
+    0 70%,
+    26% 61%,
+    38% 35%,
+    56% 52%,
+    71% 18%,
+    100% 0,
+    77% 41%,
+    65% 78%,
+    44% 64%,
+    29% 85%
+  );
+}
+.cd-strike-trail[data-from='enemy'] i {
+  scale: -1 1;
+}
+.cd-strike-trail i:nth-child(2) {
+  inset: 4% 2% 13%;
+  background: #fffbdf;
+}
+.cd-strike-trail i:nth-child(3) {
+  inset: 35% 14% -21% 3%;
+  opacity: 0.48;
+}
+
+.cd-played-card {
+  --cd-card-ink: #9e5137;
+  inset: auto 0 17%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: max-content;
+  max-width: min(85%, 260px);
+  margin-inline: auto;
+  padding: 5px 11px 5px 6px;
+  border: 1px solid var(--cd-card-ink);
+  border-inline-start-width: 4px;
+  border-radius: 3px;
+  background: #fffbec;
+  color: var(--cd-card-ink);
+  box-shadow: 3px 4px #343b2c24;
+  animation: cd-card-stamp 640ms cubic-bezier(0.19, 0.7, 0.27, 1) both;
+}
+.cd-played-card[data-kind='defense'] {
+  --cd-card-ink: #386b57;
+}
+.cd-played-card[data-kind='utility'] {
+  --cd-card-ink: #785821;
+}
+.cd-played-card > span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 21px;
+  height: 21px;
+  color: #fffbed;
+  border-radius: 50%;
+  background: var(--cd-card-ink);
+  font-size: 12px;
+}
+.cd-played-card > strong {
+  overflow-wrap: anywhere;
+}
+
+.cd-battle .ct-impact {
+  z-index: 2;
+  top: 53%;
+  left: 53%;
+  width: clamp(42px, 35%, 104px);
+  aspect-ratio: 1;
+  color: #b05231;
+  translate: -50% -50%;
+}
+.ct-impact::before,
+.ct-impact::after {
+  content: '';
+  position: absolute;
+  inset: 4%;
+  border: 3px solid currentColor;
+  border-radius: 50%;
+  animation: cd-impact-ring 445ms 105ms ease-out both;
+}
+.ct-impact::after {
+  inset: 12%;
+  border: 1px dashed #b8884c;
+  animation-delay: 145ms;
+}
+.ct-impact i {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: clamp(9px, 18%, 21px);
+  height: 4px;
+  background: linear-gradient(90deg, currentColor, #f6dba0);
+  clip-path: polygon(0 50%, 20% 0, 100% 50%, 35% 100%);
+  rotate: var(--ct-spark-angle);
+  animation: cd-impact-spark 440ms 105ms ease-out both;
+}
+.cd-battle .ct-actor-scene.is-hit .ct-actor-image-frame {
+  animation: cd-impact-recoil 420ms 96ms ease-out both;
+}
+.cd-battle .ct-effect-damage {
+  color: #9d3928;
+  text-shadow:
+    1px 2px #fffbea,
+    -1px -1px #fffbea,
+    2px 4px #9d392828;
+}
+.cd-battle .ct-effect-shield {
+  inset: 18% 24% 16%;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  border: 4px double #518a72;
+  border-radius: 17%;
+  box-shadow:
+    inset 0 0 15px #67a28b55,
+    0 0 0 5px #89b59b33;
+  animation: cd-guard-field 535ms ease-out both;
+}
+.cd-battle .ct-effect-shield::after {
+  content: '';
+  position: absolute;
+  inset: 9%;
+  border: 1px dashed #518a72;
+  border-radius: inherit;
+}
+
+@keyframes cd-strike-cross {
+  0% {
+    translate: var(--cd-strike-start) 0;
+    scale: 0.34 0.5;
+    opacity: 0;
+  }
+  20%,
+  56% {
+    opacity: 0.95;
+  }
+  80%,
+  100% {
+    translate: var(--cd-strike-end) 0;
+    scale: 0.26 0.88;
+    opacity: 0;
+  }
+}
+@keyframes cd-card-stamp {
+  0% {
+    transform: translateY(24px) rotate(-11deg) scale(0.73);
+    opacity: 0;
+  }
+  19% {
+    transform: translateY(-4px) rotate(3deg) scale(1.08);
+    opacity: 1;
+  }
+  30%,
+  66% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-14px) scale(0.97);
+    opacity: 0;
+  }
+}
+@keyframes cd-impact-recoil {
+  0%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  20% {
+    transform: translateX(calc(-10px * var(--ct-direction)))
+      rotate(calc(-2deg * var(--ct-direction)));
+    filter: brightness(1.24) sepia(0.28);
+  }
+  40% {
+    transform: translateX(calc(4px * var(--ct-direction)));
+  }
+  62% {
+    transform: translateX(calc(-2px * var(--ct-direction)));
+  }
+}
+@keyframes cd-impact-ring {
+  0% {
+    scale: 0.36;
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.86;
+  }
+  100% {
+    scale: 1.54;
+    opacity: 0;
+  }
+}
+@keyframes cd-impact-spark {
+  0% {
+    transform: translateX(1px) scaleX(0.45);
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.96;
+  }
+  100% {
+    transform: translateX(clamp(20px, 4vw, 54px)) scaleX(0.25);
+    opacity: 0;
+  }
+}
+@keyframes cd-guard-field {
+  0% {
+    scale: 0.8;
+    opacity: 0;
+  }
+  25%,
+  50% {
+    scale: 1;
+    opacity: 0.88;
+  }
+  100% {
+    scale: 1.12;
+    opacity: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .cd-strike-trail {
+    top: 54%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-battle :is(.cd-strike-trail, .ct-impact) {
+    display: none;
+  }
+  .cd-played-card {
+    animation: cd-card-still 640ms linear both;
+  }
+  @keyframes cd-card-still {
+    0%,
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}

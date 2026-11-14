@@ -17,6 +17,7 @@ import { HandLayout } from './HandLayout';
 import './card-battle.css';
 import './battle-stage.css';
 import './rogue-battle-theme.css';
+import './battle-effects.css';
 
 export interface CardBattleViewProps {
   /** Presentation only; the host still owns combat, rewards, and persistence. */
@@ -79,6 +80,9 @@ export function getCommittedBattleCue(
     .reduce((sum, entry) => sum + (entry.heal ?? 0), 0);
   return {
     key: `${after.id}:${after.commandSeq}`,
+    playedCard: card
+      ? { name: card.name, kind: card.kind, cost: card.cost }
+      : undefined,
     action: enemy
       ? 'enemy-turn'
       : card?.damage || card?.blockToDamage
@@ -346,6 +350,12 @@ export function CardBattleView({
     .filter((entry) => entry.seq === state.commandSeq)
     .map((entry) => viewText(entry.text))
     .join(' ');
+  const strike =
+    cue?.actor === 'player' && cue.action === 'attack'
+      ? 'player'
+      : cue?.actor === 'enemy' && (cue.playerDamage > 0 || cue.blocked > 0)
+        ? 'enemy'
+        : undefined;
   function toggleDiscard(id: string) {
     setSelection((old) =>
       old.includes(id)
@@ -461,6 +471,29 @@ export function CardBattleView({
           </nav>
         </header>
         <section className="cd-arena" aria-label="战斗双方">
+          {strike && (
+            <div
+              key={cue?.key}
+              className="cd-strike-trail"
+              data-from={strike}
+              aria-hidden="true"
+            >
+              <i />
+              <i />
+              <i />
+            </div>
+          )}
+          {cue?.playedCard && (
+            <div
+              key={`${cue.key}:card`}
+              className="cd-played-card"
+              data-kind={cue.playedCard.kind}
+              aria-hidden="true"
+            >
+              <span>{cue.playedCard.cost}</span>
+              <strong>{cue.playedCard.name}</strong>
+            </div>
+          )}
           <article className="cd-student">
             <BattleActor
               side="player"

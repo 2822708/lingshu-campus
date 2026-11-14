@@ -434,7 +434,33 @@ test('同轮反击和敌人修复分别反馈，精力净增长不会吞掉实�
   assert.match(markup, /−7/);
   assert.match(markup, /\+8/);
   assert.match(markup, /ct-actor-image-frame/);
+  assert.match(markup, /ct-impact/);
   assert.match(markup, /is-attacking is-hit/);
+});
+
+test('已结算的出牌包含牌名和费用，读档与结束回合不重放出牌特效', () => {
+  const before = battle();
+  const [cardId] = before.hand;
+  const card = before.cards.find((entry) => entry.id === cardId);
+  const after = stepCardBattle(before, {
+    id: before.id,
+    seq: 1,
+    type: 'play',
+    cardId,
+  });
+  assert.deepEqual(getCommittedBattleCue(before, after)?.playedCard, {
+    name: card.name,
+    kind: card.kind,
+    cost: card.cost,
+  });
+  assert.equal(getCommittedBattleCue(after, structuredClone(after)), null);
+
+  const next = stepCardBattle(after, {
+    id: after.id,
+    seq: 2,
+    type: 'end-turn',
+  });
+  assert.equal(getCommittedBattleCue(after, next)?.playedCard, undefined);
 });
 
 test('手动弃牌只确认精确数量，关闭整理返回出牌', () => {
