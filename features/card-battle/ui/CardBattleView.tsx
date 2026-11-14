@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
 import type {
   CardBattleAction,
   CardBattleState,
@@ -34,6 +34,8 @@ export interface CardBattleViewProps {
 
 const COMPACT_HAND_QUERY =
   '(max-width: 600px), (max-width: 1000px) and (pointer: coarse) and (hover: none)';
+const DOUBLE_TAP_MS = 350;
+const SWIPE_UP_DISTANCE = 48;
 const CARD_KIND_LABELS = { attack: '进攻', defense: '防御', utility: '准备' };
 
 function describeCardPreview(state: CardBattleState, card: ResolvedBattleCard) {
@@ -198,9 +200,16 @@ export function CardBattleView({
   const hintId = useId();
   const dialog = useRef<HTMLDivElement>(null);
   const routeButton = useRef<HTMLButtonElement>(null);
-  const cardButton = useRef<HTMLButtonElement>(null);
   const notebookClose = useRef<HTMLButtonElement>(null);
   const previous = useRef(state);
+  const lastTap = useRef<{ cardId: string; time: number } | null>(null);
+  const gesture = useRef<{
+    pointerId: number;
+    cardId: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const suppressCardClick = useRef<string | null>(null);
   const [cue, setCue] = useState<BattleActorCue | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
   const [retreatConfirmation, setRetreatConfirmation] = useState(false);
@@ -223,13 +232,11 @@ export function CardBattleView({
     return () => query.removeEventListener('change', update);
   }, []);
   const [notebook, setNotebook] = useState<
-    'rules' | 'log' | 'deck' | 'gear' | 'route' | 'card' | null
+    'rules' | 'log' | 'deck' | 'gear' | 'route' | null
   >(null);
-  const modalNotebook = notebook === 'route' || notebook === 'card';
   useEffect(() => {
-    if (notebook !== 'route' && notebook !== 'card') return;
-    const trigger =
-      notebook === 'route' ? routeButton.current : cardButton.current;
+    if (notebook !== 'route') return;
+    const trigger = routeButton.current;
     const battle = dialog.current;
     notebookClose.current?.focus();
     return () => {
@@ -244,6 +251,9 @@ export function CardBattleView({
       setCue(getCommittedBattleCue(before, state));
       setSelection([]);
       setRetreatConfirmation(false);
+      setPreviewCardId(null);
+      lastTap.current = null;
+      gesture.current = null;
     }
   }, [state]);
   useEffect(() => {
@@ -254,14 +264,14 @@ export function CardBattleView({
       if (event.key === 'Escape') {
         event.preventDefault();
         setNotebook(null);
+        setPreviewCardId(null);
+        lastTap.current = null;
         setRetreatConfirmation(false);
         return;
       }
       if (event.key !== 'Tab') return;
       const scope =
-        element?.querySelector(
-          '.cd-notebook:is([data-kind="route"], [data-kind="card"])'
-        ) ?? element;
+        element?.querySelector('.cd-notebook[data-kind="route"]') ?? element;
       const controls = [
         ...(scope?.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [tabindex="0"]'
@@ -306,7 +316,11 @@ export function CardBattleView({
   const active = state.phase === 'battle' || discarding;
   const discardCount = Math.max(0, state.hand.length - 10);
   const previewCard =
-    notebook === 'card' && previewCardId && state.hand.includes(previewCardId)
+    compactHand &&
+    !notebook &&
+    state.phase === 'battle' &&
+    previewCardId &&
+    state.hand.includes(previewCardId)
       ? state.cards.find((card) => card.id === previewCardId)
       : undefined;
   const previewBlocked = previewCard
@@ -342,6 +356,56 @@ export function CardBattleView({
           : old
     );
   }
+  function inspectOrPlayCard(id: string, time: number) {
+    const tap = lastTap.current;
+    if (
+      previewCard?.id === id &&
+      tap?.cardId === id &&
+      time - tap.time <= DOUBLE_TAP_MS
+    ) {
+      playPreviewedCard(id);
+      return;
+    }
+    lastTap.current = { cardId: id, time };
+    setPreviewCardId(id);
+  }
+  function playPreviewedCard(id: string) {
+    lastTap.current = null;
+    if (state.phase !== 'battle' || getCardBattlePlayableReason(state, id)) {
+      setPreviewCardId(id);
+      return;
+    }
+    setPreviewCardId(null);
+    onCommand({ type: 'play', cardId: id });
+  }
+  function startCardSwipe(event: PointerEvent<HTMLButtonElement>, id: string) {
+    suppressCardClick.current = null;
+    if (!event.isPrimary || event.pointerType === 'mouse') {
+      gesture.current = null;
+      return;
+    }
+    gesture.current = {
+      pointerId: event.pointerId,
+      cardId: id,
+      x: event.clientX,
+      y: event.clientY,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+  function endCardSwipe(event: PointerEvent<HTMLButtonElement>, id: string) {
+    const start = gesture.current;
+    if (!start || start.pointerId !== event.pointerId || start.cardId !== id)
+      return;
+    gesture.current = null;
+    const across = Math.abs(event.clientX - start.x);
+    const up = start.y - event.clientY;
+    if (Math.max(across, Math.abs(up)) < 12) return;
+
+    // A captured swipe may also generate a click. The next press starts fresh.
+    suppressCardClick.current = id;
+    lastTap.current = null;
+    if (up >= SWIPE_UP_DISTANCE && up >= across * 1.5) playPreviewedCard(id);
+  }
   return (
     <div className="cd-battle-overlay">
       <div
@@ -349,14 +413,15 @@ export function CardBattleView({
         ref={dialog}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={modalNotebook ? `${headingId}-${notebook}` : headingId}
+        aria-labelledby={
+          notebook === 'route' ? `${headingId}-route` : headingId
+        }
         tabIndex={-1}
         data-phase={state.phase}
         data-focus={state.player.energy === 0 ? 'empty' : 'ready'}
         data-shape="portrait-4-3"
         data-mode={mode}
         data-route-open={notebook === 'route' || undefined}
-        data-card-open={notebook === 'card' || undefined}
         data-compact-hand={compactHand || undefined}
       >
         <header className="cd-battle-header">
@@ -565,6 +630,46 @@ export function CardBattleView({
               )}
             </div>
           </article>
+          {previewCard && (
+            <section className="cd-card-details" aria-label="手牌详情">
+              <header>
+                <h3>{previewCard.name}</h3>
+                <button
+                  type="button"
+                  aria-label="关闭手牌详情"
+                  onClick={() => {
+                    setPreviewCardId(null);
+                    lastTap.current = null;
+                  }}
+                >
+                  关闭
+                </button>
+              </header>
+              <div aria-live="polite">
+                <p>
+                  {previewCard.cost} 专注 ·{' '}
+                  {sourceText(previewCard.sourceLabel)}
+                  {previewCard.exhaust && ' · 本场一次'}
+                </p>
+                <p>{viewText(previewCard.description)}</p>
+                <p>
+                  <strong>{describeCardPreview(state, previewCard)}</strong>
+                </p>
+                {previewCard.scalingLabel && (
+                  <p>{viewText(previewCard.scalingLabel)}</p>
+                )}
+                {previewBlocked && <p role="status">{previewBlocked}</p>}
+              </div>
+              <button
+                type="button"
+                className="cd-card-keyboard-play"
+                disabled={Boolean(previewBlocked)}
+                onClick={() => playPreviewedCard(previewCard.id)}
+              >
+                出牌
+              </button>
+            </section>
+          )}
         </section>
         {error && (
           <div className="cd-save-error" role="alert">
@@ -630,7 +735,7 @@ export function CardBattleView({
                   : state.player.energy === 0
                     ? '专注已用尽，可以结束回合'
                     : compactHand
-                      ? '点牌查看 · 确认出牌'
+                      ? '单点查看 · 双点或上滑出牌'
                       : '未出手牌保留 · 悬停或聚焦查看'}
               </p>
             </div>
@@ -666,13 +771,43 @@ export function CardBattleView({
                       data-unplayable={
                         (!discarding && Boolean(reason)) || undefined
                       }
-                      aria-pressed={discarding ? selected : undefined}
+                      data-swipe={compactHand && !discarding ? true : undefined}
+                      aria-pressed={
+                        discarding
+                          ? selected
+                          : compactHand
+                            ? previewCard?.id === id
+                            : undefined
+                      }
+                      onPointerDown={
+                        compactHand && !discarding
+                          ? (event) => startCardSwipe(event, id)
+                          : undefined
+                      }
+                      onPointerUp={
+                        compactHand && !discarding
+                          ? (event) => endCardSwipe(event, id)
+                          : undefined
+                      }
+                      onPointerCancel={
+                        compactHand && !discarding
+                          ? () => {
+                              gesture.current = null;
+                              lastTap.current = null;
+                            }
+                          : undefined
+                      }
                       onClick={(event) => {
                         if (discarding) toggleDiscard(id);
                         else if (compactHand) {
-                          cardButton.current = event.currentTarget;
-                          setPreviewCardId(id);
-                          setNotebook('card');
+                          if (
+                            suppressCardClick.current === id &&
+                            event.detail !== 0
+                          ) {
+                            suppressCardClick.current = null;
+                            return;
+                          }
+                          inspectOrPlayCard(id, event.timeStamp);
                         } else onCommand({ type: 'play', cardId: id });
                       }}
                       aria-label={`${card.name}，消耗 ${card.cost} 专注，${viewText(card.description)}${discarding ? (selected ? '，已选择弃置' : '，选择弃置') : ''}`}
@@ -789,17 +924,11 @@ export function CardBattleView({
         {notebook && (
           <section
             className="cd-notebook"
-            data-kind={modalNotebook ? notebook : undefined}
-            aria-label={
-              notebook === 'route'
-                ? '本章路线'
-                : notebook === 'card'
-                  ? '手牌详情'
-                  : '作战笔记'
-            }
+            data-kind={notebook === 'route' ? 'route' : undefined}
+            aria-label={notebook === 'route' ? '本章路线' : '作战笔记'}
           >
             <header>
-              <h3 id={modalNotebook ? `${headingId}-${notebook}` : undefined}>
+              <h3 id={notebook === 'route' ? `${headingId}-route` : undefined}>
                 {
                   {
                     rules: rogue ? '试炼战斗规则' : '作答规则',
@@ -807,12 +936,11 @@ export function CardBattleView({
                     deck: `本场${deckLabel}`,
                     gear: rogue ? '本局法器' : '本场装备特性',
                     route: '本章路线',
-                    card: previewCard?.name ?? '手牌详情',
                   }[notebook]
                 }
               </h3>
               <button
-                ref={modalNotebook ? notebookClose : undefined}
+                ref={notebook === 'route' ? notebookClose : undefined}
                 onClick={() => setNotebook(null)}
               >
                 返回牌桌 ×
@@ -820,37 +948,6 @@ export function CardBattleView({
             </header>
             {notebook === 'route' ? (
               routeMap
-            ) : notebook === 'card' ? (
-              previewCard && (
-                <div className="cd-card-details">
-                  <p>
-                    {previewCard.cost} 专注 ·{' '}
-                    {sourceText(previewCard.sourceLabel)}
-                    {previewCard.exhaust && ' · 本场一次'}
-                  </p>
-                  <p>{viewText(previewCard.description)}</p>
-                  <p>
-                    <strong>{describeCardPreview(state, previewCard)}</strong>
-                  </p>
-                  {previewCard.scalingLabel && (
-                    <p>{viewText(previewCard.scalingLabel)}</p>
-                  )}
-                  {previewBlocked && <p role="status">{previewBlocked}</p>}
-                  <button
-                    type="button"
-                    className="cd-primary"
-                    disabled={
-                      state.phase !== 'battle' || Boolean(previewBlocked)
-                    }
-                    onClick={() => {
-                      setNotebook(null);
-                      onCommand({ type: 'play', cardId: previewCard.id });
-                    }}
-                  >
-                    确认出牌
-                  </button>
-                </div>
-              )
             ) : notebook === 'rules' ? (
               <>
                 {archetype && (
