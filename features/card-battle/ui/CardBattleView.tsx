@@ -316,7 +316,6 @@ export function CardBattleView({
   const active = state.phase === 'battle' || discarding;
   const discardCount = Math.max(0, state.hand.length - 10);
   const previewCard =
-    compactHand &&
     !notebook &&
     state.phase === 'battle' &&
     previewCardId &&
@@ -380,7 +379,7 @@ export function CardBattleView({
   }
   function startCardSwipe(event: PointerEvent<HTMLButtonElement>, id: string) {
     suppressCardClick.current = null;
-    if (!event.isPrimary || event.pointerType === 'mouse') {
+    if (!event.isPrimary || event.button !== 0) {
       gesture.current = null;
       return;
     }
@@ -392,19 +391,19 @@ export function CardBattleView({
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
-  function endCardSwipe(event: PointerEvent<HTMLButtonElement>, id: string) {
+  function endCardSwipe(event: PointerEvent<HTMLDivElement>) {
     const start = gesture.current;
-    if (!start || start.pointerId !== event.pointerId || start.cardId !== id)
-      return;
+    if (!start || start.pointerId !== event.pointerId) return;
     gesture.current = null;
     const across = Math.abs(event.clientX - start.x);
     const up = start.y - event.clientY;
     if (Math.max(across, Math.abs(up)) < 12) return;
 
     // A captured swipe may also generate a click. The next press starts fresh.
-    suppressCardClick.current = id;
+    suppressCardClick.current = start.cardId;
     lastTap.current = null;
-    if (up >= SWIPE_UP_DISTANCE && up >= across * 1.5) playPreviewedCard(id);
+    if (up >= SWIPE_UP_DISTANCE && up >= across * 1.5)
+      playPreviewedCard(start.cardId);
   }
   return (
     <div className="cd-battle-overlay">
@@ -417,6 +416,11 @@ export function CardBattleView({
           notebook === 'route' ? `${headingId}-route` : headingId
         }
         tabIndex={-1}
+        onPointerUp={endCardSwipe}
+        onPointerCancel={() => {
+          gesture.current = null;
+          lastTap.current = null;
+        }}
         data-phase={state.phase}
         data-focus={state.player.energy === 0 ? 'empty' : 'ready'}
         data-shape="portrait-4-3"
@@ -735,8 +739,8 @@ export function CardBattleView({
                   : state.player.energy === 0
                     ? '专注已用尽，可以结束回合'
                     : compactHand
-                      ? '单点查看 · 双点或上滑出牌'
-                      : '未出手牌保留 · 悬停或聚焦查看'}
+                      ? '单击查看 · 双击或上滑出牌'
+                      : '单击查看 · 双击或向上拖动出牌'}
               </p>
             </div>
             <HandLayout
@@ -749,66 +753,38 @@ export function CardBattleView({
                 const reason = getCardBattlePlayableReason(state, id);
                 const selected = selection.includes(id);
                 return (
-                  <div
-                    key={id}
-                    className="ct-card-slot"
-                    tabIndex={
-                      reason && !discarding && !compactHand ? 0 : undefined
-                    }
-                    aria-label={
-                      reason && !discarding && !compactHand
-                        ? `${card.name}，${reason}，${viewText(card.description)}`
-                        : undefined
-                    }
-                  >
+                  <div key={id} className="ct-card-slot">
                     <button
                       type="button"
                       className={`ct-card cd-card-${card.kind}${selected ? ' is-selected' : ''}`}
-                      disabled={
-                        !active ||
-                        (!compactHand && !discarding && Boolean(reason))
-                      }
+                      disabled={!active}
                       data-unplayable={
                         (!discarding && Boolean(reason)) || undefined
                       }
-                      data-swipe={compactHand && !discarding ? true : undefined}
+                      data-swipe={(active && !discarding) || undefined}
                       aria-pressed={
-                        discarding
-                          ? selected
-                          : compactHand
-                            ? previewCard?.id === id
-                            : undefined
+                        discarding ? selected : previewCard?.id === id
                       }
                       onPointerDown={
-                        compactHand && !discarding
+                        active && !discarding
                           ? (event) => startCardSwipe(event, id)
                           : undefined
                       }
-                      onPointerUp={
-                        compactHand && !discarding
-                          ? (event) => endCardSwipe(event, id)
-                          : undefined
-                      }
-                      onPointerCancel={
-                        compactHand && !discarding
-                          ? () => {
-                              gesture.current = null;
-                              lastTap.current = null;
-                            }
-                          : undefined
-                      }
                       onClick={(event) => {
-                        if (discarding) toggleDiscard(id);
-                        else if (compactHand) {
-                          if (
-                            suppressCardClick.current === id &&
-                            event.detail !== 0
-                          ) {
-                            suppressCardClick.current = null;
-                            return;
-                          }
-                          inspectOrPlayCard(id, event.timeStamp);
-                        } else onCommand({ type: 'play', cardId: id });
+                        if (discarding) {
+                          toggleDiscard(id);
+                          return;
+                        }
+                        if (event.detail === 0) {
+                          lastTap.current = null;
+                          setPreviewCardId(id);
+                          return;
+                        }
+                        if (suppressCardClick.current === id) {
+                          suppressCardClick.current = null;
+                          return;
+                        }
+                        inspectOrPlayCard(id, event.timeStamp);
                       }}
                       aria-label={`${card.name}，消耗 ${card.cost} 专注，${viewText(card.description)}${discarding ? (selected ? '，已选择弃置' : '，选择弃置') : ''}`}
                     >
@@ -840,7 +816,7 @@ export function CardBattleView({
                           ? selected
                             ? '已选弃置 · 再点取消'
                             : '点击选择弃置'
-                          : reason || '点击出牌'}
+                          : reason || '单击查看'}
                       </span>
                     </button>
                   </div>

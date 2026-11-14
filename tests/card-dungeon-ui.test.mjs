@@ -101,9 +101,9 @@ function mount(Component, initialProps) {
         (node) => text(node) === label || node.props['aria-label'] === label
       );
     },
-    clickNode(node) {
+    clickNode(node, event) {
       assert.equal(Boolean(node.props.disabled), false);
-      node.props.onClick();
+      node.props.onClick(event);
       flush();
     },
     click(label) {
@@ -311,7 +311,7 @@ test('新入口只有三个遭遇与刷新/关闭，无需准备页，旧失效�
   assert.equal(entered[0][2], 5);
 });
 
-test('卡牌界面发出实例 ID 操作，结束回合与确认撤离分离', () => {
+test('单击查看，双击同一张手牌发出实例 ID；结束回合与确认撤离分离', () => {
   const state = battle();
   const commands = [];
   const ui = mount(CardBattleView, {
@@ -319,10 +319,12 @@ test('卡牌界面发出实例 ID 操作，结束回合与确认撤离分离', (
     title: '实验室',
     onCommand: (command) => commands.push(command),
   });
-  const button = ui.find('button', (node) =>
-    node.props['aria-label']?.startsWith('演算，')
-  );
-  ui.clickNode(button);
+  const button = () =>
+    ui.find('button', (node) => node.props['aria-label']?.startsWith('演算，'));
+  ui.clickNode(button(), { detail: 1, timeStamp: 100 });
+  assert.equal(commands.length, 0);
+  ui.find('section', (node) => node.props['aria-label'] === '手牌详情');
+  ui.clickNode(button(), { detail: 2, timeStamp: 250 });
   assert.deepEqual(commands[0], { type: 'play', cardId: state.hand[0] });
   ui.click('结束回合 →');
   assert.deepEqual(commands[1], { type: 'end-turn' });
@@ -336,6 +338,45 @@ test('卡牌界面发出实例 ID 操作，结束回合与确认撤离分离', (
     .nodes()
     .find((node) => node.type === BattleActor && node.props.side === 'player');
   assert.equal(actor.props.cue, null);
+});
+
+test('鼠标从手牌向上拖动只出一张，专注不足时仍可查看该牌', () => {
+  const state = battle();
+  const commands = [];
+  const ui = mount(CardBattleView, {
+    state,
+    title: '实验室',
+    onCommand: (command) => commands.push(command),
+  });
+  const card = () =>
+    ui.find('button', (node) => node.props['aria-label']?.startsWith('演算，'));
+  const pointer = {
+    pointerType: 'mouse',
+    pointerId: 1,
+    isPrimary: true,
+    button: 0,
+    clientX: 100,
+    clientY: 300,
+    currentTarget: { setPointerCapture() {} },
+  };
+  card().props.onPointerDown(pointer);
+  ui.find('div', (node) => node.props.role === 'dialog').props.onPointerUp({
+    ...pointer,
+    clientY: 230,
+  });
+  ui.clickNode(card(), { detail: 1, timeStamp: 200 });
+  assert.deepEqual(commands, [{ type: 'play', cardId: state.hand[0] }]);
+
+  ui.setProps({ state: { ...state, player: { ...state.player, energy: 0 } } });
+  assert.equal(card().props['data-unplayable'], true);
+  card().props.onPointerDown(pointer);
+  ui.find('div', (node) => node.props.role === 'dialog').props.onPointerUp({
+    ...pointer,
+    clientY: 230,
+  });
+  ui.flush();
+  assert.equal(ui.button('出牌').props.disabled, true);
+  assert.equal(commands.length, 1);
 });
 
 test('版画角色按双方身份与敌人类型选择，旧现场缺少类型时仍有合适立绘', () => {
