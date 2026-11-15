@@ -14,6 +14,7 @@ import {
 import { CARDS } from './catalog';
 import { ENEMY_ARCHETYPES } from './enemies';
 import { getEnemyTactic, isEnemyTactic } from './enemyTactics';
+import { applyBattleRules, assertBattleRules } from './battleRules';
 import type {
   CardBattleCommand,
   CardBattleFighter,
@@ -354,6 +355,8 @@ export function createCardBattle(
     );
     assertPattern(options.enemy.pattern);
   }
+  const rules = options.enemy.rules;
+  assertBattleRules(rules);
   assertEquipment(options.equipment);
   assertCards(options.cards);
   const seed = options.seed >>> 0;
@@ -375,6 +378,9 @@ export function createCardBattle(
       block: 0,
       nextAttackBonus: 0,
       attacksPlayed: 0,
+      ...(rules?.some((rule) => rule.check === 'defenses')
+        ? { defensesPlayed: 0 }
+        : {}),
     },
     enemy: {
       ...snapshotFighter(options.enemy),
@@ -387,6 +393,7 @@ export function createCardBattle(
         : { realm: options.enemy.realm }),
       behavior: options.enemy.behavior,
       guardRounds: 0,
+      ...(rules && { rules: rules.map((rule) => ({ ...rule })) }),
       ...(options.enemy.archetype === undefined
         ? {}
         : {
@@ -592,10 +599,10 @@ export function getCardBattleIncomingPreview(
   state: CardBattleState
 ): CardBattleIncomingPreview {
   const tactic = getEnemyTactic(state);
-  const incoming = bounded(state.intent.damage * (tactic?.multiplier ?? 1));
-  const piercing = Math.floor(
-    (incoming * (state.intent.piercePercent ?? 0)) / 100
-  );
+  const baseIncoming = bounded(state.intent.damage * (tactic?.multiplier ?? 1));
+  const { values, effects } = applyBattleRules(state, baseIncoming);
+  const incoming = values.damage;
+  const piercing = Math.floor((incoming * values.pierce) / 100);
   const prevented = Math.min(state.player.block, incoming - piercing);
   const damage = Math.min(state.player.hp, incoming - prevented);
   const counterDamage =
@@ -617,7 +624,7 @@ export function getCardBattleIncomingPreview(
   const heal =
     damage < state.player.hp && state.enemy.hp > counterDamage
       ? Math.min(
-          state.intent.heal ?? 0,
+          values.heal,
           state.enemy.maxHp - state.enemy.hp + counterDamage
         )
       : 0;
@@ -634,10 +641,11 @@ export function getCardBattleIncomingPreview(
           tactic: {
             label: tactic.label,
             hint: tactic.hint,
-            damageDelta: incoming - state.intent.damage,
+            damageDelta: baseIncoming - state.intent.damage,
           },
         }
       : {}),
+    ...(effects && { effects }),
   };
 }
 
@@ -648,10 +656,20 @@ function finishTurn(state: CardBattleState): void {
   state.player.block = hit.retainedBlock;
   if (state.player.counter !== undefined) state.player.counter = 0;
   if (state.player.retainBlock !== undefined) state.player.retainBlock = 0;
+  const tacticNote = hit.tactic?.damageDelta
+    ? `（${hit.tactic.label} ${hit.tactic.damageDelta > 0 ? '+' : ''}${hit.tactic.damageDelta}）`
+    : '';
+  const ruleNote = hit.effects
+    ?.filter((effect) => effect.active && effect.delta !== 0)
+    .map(
+      ({ label, channel, delta }) =>
+        `${label}（${{ damage: '来袭', pierce: '穿透率', heal: '修复上限' }[channel]}${delta > 0 ? '+' : ''}${delta}${channel === 'pierce' ? ' 个百分点' : ''}）`
+    )
+    .join('，');
   appendLog(
     state,
     'enemy',
-    `对手「${state.intent.name}」${state.intent.crit ? '暴击' : ''}：来袭 ${hit.incoming}${hit.tactic?.damageDelta ? `（${hit.tactic.label} ${hit.tactic.damageDelta > 0 ? '+' : ''}${hit.tactic.damageDelta}）` : ''}${hit.piercing ? `（其中穿透 ${hit.piercing}）` : ''}，防护抵消 ${hit.prevented}，精力 -${hit.damage}。${hit.retainedBlock ? `剩余防护留存 ${hit.retainedBlock}。` : '本轮防护清空。'}`,
+    `对手「${state.intent.name}」${state.intent.crit ? '暴击' : ''}：来袭 ${hit.incoming}${tacticNote}${hit.piercing ? `（其中穿透 ${hit.piercing}）` : ''}，防护抵消 ${hit.prevented}，精力 -${hit.damage}。${hit.retainedBlock ? `剩余防护留存 ${hit.retainedBlock}。` : '本轮防护清空。'}${ruleNote ? `${ruleNote}。` : ''}`,
     { damage: hit.damage, preventedDamage: hit.prevented }
   );
   if (hit.counterDamage) {
@@ -752,6 +770,9 @@ export function stepCardBattle(
     player: { ...current.player },
     enemy: {
       ...current.enemy,
+      ...(current.enemy.rules && {
+        rules: current.enemy.rules.map((rule) => ({ ...rule })),
+      }),
       ...(current.enemy.pattern === undefined
         ? {}
         : {
@@ -978,6 +999,12 @@ export function assertCardBattleState(
     '敌人类型与行动循环'
   );
   if (e.pattern !== undefined) assertPattern(e.pattern);
+  assertBattleRules(e.rules);
+  requireState(
+    !e.rules?.some((rule) => rule.check === 'defenses') ||
+      p.defensesPlayed !== undefined,
+    '防御牌考核缺少回合计数'
+  );
   requireState(
     e.exposed === undefined || typeof e.exposed === 'boolean',
     '敌人破绽'

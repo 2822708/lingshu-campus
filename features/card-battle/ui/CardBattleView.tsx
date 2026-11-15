@@ -647,6 +647,23 @@ export function CardBattleView({
                       )}
                     </p>
                   )}
+                  {incoming.effects?.map((effect, index) => (
+                    <p
+                      key={index}
+                      className="cd-enemy-tactic cd-floor-effect"
+                      data-active={effect.active}
+                    >
+                      <b>{effect.label}</b> · {effect.hint}
+                      {effect.delta !== 0 && (
+                        <b>
+                          {' '}
+                          {effect.delta > 0 ? '+' : ''}
+                          {effect.delta}
+                          {effect.channel === 'pierce' ? '%' : ''}
+                        </b>
+                      )}
+                    </p>
+                  ))}
                   <p className="cd-enemy-plan-description">
                     {viewText(state.intent.description)}
                   </p>
@@ -1001,6 +1018,11 @@ export function CardBattleView({
                   <li>
                     防护在对手行动后清空；留盾可保留未消耗的部分。固守减伤50%，破势可解除固守与反震。
                   </li>
+                  {incoming.effects?.map((effect, index) => (
+                    <li key={index}>
+                      <b>{effect.label}</b> · {effect.hint}
+                    </li>
+                  ))}
                   <li>
                     破绽让下一张进攻威力增加25%；反击须在本轮挡住损耗且仍存活才触发。转守为攻会消耗当前防护，出牌前注意预计损失。
                   </li>

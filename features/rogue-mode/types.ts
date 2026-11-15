@@ -83,6 +83,7 @@ export interface RogueHistoryEntry {
 }
 export interface RogueRun {
   version: 1;
+  floorRulesVersion?: 1;
   runId: string;
   seed: number;
   rngState: number;

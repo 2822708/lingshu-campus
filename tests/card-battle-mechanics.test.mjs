@@ -125,11 +125,122 @@ test('旧现场不补入新装备或状态，基础战斗在刷新后继续同�
   assert.equal(Object.hasOwn(state, 'equipment'), false);
   assert.equal(Object.hasOwn(state.enemy, 'pattern'), false);
   assert.equal(Object.hasOwn(state.player, 'defensesPlayed'), false);
+  assert.equal(Object.hasOwn(state.enemy, 'rules'), false);
+  assert.equal(
+    Object.hasOwn(getCardBattleIncomingPreview(state), 'effects'),
+    false
+  );
   const next = send(state, { type: 'end-turn' });
   assert.deepEqual(next, send(clone(state), { type: 'end-turn' }));
   assert.equal(Object.hasOwn(next.player, 'counter'), false);
   assert.equal(Object.hasOwn(next.player, 'retainBlock'), false);
   assertCardBattleState(next);
+});
+
+test('楼层考核冻结配置，破阵与打出防御牌分别更新来袭与穿透', () => {
+  const rules = [
+    { label: '阵环未断', check: 'guard', max: 0, fail: 6 },
+    {
+      label: '守阵护身',
+      check: 'defenses',
+      min: 1,
+      channel: 'pierce',
+      fail: 20,
+    },
+  ];
+  let state = arrange(
+    create({
+      enemy: { ...create().enemy, rules },
+      cards: [
+        card('break', { clearEnemyBlock: true }),
+        card('guard', { kind: 'defense', damage: 0, block: 12 }),
+      ],
+    }),
+    ['break', 'guard']
+  );
+  state.intent.damage = 20;
+  state.intent.piercePercent = 10;
+  state.enemy.guardRounds = 2;
+  rules[0].fail = 99;
+  assert.equal(state.enemy.rules[0].fail, 6);
+  assert.equal(state.player.defensesPlayed, 0);
+  assert.equal(getCardBattleIncomingPreview(state).incoming, 26);
+  assert.equal(getCardBattleIncomingPreview(state).piercing, 7);
+
+  state = play(state, 'break');
+  assert.equal(getCardBattleIncomingPreview(state).incoming, 20);
+  assert.deepEqual(
+    getCardBattleIncomingPreview(state).effects.map((item) => item.met),
+    [true, false]
+  );
+  state = play(state, 'guard');
+  const forecast = getCardBattleIncomingPreview(state);
+  assert.equal(forecast.piercing, 2);
+  assert.equal(forecast.prevented, 12);
+  const next = send(clone(state), { type: 'end-turn' });
+  assert.equal(state.player.hp - next.player.hp, forecast.damage);
+  assert.equal(next.player.defensesPlayed, 0);
+  assert.notEqual(state.enemy.rules[0], next.enemy.rules[0]);
+  assertCardBattleState(next);
+  assert.throws(
+    () =>
+      assertCardBattleState({
+        ...next,
+        enemy: {
+          ...next.enemy,
+          rules: [{ ...rules[0], check: 'constructor' }],
+        },
+      }),
+    /考核规则定义/
+  );
+});
+
+test('残血机制即时抑制修复，收牌阶段显示的是弃牌后的结算数', () => {
+  const cards = Array.from({ length: 16 }, (_, index) => card(`a${index}`));
+  const rules = [
+    {
+      label: '维修封锁',
+      timing: 'below-half',
+      check: 'attacks',
+      min: 1,
+      channel: 'heal',
+      fail: 10,
+    },
+    { label: '手记收纳', check: 'hand', max: 10, pass: -4, fail: 10 },
+  ];
+  let state = arrange(
+    create({ enemy: { ...create().enemy, rules }, cards }),
+    cards.slice(0, 13).map((item) => item.id)
+  );
+  state.intent.damage = 20;
+  state.intent.heal = 4;
+  state.enemy.hp = 301;
+  const above = getCardBattleIncomingPreview(state);
+  assert.equal(above.effects[0].active, false);
+  assert.equal(above.heal, 4);
+  state.enemy.hp = 300;
+  assert.equal(getCardBattleIncomingPreview(state).heal, 14);
+  const noBaseHeal = arrange(clone(state), state.hand.slice(0, 10));
+  delete noBaseHeal.intent.heal;
+  assert.equal(getCardBattleIncomingPreview(noBaseHeal).heal, 10);
+  assert.equal(send(noBaseHeal, { type: 'end-turn' }).enemy.hp, 310);
+  state = play(state, 'a0');
+  assert.equal(getCardBattleIncomingPreview(state).heal, 4);
+  const waiting = send(state, { type: 'end-turn' });
+  assert.equal(waiting.phase, 'discard');
+  const forecast = getCardBattleIncomingPreview(waiting);
+  assert.equal(forecast.incoming, 16);
+  assert.equal(forecast.effects[1].met, true);
+  const next = send(waiting, {
+    type: 'confirm-discard',
+    cardIds: ['a1', 'a2'],
+  });
+  assert.equal(waiting.player.hp - next.player.hp, forecast.damage);
+  assert.equal(next.enemy.hp - waiting.enemy.hp, forecast.heal);
+  assert.match(
+    next.log.findLast((entry) => entry.kind === 'enemy' && entry.damage).text,
+    /手记收纳/
+  );
 });
 
 test('破绽不叠层，强化下一次总进攻25%并仅消耗一次', () => {

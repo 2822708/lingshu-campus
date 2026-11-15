@@ -7,6 +7,7 @@ import type {
 } from '../card-battle/types';
 import { ENEMY_ARCHETYPES } from '../card-battle/enemies';
 import { createTrialOpponentPattern } from './opponentPatterns';
+import { ELITE_TRIAL_RULES, getRogueFloor } from './floors';
 import type {
   RogueCard,
   RogueCardDefinition,
@@ -978,6 +979,15 @@ export function createRogueRoom(
       ? createTrialOpponentPattern(basePattern, actualArchetype, elite)
       : { name: undefined, pattern: basePattern };
   const name = boss?.name ?? opponent.name ?? NAMES[archetype];
+  const floor = run.floorRulesVersion ? getRogueFloor(run.floor) : undefined;
+  const specialRule = boss
+    ? floor?.bossRule
+    : elite
+      ? ELITE_TRIAL_RULES[archetype]
+      : undefined;
+  const rules = floor?.combat
+    ? [floor.combat, ...(specialRule ? [specialRule] : [])]
+    : undefined;
   const hp = boss
     ? 58 + chapter * 15
     : Math.round(
@@ -1013,6 +1023,7 @@ export function createRogueRoom(
             : 'balanced',
       archetype: actualArchetype,
       pattern: opponent.pattern,
+      ...(rules ? { rules } : {}),
     },
   };
 }

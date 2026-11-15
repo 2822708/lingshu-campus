@@ -87,6 +87,21 @@ const elites = {
   counterguard: { name: '镜相护阵', turn: 2, move: LOCK_ON },
 };
 
+const ELITE_ARCHETYPES = Object.keys(elites) as CardEnemyArchetype[];
+
+export function getTrialEliteArchetype(
+  seed: number,
+  floor: number,
+  lane: number
+): CardEnemyArchetype {
+  const start = (seed ^ Math.imul(floor, 0x9e3779b1)) >>> 0;
+  return ELITE_ARCHETYPES[(start + lane) % ELITE_ARCHETYPES.length];
+}
+
+export function getTrialEliteName(archetype: CardEnemyArchetype): string {
+  return elites[archetype].name;
+}
+
 export function createTrialOpponentPattern(
   base: CardEnemyMove[],
   archetype: CardEnemyArchetype,

@@ -10,10 +10,13 @@ import {
   getChapter,
   getRogueChapter,
   getNodeKind,
-  getShopPrices,
   resolveRogueCard,
 } from './catalog';
 import { createRogueRun, getRogueCurrentKind, stepRogueRun } from './engine';
+import {
+  describeRogueServiceBonus,
+  getRogueServiceQuote,
+} from './floorServices';
 import RogueRouteMap, { getRogueNodeLabel } from './RogueRouteMap';
 import { presentRogueBattle, presentRogueText } from './presentation';
 import { commitRogueRun, loadRogueRun, ROGUE_SAVE_KEY } from './persistence';
@@ -396,7 +399,12 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
       />
     );
   }
-  const prices = getShopPrices(run);
+  const {
+    title: serviceTitle,
+    camp,
+    shop: prices,
+    event,
+  } = getRogueServiceQuote(run);
   const eligible = picker
     ? run.deck.filter((c) =>
         picker.choice === 'upgrade' ? c.level < 2 : run.deck.length > 8
@@ -577,7 +585,7 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
           )}
         {run.phase === 'camp' &&
           panel(
-            '研习室 · 调息与参悟',
+            serviceTitle ? `${serviceTitle} · 研习室` : '研习室 · 调息与参悟',
             '回到研习室，调息、参悟或整理术式，选一项后继续试炼。',
             <div className="rm-choice-grid">
               <button
@@ -587,9 +595,8 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
               >
                 <strong>静坐调息</strong>
                 <span>
-                  恢复{' '}
-                  {Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * 0.3))}{' '}
-                  精力（30%上限）。
+                  恢复 {camp.heal} 精力。
+                  {describeRogueServiceBonus(0, camp.healCredits)}
                 </span>
                 <em>恢复并继续 →</em>
               </button>
@@ -599,7 +606,13 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
                 onClick={() => setPicker({ type: 'camp', choice: 'upgrade' })}
               >
                 <strong>参悟一式</strong>
-                <span>复盘课程笔记，增强原有效果，最多参悟两次。</span>
+                <span>
+                  复盘课程笔记，增强原有效果，最多参悟两次。
+                  {describeRogueServiceBonus(
+                    camp.upgradeHeal,
+                    camp.upgradeCredits
+                  )}
+                </span>
                 <em>选择卡牌 →</em>
               </button>
               <button
@@ -608,14 +621,20 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
                 onClick={() => setPicker({ type: 'camp', choice: 'remove' })}
               >
                 <strong>整理术式</strong>
-                <span>删去一式冗余笔记，至少保留8张。</span>
+                <span>
+                  删去一式冗余笔记，至少保留8张。
+                  {describeRogueServiceBonus(
+                    camp.removeHeal,
+                    camp.removeCredits
+                  )}
+                </span>
                 <em>选择卡牌 →</em>
               </button>
             </div>
           )}
         {run.phase === 'shop' &&
           panel(
-            '学园工坊 · 炼器与修习',
+            serviceTitle ? `${serviceTitle} · 工坊` : '学园工坊 · 炼器与修习',
             '用考核所得试炼学分，换取一项工坊服务或保留学分离开。',
             <>
               <div className="rm-choice-grid">
@@ -627,11 +646,7 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
                   onClick={() => command({ type: 'shop', choice: 'heal' })}
                 >
                   <strong>提神灵饮</strong>
-                  <span>
-                    恢复{' '}
-                    {Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * 0.3))}{' '}
-                    精力。
-                  </span>
+                  <span>恢复 {prices.healAmount} 精力。</span>
                   <b>{prices.heal} 试炼学分</b>
                 </button>
                 <button
@@ -644,7 +659,10 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
                   onClick={() => setPicker({ type: 'shop', choice: 'upgrade' })}
                 >
                   <strong>术式调校</strong>
-                  <span>借助仿真台，升级一张未满级的术式。</span>
+                  <span>
+                    借助仿真台，升级一张未满级的术式。
+                    {describeRogueServiceBonus(prices.upgradeHeal)}
+                  </span>
                   <b>{prices.upgrade} 试炼学分</b>
                 </button>
                 <button
@@ -657,7 +675,8 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
                   </strong>
                   <span>
                     {run.shopRelic
-                      ? RELICS[run.shopRelic].description
+                      ? RELICS[run.shopRelic].description +
+                        describeRogueServiceBonus(prices.relicHeal)
                       : '可选择其他服务。'}
                   </span>
                   {run.shopRelic && (
@@ -680,7 +699,9 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
           )}
         {run.phase === 'event' &&
           panel(
-            '助研机缘 · 实验室来信',
+            serviceTitle
+              ? `${serviceTitle} · 助研机缘`
+              : '助研机缘 · 实验室来信',
             '同门邀你参与实验，也可领取基础补贴或到资料室整理术式。',
             <div className="rm-choice-grid">
               <button
@@ -689,27 +710,37 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
                 onClick={() => command({ type: 'event', choice: 'supplies' })}
               >
                 <strong>领取助研补贴</strong>
-                <span>领取 {20 + (chapter - 1) * 5} 试炼学分，继续修习。</span>
+                <span>
+                  领取 {event.supplies} 试炼学分。
+                  {describeRogueServiceBonus(event.suppliesHeal)}
+                </span>
                 <em>领取补贴 →</em>
               </button>
               <button
                 className="rm-choice"
-                disabled={busy || run.hp <= 8}
+                disabled={busy || run.hp <= event.riskHp}
                 onClick={() => command({ type: 'event', choice: 'risk' })}
               >
                 <strong>参与高负荷实验</strong>
                 <span>
-                  消耗8精力，获得 {45 + (chapter - 1) * 10} 试炼学分。
+                  消耗 {event.riskHp} 精力，获得 {event.riskCredits} 试炼学分。
                 </span>
                 <em>协助实验 →</em>
               </button>
               <button
                 className="rm-choice"
-                disabled={busy || run.gold < 15 || run.deck.length <= 8}
+                disabled={
+                  busy || run.gold < event.removeCost || run.deck.length <= 8
+                }
                 onClick={() => setPicker({ type: 'event', choice: 'remove' })}
               >
                 <strong>资料室梳理术式</strong>
-                <span>支付15试炼学分，移除一张术式。</span>
+                <span>
+                  {event.removeCost > 0
+                    ? `支付 ${event.removeCost} 试炼学分`
+                    : '免费'}
+                  ，移除一张术式。
+                </span>
                 <em>选择卡牌 →</em>
               </button>
             </div>

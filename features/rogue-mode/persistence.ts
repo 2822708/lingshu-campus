@@ -205,6 +205,7 @@ export function commitRogueRun(
       } else if (
         next.seq !== previous.seq + 1 ||
         next.seed !== previous.seed ||
+        next.floorRulesVersion !== previous.floorRulesVersion ||
         next.jobId !== previous.jobId ||
         next.starterId !== previous.starterId ||
         !followsMap(previous, next)

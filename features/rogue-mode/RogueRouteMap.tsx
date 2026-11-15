@@ -9,6 +9,8 @@ import {
   Swords,
 } from 'lucide-react';
 import { getBoss, getChapter } from './catalog';
+import { getRogueFloor } from './floors';
+import { getTrialEliteArchetype, getTrialEliteName } from './opponentPatterns';
 import { getRogueMap, getRogueMapChoices } from './routeMap';
 import type { RogueMapNode } from './routeMap';
 import type { RogueNodeKind, RogueRun } from './types';
@@ -80,6 +82,9 @@ export default function RogueRouteMap({ run, onChoose, busy = false }: Props) {
   const focusFloor =
     run.phase === 'route' ? run.floor : (current?.floor ?? run.floor);
   const focusY = point({ floor: focusFloor, lane: 0 }).y / HEIGHT;
+  const floorRule = run.floorRulesVersion
+    ? getRogueFloor(focusFloor)
+    : undefined;
 
   useEffect(() => {
     const view = viewport.current;
@@ -117,10 +122,21 @@ export default function RogueRouteMap({ run, onChoose, busy = false }: Props) {
           {choosing && (
             <strong>
               第{run.floor}关可选 {choices.length} 处
+              {floorRule ? ` · ${floorRule.title}` : ''}
             </strong>
           )}
         </p>
       </header>
+      {choosing &&
+        floorRule?.combat &&
+        choices.some(
+          ({ kind }) => kind === 'battle' || kind === 'elite' || kind === 'boss'
+        ) && (
+          <p className="rm-route-floor-rule">
+            本层战斗 · {floorRule.combat.label}
+            {floorRule.bossRule ? `、${floorRule.bossRule.label}` : ''}
+          </p>
+        )}
       <div
         className="rm-route-viewport"
         ref={viewport}
@@ -181,7 +197,14 @@ export default function RogueRouteMap({ run, onChoose, busy = false }: Props) {
           })}
           {nodes.map((node) => {
             const { label, Icon } = MARKS[node.kind];
-            const name = node.kind === 'boss' ? boss.name : label;
+            const eliteName =
+              run.floorRulesVersion && node.kind === 'elite'
+                ? getTrialEliteName(
+                    getTrialEliteArchetype(run.seed, node.floor, node.lane)
+                  )
+                : undefined;
+            const name =
+              node.kind === 'boss' ? boss.name : (eliteName ?? label);
             const state = available.has(node.id)
               ? 'available'
               : current?.id === node.id
@@ -197,7 +220,10 @@ export default function RogueRouteMap({ run, onChoose, busy = false }: Props) {
             }[state];
             const column =
               node.kind === 'boss' ? '' : `第${node.lane + 1}列 · `;
-            const title = `第${node.floor}关 · ${column}${name} · ${status}`;
+            const floorTitle = run.floorRulesVersion
+              ? ` · ${getRogueFloor(node.floor).title}`
+              : '';
+            const title = `第${node.floor}关 · ${column}${eliteName ? '精英 · ' : ''}${name} · ${status}${floorTitle}`;
             const content = (
               <>
                 <Icon aria-hidden="true" strokeWidth={1.8} />

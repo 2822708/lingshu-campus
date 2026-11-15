@@ -82,6 +82,13 @@
   scrollbar-width: thin;
   scrollbar-color: #a6b196 transparent;
 }
+.rm-route .rm-route-floor-rule {
+  margin: 0;
+  padding: 4px 12px;
+  color: var(--map-ink);
+  background: #e9ecdd;
+  font-size: 12px;
+}
 
 .rm-route-viewport:focus-visible {
   outline: 2px solid #b3823c;

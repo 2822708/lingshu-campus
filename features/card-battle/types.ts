@@ -89,6 +89,32 @@ export interface ResolvedBattleCard extends CardEffects {
 export type CardEnemyBehavior = 'balanced' | 'aggressive' | 'defensive';
 export type CardEnemyIntentType = 'strong' | 'guard' | 'adjust';
 export type CardEnemyTactic = 'charge' | 'lock-on' | 'feedback' | 'overload';
+export interface BattleRule {
+  label: string;
+  timing?: 'opening' | 'even' | 'odd' | 'late' | 'below-half';
+  check:
+    | 'attacks'
+    | 'block'
+    | 'focus'
+    | 'hand'
+    | 'guard'
+    | 'injury'
+    | 'defenses';
+  min?: number;
+  max?: number;
+  /** Damage and healing use flat amounts; pierce uses percentage points. */
+  channel?: 'damage' | 'pierce' | 'heal';
+  pass?: number;
+  fail?: number;
+}
+export interface BattleRuleEffect {
+  label: string;
+  hint: string;
+  active: boolean;
+  met: boolean;
+  channel: NonNullable<BattleRule['channel']>;
+  delta: number;
+}
 export type CardEnemyArchetype =
   | 'duelist'
   | 'sentinel'
@@ -143,6 +169,8 @@ export interface CardBattleEnemy extends CardBattleFighter {
   archetype?: CardEnemyArchetype;
   /** Frozen at entry; catalog changes never rewrite an active opponent. */
   pattern?: CardEnemyMove[];
+  /** Frozen at entry, alongside the opponent pattern. */
+  rules?: BattleRule[];
   exposed?: boolean;
   thorns?: number;
 }
@@ -242,4 +270,5 @@ export interface CardBattleIncomingPreview {
   retainedBlock: number;
   counterDamage: number;
   tactic?: { label: string; hint: string; damageDelta: number };
+  effects?: BattleRuleEffect[];
 }

@@ -6,6 +6,7 @@ import {
 import { CARDS } from '../card-battle/catalog';
 import { ENEMY_ARCHETYPES } from '../card-battle/enemies';
 import { isEnemyTactic } from '../card-battle/enemyTactics';
+import { assertBattleRules } from '../card-battle/battleRules';
 import type {
   CardEnemyArchetype,
   CardId,
@@ -19,9 +20,13 @@ import {
   getNodeKind,
   createRogueRoom,
   resolveRogueCard,
-  getShopPrices,
 } from './catalog';
+import {
+  describeRogueServiceBonus,
+  getRogueServiceQuote,
+} from './floorServices';
 import { getRogueMap, getRogueMapChoices, getRogueMapNode } from './routeMap';
+import { getTrialEliteArchetype } from './opponentPatterns';
 import type { RogueMapNode } from './routeMap';
 import type {
   CreateRogueRunOptions,
@@ -210,10 +215,10 @@ function remove(run: RogueRun, id: string | undefined): void {
   run.deck = run.deck.filter((item) => item.id !== card.id);
   run.lastMessage = `整理修习笔记，移除了「${ROGUE_CARDS[card.cardId]!.name}」。`;
 }
-function heal(run: RogueRun): number {
-  const amount = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * 0.3));
-  run.hp += amount;
-  return amount;
+function grantServiceBonus(run: RogueRun, hp: number, credits = 0): void {
+  run.hp += hp;
+  run.gold += credits;
+  run.lastMessage += describeRogueServiceBonus(hp, credits);
 }
 function equipment(run: RogueRun): ResolvedBattleEquipment[] {
   return run.relics.map((id) => ({
@@ -253,6 +258,7 @@ export function createRogueRun(options: CreateRogueRunOptions): RogueRun {
   requireRun(starter, '初始卡组');
   const run: RogueRun = {
     version: 1,
+    floorRulesVersion: 1,
     runId: options.runId,
     seed: options.seed,
     rngState: options.seed || 0x6d2b79f5,
@@ -311,8 +317,10 @@ export function stepRogueRun(state: RogueRun, command: RogueCommand): RogueRun {
         event: '遇到同门的助研邀请，选择如何回应。',
       }[node.kind];
     } else {
-      const archetype =
+      let archetype =
         node.kind === 'boss' ? 'duelist' : choose(run, ARCHETYPES, 1)[0];
+      if (node.kind === 'elite' && run.floorRulesVersion === 1)
+        archetype = getTrialEliteArchetype(run.seed, node.floor, node.lane);
       const room = createRogueRoom(run, 0, archetype, node.kind);
       room.nodeId = node.id;
       run.rooms = [room];
@@ -402,25 +410,34 @@ export function stepRogueRun(state: RogueRun, command: RogueCommand): RogueRun {
     } else run.lastMessage = '保留当前法器搭配，跳过本次炼器成果。';
     advance(run, '试炼考核通过，完成术式与法器整理');
   } else if (command.type === 'camp' && phase === 'camp') {
-    if (command.choice === 'heal')
-      run.lastMessage = `在研习室调息，恢复${heal(run)}精力。`;
-    else if (command.choice === 'upgrade') upgrade(run, command.cardId);
-    else if (command.choice === 'remove') remove(run, command.cardId);
-    else accepted = false;
+    const { camp } = getRogueServiceQuote(run);
+    if (command.choice === 'heal') {
+      run.hp += camp.heal;
+      run.lastMessage = `在研习室调息，恢复${camp.heal}精力。`;
+      grantServiceBonus(run, 0, camp.healCredits);
+    } else if (command.choice === 'upgrade') {
+      upgrade(run, command.cardId);
+      grantServiceBonus(run, camp.upgradeHeal, camp.upgradeCredits);
+    } else if (command.choice === 'remove') {
+      remove(run, command.cardId);
+      grantServiceBonus(run, camp.removeHeal, camp.removeCredits);
+    } else accepted = false;
     if (accepted) advance(run, '完成研习室调息与修习复盘');
   } else if (command.type === 'shop' && phase === 'shop') {
-    const prices = getShopPrices(run);
+    const { shop } = getRogueServiceQuote(run);
     if (command.choice === 'leave')
       run.lastMessage = '保留试炼学分，离开校园工坊，继续修习。';
     else if (command.choice === 'heal') {
       if (run.hp === run.maxHp) throw new Error('当前精力已满。');
-      if (run.gold < prices.heal) throw new Error('试炼学分不足。');
-      run.gold -= prices.heal;
-      run.lastMessage = `在校园工坊领取调息灵饮，恢复${heal(run)}精力。`;
+      if (run.gold < shop.heal) throw new Error('试炼学分不足。');
+      run.gold -= shop.heal;
+      run.hp += shop.healAmount;
+      run.lastMessage = `在校园工坊领取调息灵饮，恢复${shop.healAmount}精力。`;
     } else if (command.choice === 'upgrade') {
-      if (run.gold < prices.upgrade) throw new Error('试炼学分不足。');
+      if (run.gold < shop.upgrade) throw new Error('试炼学分不足。');
       upgrade(run, command.cardId);
-      run.gold -= prices.upgrade;
+      run.gold -= shop.upgrade;
+      grantServiceBonus(run, shop.upgradeHeal);
     } else if (command.choice === 'relic') {
       if (
         !run.shopRelic ||
@@ -428,28 +445,30 @@ export function stepRogueRun(state: RogueRun, command: RogueCommand): RogueRun {
         run.relics.includes(run.shopRelic)
       )
         throw new Error('本次没有可领取的实验法器。');
-      if (run.gold < prices.relic) throw new Error('试炼学分不足。');
-      run.gold -= prices.relic;
+      if (run.gold < shop.relic) throw new Error('试炼学分不足。');
+      run.gold -= shop.relic;
       run.relics.push(run.shopRelic);
       run.lastMessage = `委托工坊炼制「${RELICS[run.shopRelic].name}」，已纳入本局法器。`;
+      grantServiceBonus(run, shop.relicHeal);
     } else accepted = false;
     if (accepted) advance(run, '完成校园工坊委托');
   } else if (command.type === 'event' && phase === 'event') {
-    const chapter = getChapter(run.floor);
+    const { event } = getRogueServiceQuote(run);
     if (command.choice === 'supplies') {
-      const gold = 20 + (chapter - 1) * 5;
-      run.gold += gold;
-      run.lastMessage = `协助同门整理实验记录，领取${gold}试炼学分的助研补贴。`;
+      run.gold += event.supplies;
+      run.lastMessage = `协助同门整理实验记录，领取${event.supplies}试炼学分的助研补贴。`;
+      grantServiceBonus(run, event.suppliesHeal);
     } else if (command.choice === 'risk') {
-      if (run.hp <= 8) throw new Error('精力不足以承担8点实验损耗。');
-      const gold = 45 + (chapter - 1) * 10;
-      run.hp -= 8;
-      run.gold += gold;
-      run.lastMessage = `完成高负荷炼器实验，消耗8点精力，获得${gold}试炼学分。`;
+      if (run.hp <= event.riskHp)
+        throw new Error(`精力不足以承担${event.riskHp}点实验损耗。`);
+      run.hp -= event.riskHp;
+      run.gold += event.riskCredits;
+      run.lastMessage = `完成高负荷炼器实验，消耗${event.riskHp}点精力，获得${event.riskCredits}试炼学分。`;
     } else if (command.choice === 'remove') {
-      if (run.gold < 15) throw new Error('资料室整理术式需要15试炼学分。');
+      if (run.gold < event.removeCost)
+        throw new Error(`资料室整理术式需要${event.removeCost}试炼学分。`);
       remove(run, command.cardId);
-      run.gold -= 15;
+      run.gold -= event.removeCost;
     } else accepted = false;
     if (accepted) advance(run, '完成同门助研与修习选择');
   } else accepted = false;
@@ -503,6 +522,8 @@ export function assertRogueRun(value: unknown): asserts value is RogueRun {
   const run = value as RogueRun;
   requireRun(
     run.version === 1 &&
+      (run.floorRulesVersion === undefined ||
+        (run.floorRulesVersion === 1 && run.map?.startFloor === 1)) &&
       text(run.runId, 80) &&
       natural(run.seed, 0, 0xffffffff) &&
       natural(run.rngState, 1, 0xffffffff) &&
@@ -612,6 +633,12 @@ export function assertRogueRun(value: unknown): asserts value is RogueRun {
       );
       const index = Number(room.id.split(':').at(-1)),
         enemy = room.enemy;
+      assertBattleRules(enemy.rules);
+      requireRun(
+        enemy.rules?.length ===
+          (run.floorRulesVersion ? (kind === 'battle' ? 1 : 2) : undefined),
+        '楼层与敌人规则'
+      );
       requireRun(
         natural(index, 0, run.map || kind === 'boss' ? 0 : 2) &&
           room.id === `${run.runId}:room:${run.floor}:${index}` &&
@@ -706,6 +733,10 @@ export function assertRogueRun(value: unknown): asserts value is RogueRun {
     requireRun(
       JSON.stringify(battle.enemy.pattern) === JSON.stringify(pattern),
       '战斗行动循环'
+    );
+    requireRun(
+      JSON.stringify(battle.enemy.rules) === JSON.stringify(room.enemy.rules),
+      '战斗楼层规则'
     );
   } else requireRun(run.battle === undefined, '其他阶段包含战斗');
   if (run.phase === 'reward') {

@@ -30,6 +30,13 @@ import {
   stepCardBattle,
 } from '../features/card-battle/engine';
 import { ENEMY_ARCHETYPES } from '../features/card-battle/enemies';
+import {
+  ELITE_TRIAL_RULES,
+  ROGUE_FLOORS,
+  getRogueFloor,
+} from '../features/rogue-mode/floors';
+import { getRogueServiceQuote } from '../features/rogue-mode/floorServices';
+import { getTrialEliteArchetype } from '../features/rogue-mode/opponentPatterns';
 
 const create = (jobId = 'vanguard', starterId = 'steady', seed = 17) =>
   createRogueRun({
@@ -44,6 +51,129 @@ const mapChoices = (run) =>
   getRogueMapChoices(run.seed, run.floor, run.map.path.at(-1));
 const enterFirst = (run) =>
   send(run, { type: 'choose-node', id: mapChoices(run)[0].id });
+
+test('50 层都有独立规则，六种精英和五个 BOSS 使用不同的机制组合', () => {
+  const run = create();
+  const combatSignatures = new Set();
+  const serviceSignatures = new Set();
+  const quotes = { camp: new Set(), shop: new Set(), event: new Set() };
+  const signature = ({ label, ...rule }) => JSON.stringify(rule);
+  const activeAt = (rule, turn, low) =>
+    ({
+      opening: turn === 1,
+      even: turn % 2 === 0,
+      odd: turn % 2 !== 0,
+      late: turn >= 3,
+      'below-half': low,
+    })[rule.timing] ?? true;
+  const compatible = (first, second) => {
+    if (first.check !== second.check) return true;
+    const shareTurn = [1, 2, 3, 4].some((turn) =>
+      [true, false].some(
+        (low) => activeAt(first, turn, low) && activeAt(second, turn, low)
+      )
+    );
+    return (
+      !shareTurn ||
+      Math.max(first.min ?? 0, second.min ?? 0) <=
+        Math.min(first.max ?? Infinity, second.max ?? Infinity)
+    );
+  };
+  assert.equal(ROGUE_FLOORS.length, 50);
+  assert.equal(new Set(ROGUE_FLOORS.map((floor) => floor.title)).size, 50);
+  for (let floor = 1; floor <= 50; floor++) {
+    const design = getRogueFloor(floor);
+    assert.equal(design.floor, floor);
+    const possible = new Set();
+    for (let seed = 1; seed <= 12; seed++) {
+      const row = getRogueMap(seed, getChapter(floor)).filter(
+        (node) => node.floor === floor
+      );
+      for (const node of row) possible.add(node.kind);
+      const elites = row.filter((node) => node.kind === 'elite');
+      assert.equal(
+        new Set(
+          elites.map((node) => getTrialEliteArchetype(seed, floor, node.lane))
+        ).size,
+        elites.length
+      );
+    }
+    const quote = getRogueServiceQuote({ ...run, floor, hp: 20 });
+    for (const [kind, variants] of Object.entries(quotes)) {
+      if (possible.has(kind)) {
+        variants.add(JSON.stringify(quote[kind]));
+      }
+    }
+    if (
+      [...possible].some((kind) => ['battle', 'elite', 'boss'].includes(kind))
+    ) {
+      assert.ok(design.combat, `第 ${floor} 层缺少战斗考核`);
+      combatSignatures.add(signature(design.combat));
+    }
+    if (
+      [...possible].some((kind) => ['camp', 'event', 'shop'].includes(kind))
+    ) {
+      serviceSignatures.add(JSON.stringify(design.service));
+    }
+    if (possible.has('elite')) {
+      for (const archetype of Object.keys(ENEMY_ARCHETYPES)) {
+        const result = createRogueRoom(
+          { ...run, floor },
+          0,
+          archetype,
+          'elite'
+        );
+        assert.deepEqual(result.enemy.rules, [
+          design.combat,
+          ELITE_TRIAL_RULES[archetype],
+        ]);
+        assert.ok(
+          compatible(...result.enemy.rules),
+          `第 ${floor} 层 ${archetype} 的条件不能同时满足`
+        );
+      }
+    }
+    if (possible.has('boss')) {
+      const result = createRogueRoom({ ...run, floor }, 0, 'duelist', 'boss');
+      assert.ok(design.bossRule);
+      assert.deepEqual(result.enemy.rules, [design.combat, design.bossRule]);
+      assert.ok(
+        compatible(...result.enemy.rules),
+        `第 ${floor} 层 BOSS 的条件不能同时满足`
+      );
+    }
+  }
+  assert.equal(combatSignatures.size, 40);
+  assert.equal(serviceSignatures.size, 25);
+  assert.deepEqual(
+    Object.values(quotes).map((set) => set.size),
+    [10, 15, 20]
+  );
+  assert.equal(
+    new Set(Object.values(ELITE_TRIAL_RULES).map(signature)).size,
+    6
+  );
+  assert.equal(
+    new Set(
+      ROGUE_FLOORS.flatMap((floor) =>
+        floor.bossRule ? [signature(floor.bossRule)] : []
+      )
+    ).size,
+    5
+  );
+});
+
+test('新版规则冻结到战斗存档，旧局继续原有路线规则', () => {
+  const fresh = create();
+  const active = enterFirst(fresh);
+  assert.deepEqual(active.battle.enemy.rules, [getRogueFloor(1).combat]);
+  assertRogueRun(JSON.parse(JSON.stringify(active)));
+  const { floorRulesVersion, ...legacy } = fresh;
+  const legacyActive = enterFirst(legacy);
+  assert.deepEqual(legacyActive.map, active.map);
+  assert.equal(legacyActive.battle.enemy.rules, undefined);
+  assertRogueRun(legacyActive);
+});
 
 test('普通怪从第二章使用专属行动，六种精英在同一循环内组合两种压力', () => {
   const start = create();
@@ -109,14 +239,24 @@ function score(battle, id) {
       ) * 0.5;
   value -= (p.reflectedDamage ?? 0) * 1.2;
   if (p.blockConsumed) value -= Math.min(missing, p.blockConsumed) * 0.8;
-  if (battle.intent.tactic) {
+  if (battle.intent.tactic || battle.enemy.rules) {
     const player = {
       ...battle.player,
       block: battle.player.block + p.block - (p.blockConsumed ?? 0),
       attacksPlayed: battle.player.attacksPlayed + Number(p.damage > 0),
+      defensesPlayed:
+        (battle.player.defensesPlayed ?? 0) + Number(card.kind === 'defense'),
+      energy: battle.player.energy - card.cost + (p.focusGain ?? 0),
     };
-    const projected = getCardBattleIncomingPreview({ ...battle, player });
+    const projected = getCardBattleIncomingPreview({
+      ...battle,
+      hand: battle.hand.filter((other) => other !== id),
+      player,
+      enemy: p.clearsGuard ? { ...battle.enemy, guardRounds: 0 } : battle.enemy,
+    });
     value += (incoming.incoming - projected.incoming) * 0.9;
+    value += (incoming.piercing - projected.piercing) * 0.5;
+    value += (incoming.heal - projected.heal) * 0.5;
     if (
       battle.intent.tactic === 'charge' &&
       player.attacksPlayed === 1 &&
@@ -203,12 +343,14 @@ function chooseService(run, preferElite = false) {
           };
     case 'event':
       return { type: 'event', choice: 'supplies' };
-    case 'shop':
-      return run.shopRelic && run.gold >= getShopPrices(run).relic
+    case 'shop': {
+      const prices = getRogueServiceQuote(run).shop;
+      return run.shopRelic && run.gold >= prices.relic
         ? { type: 'shop', choice: 'relic' }
-        : run.hp < run.maxHp * 0.7 && run.gold >= getShopPrices(run).heal
+        : run.hp < run.maxHp * 0.7 && run.gold >= prices.heal
           ? { type: 'shop', choice: 'heal' }
           : { type: 'shop', choice: 'leave' };
+    }
     default:
       return null;
   }
@@ -407,7 +549,8 @@ test('胜利确认才唯一发金币，奖励与跳过后进度可确定性续�
 });
 
 test('事件代价、休整强化删牌和商店单次交易都有真实后果', () => {
-  const event = drive(create(), (s) => s.phase === 'event');
+  const { floorRulesVersion, ...previousRun } = create();
+  const event = drive(previousRun, (s) => s.phase === 'event');
   const chapter = getChapter(event.floor);
   const supplies = send(event, { type: 'event', choice: 'supplies' });
   assert.equal(supplies.gold, event.gold + 20 + (chapter - 1) * 5);
@@ -422,7 +565,7 @@ test('事件代价、休整强化删牌和商店单次交易都有真实后果',
   });
   assert.equal(removed.gold, event.gold - 15);
   assert.equal(removed.deck.length, event.deck.length - 1);
-  const camp = drive(create(), (s) => s.phase === 'camp');
+  const camp = drive(previousRun, (s) => s.phase === 'camp');
   const upgraded = send(camp, {
     type: 'camp',
     choice: 'upgrade',
@@ -438,7 +581,7 @@ test('事件代价、休整强化删牌和商店单次交易都有真实后果',
     Math.min(camp.maxHp, camp.hp + Math.ceil(camp.maxHp * 0.3))
   );
   const shop = drive(
-    create(),
+    previousRun,
     (s) => s.phase === 'shop' && s.shopRelic && s.gold >= getShopPrices(s).relic
   );
   const price = getShopPrices(shop).relic;
@@ -450,6 +593,35 @@ test('事件代价、休整强化删牌和商店单次交易都有真实后果',
   assert.equal(bought.phase, 'route');
   assert.equal(bought.history.at(-1).kind, 'shop');
   assert.equal(send(bought, { type: 'shop', choice: 'relic' }), bought);
+});
+
+test('新版非战斗节点使用该层显示的收益和代价', () => {
+  const event = drive(create(), (run) => run.phase === 'event');
+  const camp = drive(create(), (run) => run.phase === 'camp');
+  const shop = drive(create(), (run) => run.phase === 'shop');
+  const eventQuote = getRogueServiceQuote(event).event;
+  const campQuote = getRogueServiceQuote(camp).camp;
+  const shopQuote = getRogueServiceQuote(shop).shop;
+  const risk = send(event, { type: 'event', choice: 'risk' });
+  assert.equal(risk.hp, event.hp - eventQuote.riskHp);
+  assert.equal(risk.gold, event.gold + eventQuote.riskCredits);
+  const rested = send(camp, { type: 'camp', choice: 'heal' });
+  assert.equal(rested.hp, camp.hp + campQuote.heal);
+  assert.equal(rested.gold, camp.gold + campQuote.healCredits);
+  const purchased = send(
+    { ...shop, gold: Math.max(shopQuote.upgrade, shop.gold) },
+    {
+      type: 'shop',
+      choice: 'upgrade',
+      cardId: shop.deck[0].id,
+    }
+  );
+  assert.equal(
+    purchased.gold,
+    Math.max(shopQuote.upgrade, shop.gold) - shopQuote.upgrade
+  );
+  assert.equal(purchased.hp, shop.hp + shopQuote.upgradeHeal);
+  assert.equal(purchased.deck[0].level, shop.deck[0].level + 1);
 });
 
 test('撤离或回合上限导致本局结束，未获胜不能发奖励', () => {

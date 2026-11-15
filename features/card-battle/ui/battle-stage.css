@@ -126,6 +126,13 @@
 .cd-enemy-tactic b {
   white-space: nowrap;
 }
+.cd-battle .cd-enemy-intent .cd-floor-effect[data-active='false'] {
+  color: #5f6557;
+}
+.cd-battle .cd-enemy-intent .cd-floor-effect {
+  padding-top: 2px;
+  border-top: 1px solid #aa8e6f50;
+}
 .cd-battle .cd-hand-area {
   border-top: 1px solid #c2c9b5;
 }
