@@ -13,6 +13,7 @@ import {
 } from './shared';
 import { CARDS } from './catalog';
 import { ENEMY_ARCHETYPES } from './enemies';
+import { getEnemyTactic, isEnemyTactic } from './enemyTactics';
 import type {
   CardBattleCommand,
   CardBattleFighter,
@@ -145,6 +146,7 @@ function assertPattern(pattern: unknown): asserts pattern is CardEnemyMove[] {
         INTENTS.includes(move.type) &&
         text(move.name, 128) &&
         text(move.description, 1000) &&
+        (move.tactic === undefined || isEnemyTactic(move.tactic)) &&
         Number.isFinite(move.damageMultiplier) &&
         move.damageMultiplier >= 0 &&
         move.damageMultiplier <= 3,
@@ -312,6 +314,7 @@ function randomIntent(
     description: move?.description ?? DESCRIPTIONS[type],
     damage,
     crit,
+    ...(move?.tactic ? { tactic: move.tactic } : {}),
     ...(move?.piercePercent ? { piercePercent: move.piercePercent } : {}),
     ...(move?.healPercent
       ? {
@@ -588,7 +591,8 @@ export function getCardBattlePreview(
 export function getCardBattleIncomingPreview(
   state: CardBattleState
 ): CardBattleIncomingPreview {
-  const incoming = state.intent.damage;
+  const tactic = getEnemyTactic(state);
+  const incoming = bounded(state.intent.damage * (tactic?.multiplier ?? 1));
   const piercing = Math.floor(
     (incoming * (state.intent.piercePercent ?? 0)) / 100
   );
@@ -625,6 +629,15 @@ export function getCardBattleIncomingPreview(
     heal,
     retainedBlock,
     counterDamage,
+    ...(tactic
+      ? {
+          tactic: {
+            label: tactic.label,
+            hint: tactic.hint,
+            damageDelta: incoming - state.intent.damage,
+          },
+        }
+      : {}),
   };
 }
 
@@ -638,7 +651,7 @@ function finishTurn(state: CardBattleState): void {
   appendLog(
     state,
     'enemy',
-    `对手「${state.intent.name}」${state.intent.crit ? '暴击' : ''}：来袭 ${state.intent.damage}${hit.piercing ? `（其中穿透 ${hit.piercing}）` : ''}，防护抵消 ${hit.prevented}，精力 -${hit.damage}。${hit.retainedBlock ? `剩余防护留存 ${hit.retainedBlock}。` : '本轮防护清空。'}`,
+    `对手「${state.intent.name}」${state.intent.crit ? '暴击' : ''}：来袭 ${hit.incoming}${hit.tactic?.damageDelta ? `（${hit.tactic.label} ${hit.tactic.damageDelta > 0 ? '+' : ''}${hit.tactic.damageDelta}）` : ''}${hit.piercing ? `（其中穿透 ${hit.piercing}）` : ''}，防护抵消 ${hit.prevented}，精力 -${hit.damage}。${hit.retainedBlock ? `剩余防护留存 ${hit.retainedBlock}。` : '本轮防护清空。'}`,
     { damage: hit.damage, preventedDamage: hit.prevented }
   );
   if (hit.counterDamage) {
@@ -976,6 +989,7 @@ export function assertCardBattleState(
       INTENTS.includes(intent.type) &&
       text(intent.name, 128) &&
       text(intent.description, 1000) &&
+      (intent.tactic === undefined || isEnemyTactic(intent.tactic)) &&
       integer(intent.damage, 0) &&
       typeof intent.crit === 'boolean',
     '已公布意图'

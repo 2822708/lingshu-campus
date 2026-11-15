@@ -9,6 +9,7 @@ import {
   getBoss,
   getShopPrices,
   resolveRogueCard,
+  createRogueRoom,
 } from '../features/rogue-mode/catalog';
 import {
   createRogueRun,
@@ -43,6 +44,34 @@ const mapChoices = (run) =>
   getRogueMapChoices(run.seed, run.floor, run.map.path.at(-1));
 const enterFirst = (run) =>
   send(run, { type: 'choose-node', id: mapChoices(run)[0].id });
+
+test('普通怪从第二章使用专属行动，六种精英在同一循环内组合两种压力', () => {
+  const start = create();
+  for (const archetype of Object.keys(ENEMY_ARCHETYPES)) {
+    const first = createRogueRoom(start, 0, archetype, 'battle');
+    assert.ok(first.enemy.pattern.every((move) => !move.tactic));
+    const late = createRogueRoom(
+      { ...start, floor: 11 },
+      0,
+      archetype,
+      'battle'
+    );
+    assert.equal(late.enemy.pattern.filter((move) => move.tactic).length, 1);
+    const elite = createRogueRoom(
+      { ...start, floor: 4 },
+      0,
+      archetype,
+      'elite'
+    );
+    assert.notEqual(elite.enemy.name, first.enemy.name);
+    assert.equal(
+      new Set(elite.enemy.pattern.flatMap((move) => move.tactic ?? [])).size,
+      2
+    );
+    const boss = createRogueRoom({ ...start, floor: 10 }, 0, archetype, 'boss');
+    assert.ok(boss.enemy.pattern.every((move) => !move.tactic));
+  }
+});
 function score(battle, id) {
   const card = battle.cards.find((item) => item.id === id),
     p = getCardBattlePreview(battle, id),
@@ -80,6 +109,29 @@ function score(battle, id) {
       ) * 0.5;
   value -= (p.reflectedDamage ?? 0) * 1.2;
   if (p.blockConsumed) value -= Math.min(missing, p.blockConsumed) * 0.8;
+  if (battle.intent.tactic) {
+    const player = {
+      ...battle.player,
+      block: battle.player.block + p.block - (p.blockConsumed ?? 0),
+      attacksPlayed: battle.player.attacksPlayed + Number(p.damage > 0),
+    };
+    const projected = getCardBattleIncomingPreview({ ...battle, player });
+    value += (incoming.incoming - projected.incoming) * 0.9;
+    if (
+      battle.intent.tactic === 'charge' &&
+      player.attacksPlayed === 1 &&
+      p.damage > 0 &&
+      battle.hand.some((other) => {
+        const next = battle.cards.find((item) => item.id === other);
+        return (
+          other !== id &&
+          next.cost <= player.energy - card.cost &&
+          getCardBattlePreview(battle, other).damage > 0
+        );
+      })
+    )
+      value += incoming.incoming * 0.25;
+  }
   return value / Math.max(1, card.cost);
 }
 function battleAction(run) {
@@ -161,7 +213,12 @@ function chooseService(run, preferElite = false) {
       return null;
   }
 }
-function drive(initial, stop = () => false, preferElite = false) {
+function drive(
+  initial,
+  stop = () => false,
+  preferElite = false,
+  takeRewards = false
+) {
   let run = initial;
   for (
     let step = 0;
@@ -169,6 +226,13 @@ function drive(initial, stop = () => false, preferElite = false) {
     step++
   ) {
     let action = chooseService(run, preferElite);
+    if (takeRewards && action?.type === 'choose-card' && run.deck.length < 14) {
+      const useful = run.reward.cards.find((id) => {
+        const card = ROGUE_CARDS[id];
+        return (card.damage ?? 0) >= card.cost * 7 && card.kind === 'attack';
+      });
+      if (useful) action = { type: 'choose-card', cardId: useful };
+    }
     if (
       action?.type === 'camp' &&
       action.choice === 'upgrade' &&
@@ -483,11 +547,19 @@ test('篡改关数、奖励、牌区、职业或冻结敌人均明确拒绝', ()
   }
 });
 
-test('三职业六套开局可通过真实指令走完50混合节点和五BOSS', () => {
+test('三职业六套开局在同一组种子中均可走完50混合节点和五BOSS', () => {
   const rows = [];
   for (const job of Object.values(JOBS))
     for (const starter of job.starters) {
-      const run = drive(create(job.id, starter.id, 17));
+      const attempts = [17, 1].map((seed) =>
+        drive(create(job.id, starter.id, seed), undefined, false, true)
+      );
+      for (const attempt of attempts) {
+        assert.ok(['complete', 'defeat'].includes(attempt.phase));
+        assertRogueRun(JSON.parse(JSON.stringify(attempt)));
+      }
+      const run =
+        attempts.find((attempt) => attempt.phase === 'complete') ?? attempts[0];
       rows.push({
         job: job.id,
         starter: starter.id,

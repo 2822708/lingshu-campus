@@ -547,6 +547,7 @@ export function CardBattleView({
             />
             <p>
               {state.enemy.realm ?? state.enemy.title}
+              {rogue && state.enemy.title === '实训精英' && ' · 精英'}
               {archetype && (
                 <span
                   className="cd-enemy-archetype"
@@ -634,6 +635,18 @@ export function CardBattleView({
                       </span>
                     )}
                   </div>
+                  {incoming.tactic && (
+                    <p className="cd-enemy-tactic">
+                      {incoming.tactic.hint}
+                      {incoming.tactic.damageDelta !== 0 && (
+                        <b>
+                          {' '}
+                          来袭 {incoming.tactic.damageDelta > 0 ? '+' : ''}
+                          {incoming.tactic.damageDelta}
+                        </b>
+                      )}
+                    </p>
+                  )}
                   <p className="cd-enemy-plan-description">
                     {viewText(state.intent.description)}
                   </p>
@@ -962,6 +975,9 @@ export function CardBattleView({
                 {archetype && (
                   <p className="cd-enemy-guide">
                     <b>{archetypeName}</b>
+                    {archetype &&
+                      state.enemy.title === '实训精英' &&
+                      ' · 实训精英'}
                     {!rogue && (
                       <>
                         ：{archetype.description}

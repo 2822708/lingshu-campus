@@ -65,6 +65,61 @@ function arrange(state, ids) {
   return state;
 }
 
+test('敌人特殊行动随出牌更新，预告、穿透和结算使用同一份伤害', () => {
+  for (const [tactic, actions, initial, adjusted] of [
+    ['charge', ['a', 'b'], 1, 0.5],
+    ['lock-on', ['guard'], 1.35, 1],
+    ['feedback', ['a', 'b'], 1, 1.35],
+    ['overload', ['a'], 1.35, 1],
+  ]) {
+    const move = {
+      name: '特殊行动',
+      description: '核对预告与实效。',
+      type: 'strong',
+      damageMultiplier: 1,
+      piercePercent: 25,
+      tactic,
+    };
+    let state = arrange(
+      create({
+        enemy: {
+          ...create().enemy,
+          archetype: 'duelist',
+          pattern: [move, move],
+        },
+        cards: [
+          card('a'),
+          card('b'),
+          card('guard', { kind: 'defense', damage: 0, block: 10 }),
+        ],
+      }),
+      ['a', 'b', 'guard']
+    );
+    const base = state.intent.damage;
+    assert.equal(state.intent.tactic, tactic);
+    assert.equal(
+      getCardBattleIncomingPreview(state).incoming,
+      Math.round(base * initial)
+    );
+    for (const id of actions) state = play(state, id);
+    const forecast = getCardBattleIncomingPreview(state);
+    assert.equal(forecast.incoming, Math.round(base * adjusted));
+    assert.equal(forecast.piercing, Math.floor(forecast.incoming / 4));
+    const reloaded = clone(state);
+    assertCardBattleState(reloaded);
+    const next = send(reloaded, { type: 'end-turn' });
+    assert.equal(state.player.hp - next.player.hp, forecast.damage);
+    assert.match(
+      next.log.find((entry) => entry.kind === 'enemy').text,
+      new RegExp(`来袭 ${forecast.incoming}`)
+    );
+    assert.equal(
+      getCardBattleIncomingPreview(next).incoming,
+      Math.round(next.intent.damage * initial)
+    );
+  }
+});
+
 test('旧现场不补入新装备或状态，基础战斗在刷新后继续同一随机流', () => {
   const state = create();
   assert.equal(Object.hasOwn(state, 'equipment'), false);

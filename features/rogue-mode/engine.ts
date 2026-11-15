@@ -5,6 +5,7 @@ import {
 } from '../card-battle/engine';
 import { CARDS } from '../card-battle/catalog';
 import { ENEMY_ARCHETYPES } from '../card-battle/enemies';
+import { isEnemyTactic } from '../card-battle/enemyTactics';
 import type {
   CardEnemyArchetype,
   CardId,
@@ -638,6 +639,7 @@ export function assertRogueRun(value: unknown): asserts value is RogueRun {
               ['strong', 'guard', 'adjust'].includes(move.type) &&
               text(move.name, 128) &&
               text(move.description, 1000) &&
+              (move.tactic === undefined || isEnemyTactic(move.tactic)) &&
               Number.isFinite(move.damageMultiplier) &&
               move.damageMultiplier >= 0 &&
               move.damageMultiplier <= 3 &&

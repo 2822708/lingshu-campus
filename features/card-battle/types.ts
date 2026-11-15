@@ -88,6 +88,7 @@ export interface ResolvedBattleCard extends CardEffects {
 }
 export type CardEnemyBehavior = 'balanced' | 'aggressive' | 'defensive';
 export type CardEnemyIntentType = 'strong' | 'guard' | 'adjust';
+export type CardEnemyTactic = 'charge' | 'lock-on' | 'feedback' | 'overload';
 export type CardEnemyArchetype =
   | 'duelist'
   | 'sentinel'
@@ -103,6 +104,7 @@ export interface CardEnemyMove {
   piercePercent?: number;
   healPercent?: number;
   thornsPercent?: number;
+  tactic?: CardEnemyTactic;
 }
 export interface ResolvedBattleEquipment {
   id: string;
@@ -153,6 +155,7 @@ export interface CardBattleIntent {
   piercePercent?: number;
   heal?: number;
   thorns?: number;
+  tactic?: CardEnemyTactic;
 }
 export interface CardBattleLogEntry {
   seq: number;
@@ -238,4 +241,5 @@ export interface CardBattleIncomingPreview {
   heal: number;
   retainedBlock: number;
   counterDamage: number;
+  tactic?: { label: string; hint: string; damageDelta: number };
 }

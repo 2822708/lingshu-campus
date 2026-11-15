@@ -6,6 +6,7 @@ import type {
   ResolvedBattleCard,
 } from '../card-battle/types';
 import { ENEMY_ARCHETYPES } from '../card-battle/enemies';
+import { createTrialOpponentPattern } from './opponentPatterns';
 import type {
   RogueCard,
   RogueCardDefinition,
@@ -969,6 +970,14 @@ export function createRogueRoom(
   const boss = kind === 'boss' ? BOSSES[chapter - 1] : undefined;
   const actualArchetype = boss?.archetype ?? archetype;
   const elite = kind === 'elite';
+  const basePattern = (
+    boss?.pattern ?? ENEMY_ARCHETYPES[actualArchetype].pattern
+  ).map((move) => ({ ...move, ...getRogueMoveText(move.name) }));
+  const opponent =
+    !boss && (elite || chapter >= 2)
+      ? createTrialOpponentPattern(basePattern, actualArchetype, elite)
+      : { name: undefined, pattern: basePattern };
+  const name = boss?.name ?? opponent.name ?? NAMES[archetype];
   const hp = boss
     ? 58 + chapter * 15
     : Math.round(
@@ -981,10 +990,14 @@ export function createRogueRoom(
     : 7 + chapter * 2 + Math.floor(local / 3) + (elite ? 2 : 0);
   return {
     id: `${run.runId}:room:${run.floor}:${index}`,
-    name: boss?.name ?? `${elite ? '精英·' : ''}${NAMES[archetype]}`,
-    description: boss?.description ?? GUIDES[archetype],
+    name: elite ? `精英·${name}` : name,
+    description:
+      boss?.description ??
+      (opponent.name
+        ? '此实训精英会轮换两种特殊行动。每回合按预告调整出牌。'
+        : GUIDES[archetype]),
     enemy: {
-      name: boss?.name ?? NAMES[archetype],
+      name,
       title: boss ? '章节考核' : elite ? '实训精英' : '学园试阵',
       realm: `第${chapter}章`,
       hp,
@@ -999,9 +1012,7 @@ export function createRogueRoom(
             ? 'aggressive'
             : 'balanced',
       archetype: actualArchetype,
-      pattern: (boss?.pattern ?? ENEMY_ARCHETYPES[actualArchetype].pattern).map(
-        (move) => ({ ...move, ...getRogueMoveText(move.name) })
-      ),
+      pattern: opponent.pattern,
     },
   };
 }
