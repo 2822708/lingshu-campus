@@ -30,6 +30,7 @@ interface BattleActorProps {
   archetype?: CardEnemyArchetype;
   cue?: BattleActorCue | null;
   setting?: 'campus' | 'trial';
+  presentation?: 'calculus';
 }
 
 type PortraitId = 'player' | 'duelist' | 'sentinel';
@@ -69,6 +70,7 @@ export function BattleActor({
   archetype,
   cue = null,
   setting = 'campus',
+  presentation,
 }: BattleActorProps) {
   const portrait = getPortrait(side, archetype, variant);
   const damage =
@@ -100,13 +102,20 @@ export function BattleActor({
       data-action={cue?.action ?? 'idle'}
       data-portrait={portrait}
       data-setting={setting}
+      data-contact={
+        blocked > 0 ? (damage > 0 ? 'partial' : 'blocked') : undefined
+      }
+      data-presentation={presentation}
       aria-hidden="true"
     >
       <div key={cue?.key ?? 'idle'} className={classes}>
         <div className="ct-actor-image-frame">
           <div className="ct-actor-figure">
             {setting === 'trial' && side === 'enemy' ? (
-              <TrialConstruct archetype={archetype} />
+              <TrialConstruct
+                archetype={archetype}
+                presentation={presentation}
+              />
             ) : (
               <img
                 className="ct-actor-art"

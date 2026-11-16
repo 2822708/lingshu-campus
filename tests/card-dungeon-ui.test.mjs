@@ -474,7 +474,7 @@ test('手动弃牌只确认精确数量，关闭整理返回出牌', () => {
     title: '弃牌',
     onCommand: (command) => commands.push(command),
   });
-  assert.equal(ui.button('弃置 0 张并结束回合').props.disabled, true);
+  assert.equal(ui.button('确认弃牌 · 还需选 4 张').props.disabled, true);
   for (let i = 0; i < 4; i++)
     ui.clickNode(
       ui.find('button', (node) =>
@@ -482,7 +482,7 @@ test('手动弃牌只确认精确数量，关闭整理返回出牌', () => {
       )
     );
   assert.equal(commands.length, 0);
-  ui.click('弃置 4 张并结束回合');
+  ui.click('确认弃牌并结束回合');
   assert.equal(commands[0].type, 'confirm-discard');
   assert.equal(commands[0].cardIds.length, 4);
   assert.equal(new Set(commands[0].cardIds).size, 4);

@@ -90,12 +90,58 @@ function tone(
   }
 }
 
+let paperNoise: AudioBuffer | null = null;
+
+function texture(freq: number, duration: number, volume: number, delay = 0) {
+  const ctx = getCtx();
+  if (!ctx) return;
+  try {
+    if (!paperNoise) {
+      paperNoise = ctx.createBuffer(
+        1,
+        Math.ceil(ctx.sampleRate * 0.28),
+        ctx.sampleRate
+      );
+      const samples = paperNoise.getChannelData(0);
+      for (let i = 0; i < samples.length; i++)
+        samples[i] = Math.random() * 2 - 1;
+    }
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    const start = ctx.currentTime + delay;
+
+    source.buffer = paperNoise;
+    filter.type = 'bandpass';
+    filter.frequency.value = freq;
+    gain.gain.setValueAtTime(volume, start);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.start(start);
+    source.stop(start + duration);
+  } catch {
+    // 音效播放失败时保留画面反馈。
+  }
+}
+
 /** 播放一个音效 */
 export function playSound(
-  name: 'click' | 'confirm' | 'battle' | 'levelup' | 'defeat' | 'pickup'
+  name:
+    | 'click'
+    | 'confirm'
+    | 'battle'
+    | 'levelup'
+    | 'defeat'
+    | 'pickup'
+    | 'trial-paper'
+    | 'trial-hit'
+    | 'trial-block'
+    | 'trial-break'
+    | 'trial-heavy'
+    | 'trial-seal'
 ) {
   const { enabled, volume } = readSettings();
-  if (!enabled) return;
+  if (!enabled || volume <= 0) return;
 
   switch (name) {
     case 'click':
@@ -126,6 +172,31 @@ export function playSound(
       // 获得物品：清脆叮
       tone(880, 880, 0.08, 'sine', volume * 0.4);
       tone(1320, 1320, 0.12, 'sine', volume * 0.35, 0.08);
+      break;
+    case 'trial-paper':
+      texture(1600, 0.12, volume * 0.18);
+      texture(2050, 0.09, volume * 0.12, 0.055);
+      break;
+    case 'trial-hit':
+      tone(165, 55, 0.1, 'triangle', volume * 0.24);
+      texture(1700, 0.055, volume * 0.21);
+      break;
+    case 'trial-block':
+      tone(340, 190, 0.1, 'sine', volume * 0.15);
+      texture(740, 0.07, volume * 0.16);
+      break;
+    case 'trial-break':
+      tone(470, 110, 0.11, 'triangle', volume * 0.2);
+      texture(2900, 0.15, volume * 0.25);
+      texture(1210, 0.09, volume * 0.14, 0.042);
+      break;
+    case 'trial-heavy':
+      tone(130, 48, 0.23, 'triangle', volume * 0.31);
+      texture(850, 0.18, volume * 0.26);
+      break;
+    case 'trial-seal':
+      tone(115, 69, 0.12, 'sine', volume * 0.3);
+      texture(1220, 0.12, volume * 0.17);
       break;
   }
 }

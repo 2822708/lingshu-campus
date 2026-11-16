@@ -1,11 +1,33 @@
 import type { CardEnemyArchetype } from '../types';
 
+const CALCULUS_PORTRAIT = new URL(
+  './assets/print-calculus.webp',
+  import.meta.url
+).href;
+
 /** An engineering trial apparatus; all geometry is decorative and has no rules. */
 export function TrialConstruct({
   archetype,
+  presentation,
 }: {
   archetype?: CardEnemyArchetype;
+  presentation?: 'calculus';
 }) {
+  if (presentation === 'calculus') {
+    return (
+      <div className="ct-calculus-construct" aria-hidden="true">
+        <img
+          className="ct-actor-art"
+          src={CALCULUS_PORTRAIT}
+          alt=""
+          draggable={false}
+          decoding="async"
+        />
+        <span data-calculus-mark />
+      </div>
+    );
+  }
+
   const shield = archetype === 'sentinel' || archetype === 'counterguard';
   const repair = archetype === 'regenerator';
   const waveform = archetype === 'disruptor';

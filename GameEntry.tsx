@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { CAMPUS_THEME } from './config/campusTheme';
+import { unlockAudio } from './utils/sound';
 import './features/rogue-mode/rogue-mode.css';
 
 const CampusApp = lazy(() => import('./App'));
@@ -36,7 +37,10 @@ export default function GameEntry() {
           </button>
           <button
             className="rm-mode-choice is-expedition"
-            onClick={() => setMode('rogue')}
+            onClick={() => {
+              unlockAudio();
+              setMode('rogue');
+            }}
           >
             <span className="rm-mode-number">02</span>
             <strong>灵枢试炼</strong>

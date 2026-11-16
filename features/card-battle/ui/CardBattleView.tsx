@@ -1,8 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import type { PointerEvent, ReactNode } from 'react';
+import type { CSSProperties, PointerEvent, ReactNode } from 'react';
+import { Files, Shield, Swords } from 'lucide-react';
 import type {
   CardBattleAction,
   CardBattleState,
+  CardEnemyIntentType,
   ResolvedBattleCard,
 } from '../types';
 import {
@@ -11,17 +13,20 @@ import {
   getCardBattlePreview,
 } from '../engine';
 import { ENEMY_ARCHETYPES } from '../enemies';
+import { playSound } from '../../../utils/sound';
 import { BattleActor } from './BattleActor';
 import type { BattleActorCue } from './BattleActor';
-import { HandLayout } from './HandLayout';
 import './card-battle.css';
 import './battle-stage.css';
 import './rogue-battle-theme.css';
 import './battle-effects.css';
+import './calculus-presentation.css';
 
 export interface CardBattleViewProps {
   /** Presentation only; the host still owns combat, rewards, and persistence. */
   mode?: 'dungeon' | 'rogue';
+  presentation?: 'calculus';
+  playIntro?: boolean;
   onPause?: () => void;
   routeMap?: ReactNode;
   state: CardBattleState;
@@ -33,17 +38,45 @@ export interface CardBattleViewProps {
   onAcknowledge?: () => void;
 }
 
-const COMPACT_HAND_QUERY =
-  '(max-width: 600px), (max-width: 1000px) and (pointer: coarse) and (hover: none)';
+const COMPACT_HAND_QUERY = '(max-width: 600px) and (orientation: portrait)';
 const DOUBLE_TAP_MS = 350;
 const SWIPE_UP_DISTANCE = 48;
 const CARD_KIND_LABELS = { attack: '进攻', defense: '防御', utility: '准备' };
+const CARD_KIND_MARKS = { attack: Swords, defense: Shield, utility: Files };
+
+interface CommittedBattleCue extends BattleActorCue {
+  playerHpBefore: number;
+  enemyHpBefore: number;
+  enemyMove?: CardEnemyIntentType;
+  enemyMoveName?: string;
+}
+
+function getCalculusRelease(cue: CommittedBattleCue) {
+  if (cue.actor === 'player' || cue.enemyMove === 'strong') return 160;
+  return 72;
+}
+
+function getCardFaceEffect(state: CardBattleState, card: ResolvedBattleCard) {
+  const preview = getCardBattlePreview(state, card.id);
+  if (card.clearEnemyBlock) return '破护';
+  if (card.counter) return `反击 ${preview.counter ?? 0}`;
+  if (preview.damage > 0) return `打 ${preview.damage}`;
+  if (card.blockToDamage) return '耗盾';
+  if (card.expose) return '破绽';
+  if (card.block) return `护 ${preview.block}`;
+  if (card.draw) return `抽 ${preview.draw}`;
+  if (card.heal) return `回 ${preview.heal}`;
+  if (card.focusGain) return `专注 +${preview.focusGain ?? 0}`;
+  if (card.nextAttackBonus) return `蓄势 +${preview.nextAttackBonus}`;
+  if (card.retainBlock) return `留盾 ${preview.retainBlock ?? 0}`;
+  return CARD_KIND_LABELS[card.kind];
+}
 
 function describeCardPreview(state: CardBattleState, card: ResolvedBattleCard) {
   const preview = getCardBattlePreview(state, card.id);
   return (
     [
-      preview.actualDamage > 0 ? `命中 ${preview.actualDamage}` : '',
+      preview.damage > 0 ? `预计命中 ${preview.actualDamage}` : '',
       preview.block ? `防护 +${preview.block}` : '',
       preview.heal ? `恢复 +${preview.heal}` : '',
       preview.draw ? `抽牌 ${preview.draw}` : '',
@@ -66,7 +99,7 @@ function describeCardPreview(state: CardBattleState, card: ResolvedBattleCard) {
 export function getCommittedBattleCue(
   before: CardBattleState,
   after: CardBattleState
-): BattleActorCue | null {
+): CommittedBattleCue | null {
   if (before.id !== after.id || after.commandSeq !== before.commandSeq + 1)
     return null;
   const entries = after.log.filter((entry) => entry.seq === after.commandSeq);
@@ -95,6 +128,10 @@ export function getCommittedBattleCue(
               ? 'charge'
               : 'draw',
     actor: enemy ? 'enemy' : played ? 'player' : 'none',
+    playerHpBefore: before.player.hp,
+    enemyHpBefore: before.enemy.hp,
+    enemyMove: enemy ? before.intent.type : undefined,
+    enemyMoveName: enemy ? before.intent.name : undefined,
     playerDamage: Math.max(
       0,
       before.player.hp + playerHealing - after.player.hp
@@ -146,31 +183,62 @@ function Energy({
   hp,
   max,
   resource = '精力',
+  motion,
 }: {
   label: string;
   hp: number;
   max: number;
   resource?: '精力' | '生命';
+  motion?: { key: string; before: number };
 }) {
+  const changing = motion && motion.before !== hp;
   return (
     <div className="cd-energy">
       <span>
         <span className="cd-energy-name">{label}</span>
-        <b>
-          {hp} / {max}
-        </b>
+        {changing ? (
+          <span className="cd-energy-figures" key={motion.key}>
+            <b className="cd-energy-current">
+              {hp} / {max}
+            </b>
+            <b className="cd-energy-before" aria-hidden="true">
+              {motion.before} / {max}
+            </b>
+          </span>
+        ) : (
+          <b>
+            {hp} / {max}
+          </b>
+        )}
       </span>
-      <meter
-        min={0}
-        max={Math.max(1, max)}
-        value={hp}
-        aria-label={label.endsWith(resource) ? label : `${label}${resource}`}
-      />
+      <div className="cd-energy-track">
+        <meter
+          min={0}
+          max={Math.max(1, max)}
+          value={hp}
+          aria-label={label.endsWith(resource) ? label : `${label}${resource}`}
+        />
+        {changing && (
+          <span
+            key={motion.key}
+            className="cd-energy-rolling"
+            aria-hidden="true"
+            style={
+              {
+                '--cd-hp-before': motion.before / Math.max(1, max),
+                '--cd-hp-after': hp / Math.max(1, max),
+              } as CSSProperties
+            }
+          />
+        )}
+      </div>
     </div>
   );
 }
 export function CardBattleView({
   mode = 'dungeon',
+  presentation,
+  playIntro = false,
   onPause,
   routeMap,
   state,
@@ -202,8 +270,11 @@ export function CardBattleView({
       : (value ?? '基础牌');
   const headingId = useId();
   const hintId = useId();
+  const intentPanelId = useId();
   const dialog = useRef<HTMLDivElement>(null);
   const routeButton = useRef<HTMLButtonElement>(null);
+  const intentButton = useRef<HTMLButtonElement>(null);
+  const inspectedCard = useRef<HTMLButtonElement>(null);
   const notebookClose = useRef<HTMLButtonElement>(null);
   const previous = useRef(state);
   const lastTap = useRef<{ cardId: string; time: number } | null>(null);
@@ -214,7 +285,57 @@ export function CardBattleView({
     y: number;
   } | null>(null);
   const suppressCardClick = useRef<string | null>(null);
-  const [cue, setCue] = useState<BattleActorCue | null>(null);
+  const [scene, setScene] = useState<{
+    snapshot: CardBattleState;
+    cue: CommittedBattleCue | null;
+  }>(() => ({ snapshot: state, cue: null }));
+  // Paint the committed snapshot and its visual cue in the same render.
+  if (scene.snapshot !== state) {
+    setScene({
+      snapshot: state,
+      cue: getCommittedBattleCue(scene.snapshot, state),
+    });
+  }
+  const { cue } = scene;
+  const calculusCue = presentation === 'calculus' ? cue : null;
+  const preparing = calculusCue?.enemyMoveName === '压轴起式';
+  const opening =
+    presentation === 'calculus' &&
+    playIntro &&
+    state.phase === 'battle' &&
+    state.commandSeq === 0;
+  useEffect(() => {
+    if (opening) playSound('trial-paper');
+  }, [opening]);
+  useEffect(() => {
+    if (!calculusCue || calculusCue.actor === 'none') return;
+    if (calculusCue.playedCard || preparing) playSound('trial-paper');
+    const reduced = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    const impact = calculusCue.brokeBlock
+      ? 'trial-break'
+      : calculusCue.playerDamage || calculusCue.enemyDamage
+        ? calculusCue.enemyMove === 'strong'
+          ? 'trial-heavy'
+          : 'trial-hit'
+        : calculusCue.blocked || calculusCue.playerBlock
+          ? 'trial-block'
+          : null;
+    const timers: number[] = [];
+    if (impact)
+      timers.push(
+        window.setTimeout(
+          () => playSound(impact),
+          reduced ? 0 : getCalculusRelease(calculusCue) + 90
+        )
+      );
+    if (calculusCue.outcome === 'victory')
+      timers.push(
+        window.setTimeout(() => playSound('trial-seal'), reduced ? 0 : 600)
+      );
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [calculusCue, preparing]);
   const [selection, setSelection] = useState<string[]>([]);
   const [retreatConfirmation, setRetreatConfirmation] = useState(false);
   const [previewCardId, setPreviewCardId] = useState<string | null>(null);
@@ -236,11 +357,12 @@ export function CardBattleView({
     return () => query.removeEventListener('change', update);
   }, []);
   const [notebook, setNotebook] = useState<
-    'rules' | 'log' | 'deck' | 'gear' | 'route' | null
+    'rules' | 'log' | 'deck' | 'gear' | 'route' | 'intent' | null
   >(null);
   useEffect(() => {
-    if (notebook !== 'route') return;
-    const trigger = routeButton.current;
+    if (notebook !== 'route' && notebook !== 'intent') return;
+    const trigger =
+      notebook === 'route' ? routeButton.current : intentButton.current;
     const battle = dialog.current;
     notebookClose.current?.focus();
     return () => {
@@ -252,7 +374,6 @@ export function CardBattleView({
     const before = previous.current;
     previous.current = state;
     if (before !== state) {
-      setCue(getCommittedBattleCue(before, state));
       setSelection([]);
       setRetreatConfirmation(false);
       setPreviewCardId(null);
@@ -267,6 +388,8 @@ export function CardBattleView({
     const trap = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
+        if (element?.querySelector('.cd-card-details'))
+          inspectedCard.current?.focus();
         setNotebook(null);
         setPreviewCardId(null);
         lastTap.current = null;
@@ -275,7 +398,9 @@ export function CardBattleView({
       }
       if (event.key !== 'Tab') return;
       const scope =
-        element?.querySelector('.cd-notebook[data-kind="route"]') ?? element;
+        element?.querySelector(
+          '.cd-notebook:is([data-kind="route"], [data-kind="intent"])'
+        ) ?? element;
       const controls = [
         ...(scope?.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [tabindex="0"]'
@@ -332,6 +457,8 @@ export function CardBattleView({
   const incoming = getCardBattleIncomingPreview(state);
   const prevented = incoming.prevented;
   const expectedLoss = incoming.damage;
+  const currentEffect = incoming.effects?.find((effect) => effect.active);
+  const cardColumns = Math.max(1, state.hand.length);
   const archetype = state.enemy.archetype
     ? ENEMY_ARCHETYPES[state.enemy.archetype]
     : undefined;
@@ -356,6 +483,12 @@ export function CardBattleView({
       : cue?.actor === 'enemy' && (cue.playerDamage > 0 || cue.blocked > 0)
         ? 'enemy'
         : undefined;
+  const calculusStyle = calculusCue
+    ? ({
+        '--cd-release': `${getCalculusRelease(calculusCue)}ms`,
+        '--cd-contact': `${getCalculusRelease(calculusCue) + 90}ms`,
+      } as CSSProperties)
+    : undefined;
   function toggleDiscard(id: string) {
     setSelection((old) =>
       old.includes(id)
@@ -423,7 +556,11 @@ export function CardBattleView({
         role="dialog"
         aria-modal="true"
         aria-labelledby={
-          notebook === 'route' ? `${headingId}-route` : headingId
+          notebook === 'route'
+            ? `${headingId}-route`
+            : notebook === 'intent'
+              ? `${intentPanelId}-title`
+              : headingId
         }
         tabIndex={-1}
         onPointerUp={endCardSwipe}
@@ -435,7 +572,9 @@ export function CardBattleView({
         data-focus={state.player.energy === 0 ? 'empty' : 'ready'}
         data-shape="portrait-4-3"
         data-mode={mode}
+        data-presentation={presentation}
         data-route-open={notebook === 'route' || undefined}
+        data-intent-open={notebook === 'intent' || undefined}
         data-compact-hand={compactHand || undefined}
       >
         <header className="cd-battle-header">
@@ -470,28 +609,113 @@ export function CardBattleView({
             {rogue && onPause && <button onClick={onPause}>保存离开</button>}
           </nav>
         </header>
-        <section className="cd-arena" aria-label="战斗双方">
-          {strike && (
+        <section
+          className="cd-arena"
+          aria-label="战斗双方"
+          data-opening={opening || undefined}
+          data-move={calculusCue?.enemyMove}
+          data-preparing={preparing || undefined}
+          style={calculusStyle}
+        >
+          <div
+            className="cd-intent-row"
+            data-intent={active ? state.intent.type : state.phase}
+            data-exposure={
+              active ? (expectedLoss > 0 ? 'damage' : 'blocked') : undefined
+            }
+          >
+            {active ? (
+              <button
+                type="button"
+                ref={intentButton}
+                className="cd-enemy-intent"
+                aria-label={`对手下一步 ${state.intent.name}，预计损失 ${expectedLoss} ${resource}${currentEffect ? `，${currentEffect.label}${currentEffect.met ? '已达标' : '待达标'}` : ''}，查看详情`}
+                aria-expanded={notebook === 'intent'}
+                aria-controls={
+                  notebook === 'intent' ? intentPanelId : undefined
+                }
+                onClick={() => setNotebook('intent')}
+              >
+                <span className="cd-enemy-plan-label">下步</span>
+                <strong className="cd-intent-name">{state.intent.name}</strong>
+                <span className="cd-expected-loss">
+                  预计损失 <b>{expectedLoss}</b> {resource}
+                </span>
+                {currentEffect && (
+                  <span
+                    className="cd-current-rule"
+                    data-met={currentEffect.met}
+                  >
+                    {currentEffect.label}{' '}
+                    {currentEffect.met ? '达标' : '待达标'}
+                  </span>
+                )}
+                <span className="cd-intent-more" aria-hidden="true">
+                  详情 <span>⌄</span>
+                </span>
+              </button>
+            ) : (
+              <div className="cd-enemy-intent" aria-label="本场状态">
+                <span className="cd-enemy-plan-label">本场状态</span>
+                <strong className="cd-intent-name">
+                  {
+                    {
+                      victory: '胜利 · 本场结束',
+                      defeat: '力竭 · 本场结束',
+                      retreat: '已撤离 · 本场结束',
+                      stalemate: '僵持 · 本场结束',
+                    }[state.phase]
+                  }
+                </strong>
+                <span>
+                  {
+                    {
+                      victory: '对手已被击破。',
+                      defeat: rogue ? '本次试炼已结束。' : '本场作答已结束。',
+                      retreat: rogue ? '已撤离本次试炼。' : '已收起简历离场。',
+                      stalemate: '已达到本场回合上限。',
+                    }[state.phase]
+                  }
+                </span>
+              </div>
+            )}
+          </div>
+          {(opening ||
+            strike ||
+            cue?.playedCard ||
+            preparing ||
+            calculusCue?.enemyMove === 'strong') && (
             <div
-              key={cue?.key}
-              className="cd-strike-trail"
-              data-from={strike}
+              key={cue?.key ?? 'entry'}
+              className={
+                presentation === 'calculus'
+                  ? 'cd-calculus-effects'
+                  : 'cd-common-effects'
+              }
               aria-hidden="true"
             >
-              <i />
-              <i />
-              <i />
-            </div>
-          )}
-          {cue?.playedCard && (
-            <div
-              key={`${cue.key}:card`}
-              className="cd-played-card"
-              data-kind={cue.playedCard.kind}
-              aria-hidden="true"
-            >
-              <span>{cue.playedCard.cost}</span>
-              <strong>{cue.playedCard.name}</strong>
+              {opening && <i className="cd-calculus-axis" />}
+              {(preparing || calculusCue?.enemyMove === 'strong') && (
+                <>
+                  <i className="cd-calculus-windup" />
+                  <span className="cd-calculus-move-name">
+                    施放 · {calculusCue?.enemyMoveName}
+                  </span>
+                </>
+              )}
+              {strike && (
+                <div className="cd-strike-trail" data-from={strike}>
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              )}
+              {cue?.playedCard && (
+                <div className="cd-played-card" data-kind={cue.playedCard.kind}>
+                  <span>{cue.playedCard.cost}</span>
+                  <strong>{cue.playedCard.name}</strong>
+                </div>
+              )}
             </div>
           )}
           <article className="cd-student">
@@ -505,6 +729,14 @@ export function CardBattleView({
               resource={resource}
               hp={state.player.hp}
               max={state.player.maxHp}
+              motion={
+                calculusCue
+                  ? {
+                      key: calculusCue.key,
+                      before: calculusCue.playerHpBefore,
+                    }
+                  : undefined
+              }
             />
             <p>
               防护 <b>{state.player.block}</b>
@@ -530,6 +762,7 @@ export function CardBattleView({
               side="enemy"
               setting={rogue ? 'trial' : 'campus'}
               archetype={state.enemy.archetype}
+              presentation={presentation}
               variant={
                 state.enemy.behavior === 'defensive'
                   ? 1
@@ -544,6 +777,14 @@ export function CardBattleView({
               resource={resource}
               hp={state.enemy.hp}
               max={state.enemy.maxHp}
+              motion={
+                calculusCue
+                  ? {
+                      key: calculusCue.key,
+                      before: calculusCue.enemyHpBefore,
+                    }
+                  : undefined
+              }
             />
             <p>
               {state.enemy.realm ?? state.enemy.title}
@@ -588,114 +829,6 @@ export function CardBattleView({
                 </b>
               )}
             </p>
-            <div
-              className="cd-enemy-intent"
-              data-intent={active ? state.intent.type : state.phase}
-              data-exposure={
-                active ? (expectedLoss > 0 ? 'damage' : 'blocked') : undefined
-              }
-              aria-label={active ? '对手下一步' : '本场状态'}
-              title={active ? viewText(state.intent.description) : undefined}
-            >
-              {active ? (
-                <>
-                  <div className="cd-enemy-plan">
-                    <span className="cd-enemy-plan-label">下步</span>
-                    <strong>{state.intent.name}</strong>
-                    {state.intent.crit && <span>暴击</span>}
-                  </div>
-                  <div className="cd-enemy-forecast">
-                    <span>
-                      来袭 <b>{incoming.incoming}</b>
-                    </span>
-                    <span>
-                      防护抵挡 <b>{prevented}</b>
-                    </span>
-                    <span className="cd-expected-loss">
-                      预计损失 <b>{expectedLoss}</b> {resource}
-                    </span>
-                    {incoming.piercing > 0 && (
-                      <span>
-                        穿透 <b>{incoming.piercing}</b>
-                      </span>
-                    )}
-                    {incoming.heal > 0 && (
-                      <span>
-                        对手修复 <b>+{incoming.heal}</b>
-                      </span>
-                    )}
-                    {incoming.counterDamage > 0 && (
-                      <span>
-                        预计反击 <b>{incoming.counterDamage}</b>
-                      </span>
-                    )}
-                    {incoming.retainedBlock > 0 && (
-                      <span>
-                        结余留盾 <b>{incoming.retainedBlock}</b>
-                      </span>
-                    )}
-                  </div>
-                  {incoming.tactic && (
-                    <p className="cd-enemy-tactic">
-                      {incoming.tactic.hint}
-                      {incoming.tactic.damageDelta !== 0 && (
-                        <b>
-                          {' '}
-                          来袭 {incoming.tactic.damageDelta > 0 ? '+' : ''}
-                          {incoming.tactic.damageDelta}
-                        </b>
-                      )}
-                    </p>
-                  )}
-                  {incoming.effects?.map((effect, index) => (
-                    <p
-                      key={index}
-                      className="cd-enemy-tactic cd-floor-effect"
-                      data-active={effect.active}
-                    >
-                      <b>{effect.label}</b> · {effect.hint}
-                      {effect.delta !== 0 && (
-                        <b>
-                          {' '}
-                          {effect.delta > 0 ? '+' : ''}
-                          {effect.delta}
-                          {effect.channel === 'pierce' ? '%' : ''}
-                        </b>
-                      )}
-                    </p>
-                  ))}
-                  <p className="cd-enemy-plan-description">
-                    {viewText(state.intent.description)}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <span>本场状态</span>
-                  <strong>
-                    {
-                      {
-                        victory: '胜利 · 本场结束',
-                        defeat: '力竭 · 本场结束',
-                        retreat: '已撤离 · 本场结束',
-                        stalemate: '僵持 · 本场结束',
-                      }[state.phase]
-                    }
-                  </strong>
-                  <p>
-                    {
-                      {
-                        victory: '对手已被击破。',
-                        defeat: rogue ? '本次试炼已结束。' : '本场作答已结束。',
-                        retreat: rogue
-                          ? '已撤离本次试炼。'
-                          : '已收起简历离场。',
-                        stalemate: '已达到本场回合上限。',
-                      }[state.phase]
-                    }
-                  </p>
-                </>
-              )}
-            </div>
           </article>
           {previewCard && (
             <section className="cd-card-details" aria-label="手牌详情">
@@ -705,6 +838,7 @@ export function CardBattleView({
                   type="button"
                   aria-label="关闭手牌详情"
                   onClick={() => {
+                    inspectedCard.current?.focus();
                     setPreviewCardId(null);
                     lastTap.current = null;
                   }}
@@ -714,8 +848,8 @@ export function CardBattleView({
               </header>
               <div aria-live="polite">
                 <p>
-                  {previewCard.cost} 专注 ·{' '}
-                  {sourceText(previewCard.sourceLabel)}
+                  {previewCard.cost} 专注 · {CARD_KIND_LABELS[previewCard.kind]}{' '}
+                  · {sourceText(previewCard.sourceLabel)}
                   {previewCard.exhaust && ' · 本场一次'}
                 </p>
                 <p>{viewText(previewCard.description)}</p>
@@ -757,6 +891,9 @@ export function CardBattleView({
         {result ? (
           <section
             className="cd-result-summary"
+            data-calculus-victory={
+              calculusCue?.outcome === 'victory' || undefined
+            }
             aria-label={rogue ? '本局战果' : '副本结算'}
           >
             <div className="cd-result-title">
@@ -806,15 +943,27 @@ export function CardBattleView({
                       : '单击查看 · 双击或向上拖动出牌'}
               </p>
             </div>
-            <HandLayout
-              cardShape="portrait-4-3"
-              ariaLabel={discarding ? '选择要弃置的手牌' : '全部手牌'}
-              hintId={hintId}
+            <div
+              className="ct-hand ct-hand-layout"
+              role="group"
+              aria-label={discarding ? '选择要弃置的手牌' : '全部手牌'}
+              aria-describedby={hintId}
+              data-hand-rows={compactHand ? undefined : 1}
+              style={
+                {
+                  '--cd-hand-count': cardColumns,
+                  '--cd-hand-four': Math.min(4, cardColumns),
+                  '--cd-hand-five': Math.min(5, cardColumns),
+                  '--cd-hand-ten': Math.min(10, cardColumns),
+                } as CSSProperties
+              }
             >
               {state.hand.map((id) => {
                 const card = state.cards.find((value) => value.id === id)!;
                 const reason = getCardBattlePlayableReason(state, id);
                 const selected = selection.includes(id);
+                const Mark = CARD_KIND_MARKS[card.kind];
+                const faceEffect = getCardFaceEffect(state, card);
                 return (
                   <div key={id} className="ct-card-slot">
                     <button
@@ -828,16 +977,35 @@ export function CardBattleView({
                       aria-pressed={
                         discarding ? selected : previewCard?.id === id
                       }
+                      aria-keyshortcuts={
+                        !discarding && active ? 'Enter' : undefined
+                      }
                       onPointerDown={
                         active && !discarding
                           ? (event) => startCardSwipe(event, id)
                           : undefined
                       }
+                      onFocus={(event) => {
+                        if (
+                          !discarding &&
+                          event.currentTarget.matches(':focus-visible')
+                        ) {
+                          inspectedCard.current = event.currentTarget;
+                          setPreviewCardId(id);
+                        }
+                      }}
+                      onKeyDown={(event) => {
+                        if (active && !discarding && event.key === 'Enter') {
+                          event.preventDefault();
+                          if (!event.repeat) playPreviewedCard(id);
+                        }
+                      }}
                       onClick={(event) => {
                         if (discarding) {
                           toggleDiscard(id);
                           return;
                         }
+                        inspectedCard.current = event.currentTarget;
                         if (event.detail === 0) {
                           lastTap.current = null;
                           setPreviewCardId(id);
@@ -849,43 +1017,28 @@ export function CardBattleView({
                         }
                         inspectOrPlayCard(id, event.timeStamp);
                       }}
-                      aria-label={`${card.name}，消耗 ${card.cost} 专注，${viewText(card.description)}${discarding ? (selected ? '，已选择弃置' : '，选择弃置') : ''}`}
+                      aria-label={`${card.name}，消耗 ${card.cost} 专注，${viewText(card.description)}${discarding ? (selected ? '，已选择弃置' : '，选择弃置') : `，${faceEffect}`}`}
                     >
-                      <span className="ct-card-heading">
-                        <span className="ct-card-cost">{card.cost}</span>
-                        <strong>{card.name}</strong>
-                      </span>
-                      <span className="cd-card-compact-kind" aria-hidden="true">
-                        {selected ? '已选弃置' : CARD_KIND_LABELS[card.kind]}
-                      </span>
-                      <span className="ct-card-kind">
-                        {CARD_KIND_LABELS[card.kind]} ·{' '}
-                        {sourceText(card.sourceLabel)}
-                        {card.exhaust ? ' · 本场一次' : ''}
-                      </span>
-                      <span className="ct-card-description">
-                        {viewText(card.description)}
-                      </span>
-                      <span className="ct-card-preview">
-                        {describeCardPreview(state, card)}
-                      </span>
-                      {card.scalingLabel && (
-                        <span className="ct-card-scaling">
-                          {viewText(card.scalingLabel)}
+                      <span className="cd-card-face">
+                        <span className="ct-card-heading">
+                          <span className="ct-card-cost">{card.cost}</span>
+                          <strong>{card.name}</strong>
                         </span>
-                      )}
-                      <span className="ct-card-action">
-                        {discarding
-                          ? selected
-                            ? '已选弃置 · 再点取消'
-                            : '点击选择弃置'
-                          : reason || '单击查看'}
+                        <span className="cd-card-mark" aria-hidden="true">
+                          <Mark strokeWidth={1.5} />
+                        </span>
+                        <span
+                          className="cd-card-compact-kind"
+                          aria-hidden="true"
+                        >
+                          {selected ? '✓ 已选择' : faceEffect}
+                        </span>
                       </span>
                     </button>
                   </div>
                 );
               })}
-            </HandLayout>
+            </div>
           </section>
         )}
         <footer className="cd-controls">
@@ -944,7 +1097,9 @@ export function CardBattleView({
                         })
                       }
                     >
-                      弃置 {selection.length} 张并结束回合
+                      {selection.length === discardCount
+                        ? '确认弃牌并结束回合'
+                        : `确认弃牌 · 还需选 ${discardCount - selection.length} 张`}
                     </button>
                   </>
                 ) : (
@@ -963,11 +1118,26 @@ export function CardBattleView({
         {notebook && (
           <section
             className="cd-notebook"
-            data-kind={notebook === 'route' ? 'route' : undefined}
-            aria-label={notebook === 'route' ? '本章路线' : '作战笔记'}
+            id={notebook === 'intent' ? intentPanelId : undefined}
+            data-kind={notebook}
+            aria-label={
+              notebook === 'route'
+                ? '本章路线'
+                : notebook === 'intent'
+                  ? '对手行动与考核'
+                  : '作战笔记'
+            }
           >
             <header>
-              <h3 id={notebook === 'route' ? `${headingId}-route` : undefined}>
+              <h3
+                id={
+                  notebook === 'route'
+                    ? `${headingId}-route`
+                    : notebook === 'intent'
+                      ? `${intentPanelId}-title`
+                      : undefined
+                }
+              >
                 {
                   {
                     rules: rogue ? '试炼战斗规则' : '作答规则',
@@ -975,11 +1145,16 @@ export function CardBattleView({
                     deck: `本场${deckLabel}`,
                     gear: rogue ? '本局法器' : '本场装备特性',
                     route: '本章路线',
+                    intent: '对手行动与考核',
                   }[notebook]
                 }
               </h3>
               <button
-                ref={notebook === 'route' ? notebookClose : undefined}
+                ref={
+                  notebook === 'route' || notebook === 'intent'
+                    ? notebookClose
+                    : undefined
+                }
                 onClick={() => setNotebook(null)}
               >
                 返回牌桌 ×
@@ -987,6 +1162,74 @@ export function CardBattleView({
             </header>
             {notebook === 'route' ? (
               routeMap
+            ) : notebook === 'intent' ? (
+              <>
+                <p className="cd-intent-detail-name">
+                  <strong>{state.intent.name}</strong>
+                  {state.intent.crit && <span> · 暴击</span>}
+                </p>
+                <p>{viewText(state.intent.description)}</p>
+                <div className="cd-enemy-forecast">
+                  <span>
+                    来袭 <b>{incoming.incoming}</b>
+                  </span>
+                  <span>
+                    防护抵挡 <b>{prevented}</b>
+                  </span>
+                  <span className="cd-expected-loss">
+                    预计损失 <b>{expectedLoss}</b> {resource}
+                  </span>
+                  {incoming.piercing > 0 && (
+                    <span>
+                      穿透 <b>{incoming.piercing}</b>
+                    </span>
+                  )}
+                  {incoming.heal > 0 && (
+                    <span>
+                      对手修复 <b>+{incoming.heal}</b>
+                    </span>
+                  )}
+                  {incoming.counterDamage > 0 && (
+                    <span>
+                      预计反击 <b>{incoming.counterDamage}</b>
+                    </span>
+                  )}
+                  {incoming.retainedBlock > 0 && (
+                    <span>
+                      结余留盾 <b>{incoming.retainedBlock}</b>
+                    </span>
+                  )}
+                </div>
+                {incoming.tactic && (
+                  <p className="cd-enemy-tactic">
+                    {incoming.tactic.hint}
+                    {incoming.tactic.damageDelta !== 0 && (
+                      <b>
+                        {' '}
+                        来袭 {incoming.tactic.damageDelta > 0 ? '+' : ''}
+                        {incoming.tactic.damageDelta}
+                      </b>
+                    )}
+                  </p>
+                )}
+                {incoming.effects?.map((effect) => (
+                  <p
+                    key={effect.label}
+                    className="cd-floor-effect"
+                    data-active={effect.active}
+                    data-met={effect.active ? effect.met : undefined}
+                  >
+                    <b>{effect.label}</b> ·{' '}
+                    {effect.active
+                      ? effect.met
+                        ? '本轮达标'
+                        : '本轮待达标'
+                      : '本轮未启用'}
+                    <br />
+                    {effect.hint}
+                  </p>
+                ))}
+              </>
             ) : notebook === 'rules' ? (
               <>
                 {archetype && (

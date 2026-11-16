@@ -1,0 +1,410 @@
+.cd-common-effects {
+  display: contents;
+}
+
+/* Shared timing is set from the committed cue. The overlay covers only the actor row. */
+.cd-calculus-effects {
+  position: absolute;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.cd-calculus-effects .cd-strike-trail {
+  inset: max(7px, calc((100% - 40px) * 0.45)) 25% auto;
+  height: clamp(12px, 11%, 36px);
+  transform: rotate(-4deg);
+  animation: cd-calculus-cut 110ms var(--cd-release) ease-in both;
+}
+.cd-calculus-effects .cd-strike-trail[data-from='enemy'] {
+  transform: rotate(4deg);
+  animation-name: cd-calculus-cut-back;
+}
+.cd-calculus-effects .cd-strike-trail i {
+  clip-path: polygon(
+    0 64%,
+    20% 67%,
+    57% 52%,
+    80% 25%,
+    100% 0,
+    90% 45%,
+    72% 60%,
+    33% 86%,
+    7% 90%
+  );
+}
+.cd-arena[data-move='strong'] .cd-calculus-effects .cd-strike-trail {
+  --cd-strike-ink: #a0442f;
+  height: clamp(17px, 16%, 46px);
+}
+.cd-calculus-effects .cd-played-card {
+  inset: auto auto clamp(26px, 32%, 86px) 7%;
+  max-width: 45%;
+  margin: 0;
+  gap: 5px;
+  padding: 3px 6px;
+  font-size: clamp(10px, 1.5vw, 14px);
+  animation: cd-calculus-depart 250ms ease-out both;
+}
+.cd-calculus-effects .cd-played-card > span {
+  flex-basis: 16px;
+  height: 16px;
+  font-size: 10px;
+}
+.cd-calculus-axis,
+.cd-calculus-windup {
+  position: absolute;
+  inset: max(2px, calc((100% - 42px) * 0.06)) 10% 42px 57%;
+  border-bottom: 1px solid currentColor;
+  color: #48604f;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 49.5%,
+      currentColor 50%,
+      transparent 50.5%
+    ),
+    linear-gradient(
+      0deg,
+      transparent 49.5%,
+      currentColor 50%,
+      transparent 50.5%
+    );
+  animation: cd-calculus-axis 560ms ease-out both;
+}
+.cd-calculus-windup {
+  border-bottom: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: #a64b36;
+  animation: cd-calculus-gather var(--cd-release) ease-in both;
+}
+.cd-arena[data-preparing] .cd-calculus-windup {
+  color: #77694b;
+  animation-duration: 380ms;
+}
+.cd-calculus-move-name {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-inline-start: 2px solid #9d452f;
+  background: #faf4e8;
+  color: #873e2d;
+  font-weight: 700;
+  font-size: clamp(10px, 1.4vw, 13px);
+  white-space: nowrap;
+  animation: cd-card-still 510ms linear both;
+}
+
+.cd-battle[data-presentation='calculus'] .ct-effect-swipe {
+  display: none;
+}
+.cd-battle[data-presentation='calculus'] .ct-actor-scene {
+  container-type: size;
+}
+.cd-battle[data-presentation='calculus']
+  .ct-actor-scene.is-attacking
+  .ct-actor-figure {
+  animation: cd-calculus-windup var(--cd-contact) ease-out both;
+}
+.cd-battle[data-presentation='calculus']
+  .ct-actor-scene.is-hit
+  .ct-actor-image-frame {
+  animation-delay: var(--cd-contact);
+  animation-duration: 158ms;
+}
+.cd-battle[data-presentation='calculus'] .ct-impact::before,
+.cd-battle[data-presentation='calculus'] .ct-impact::after,
+.cd-battle[data-presentation='calculus'] .ct-impact i {
+  animation-delay: var(--cd-contact);
+  animation-duration: 250ms;
+}
+.cd-battle[data-presentation='calculus'] .ct-actor-enemy .ct-impact {
+  top: calc(100% - min(100cqh, 133.333cqw) * 0.585);
+  left: calc(50% - min(100cqw, 75cqh) * 0.095);
+}
+.cd-battle[data-presentation='calculus'] .ct-effect-number,
+.cd-battle[data-presentation='calculus'] .ct-effect-block,
+.cd-battle[data-presentation='calculus'] .ct-effect-break > * {
+  animation-delay: var(--cd-contact);
+}
+.cd-battle[data-presentation='calculus'] .ct-effect-shield {
+  border-width: 3px;
+  animation-delay: 105ms;
+  animation-duration: 300ms;
+}
+.cd-battle[data-presentation='calculus'] [data-contact] .ct-effect-shield {
+  animation-delay: var(--cd-contact);
+}
+.cd-battle[data-presentation='calculus']
+  [data-contact='blocked']
+  .ct-effect-block {
+  border: 1px solid currentColor;
+}
+.cd-battle[data-presentation='calculus']
+  [data-contact='partial']
+  .ct-effect-block {
+  bottom: 17%;
+  left: 27%;
+}
+.cd-battle[data-presentation='calculus'] .ct-effect-break b {
+  top: auto;
+  bottom: 7%;
+  left: 15%;
+  padding: 2px 4px;
+  background: #faf8efee;
+}
+.cd-battle[data-presentation='calculus'] .ct-effect-break i {
+  border: 0;
+  background: linear-gradient(145deg, #b2694a 15%, #e9dfbf 82%);
+  clip-path: polygon(62% 0, 100% 11%, 43% 87%, 0 100%, 26% 36%);
+}
+.cd-arena:is([data-move='strong'], [data-preparing])
+  [data-calculus-mark]::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #de7028;
+  box-shadow: 0 0 10px 6px #dc753a72;
+  content: '';
+  animation: cd-calculus-core var(--cd-release) ease-in both;
+}
+.cd-arena[data-preparing] [data-calculus-mark]::after {
+  animation-duration: 380ms;
+}
+.cd-arena[data-opening] .ct-actor-enemy .ct-actor-figure {
+  animation: cd-calculus-rise 620ms ease-out both;
+}
+.cd-arena[data-opening] .cd-enemy .cd-energy-name {
+  animation: cd-calculus-reveal 180ms 450ms ease-out both;
+}
+.cd-battle[data-presentation='calculus']
+  .ct-actor-scene.is-downed
+  .ct-actor-figure {
+  animation: cd-calculus-fold 350ms var(--cd-contact) ease-in both;
+}
+.cd-result-summary[data-calculus-victory] .cd-result-title h3 {
+  width: fit-content;
+  padding: 3px 8px;
+  border: 3px double #9d452f;
+  color: #9d452f;
+  animation: cd-calculus-seal 190ms 550ms ease-out both;
+}
+
+.cd-energy-figures {
+  display: inline-grid;
+}
+.cd-energy-figures b {
+  grid-area: 1 / 1;
+  justify-self: end;
+}
+.cd-energy-current {
+  animation: cd-calculus-reveal 1ms var(--cd-contact) steps(1, end) both;
+}
+.cd-energy-before {
+  animation: cd-calculus-hide 1ms var(--cd-contact) steps(1, end) both;
+}
+.cd-energy-track {
+  position: relative;
+}
+.cd-energy-rolling {
+  position: absolute;
+  inset: 0;
+  background: #dedfcf;
+  pointer-events: none;
+}
+.cd-energy-rolling::before {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  background: #617c60;
+  content: '';
+  animation: cd-calculus-drain 132ms var(--cd-contact) ease-out both;
+}
+.cd-enemy .cd-energy-rolling::before {
+  background: #a37257;
+}
+
+@keyframes cd-calculus-depart {
+  0% {
+    transform: translateY(16px) rotate(-8deg) scale(0.87);
+    opacity: 0;
+  }
+  30%,
+  68% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+}
+@keyframes cd-calculus-windup {
+  0%,
+  28%,
+  100% {
+    transform: none;
+  }
+  56% {
+    transform: translateX(calc(-5px * var(--ct-direction)))
+      rotate(calc(-2deg * var(--ct-direction)));
+  }
+  76% {
+    transform: translateX(calc(11px * var(--ct-direction)))
+      rotate(calc(2deg * var(--ct-direction)));
+  }
+}
+@keyframes cd-calculus-cut {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.75;
+  }
+  82% {
+    clip-path: inset(0);
+    opacity: 0.95;
+  }
+  100% {
+    clip-path: inset(0 0 0 36%);
+    opacity: 0;
+  }
+}
+@keyframes cd-calculus-cut-back {
+  0% {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0.75;
+  }
+  82% {
+    clip-path: inset(0);
+    opacity: 0.95;
+  }
+  100% {
+    clip-path: inset(0 36% 0 0);
+    opacity: 0;
+  }
+}
+@keyframes cd-calculus-drain {
+  from {
+    transform: scaleX(var(--cd-hp-before));
+  }
+  to {
+    transform: scaleX(var(--cd-hp-after));
+  }
+}
+@keyframes cd-calculus-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cd-calculus-hide {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes cd-calculus-axis {
+  0% {
+    clip-path: inset(0 48% 0 48%);
+    opacity: 0;
+  }
+  30% {
+    clip-path: inset(0);
+    opacity: 0.56;
+  }
+  100% {
+    clip-path: inset(0);
+    opacity: 0;
+  }
+}
+@keyframes cd-calculus-rise {
+  0%,
+  18% {
+    transform: scale(0.75, 0.15);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(0.98, 1.035);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes cd-calculus-gather {
+  0% {
+    transform: scale(1.15);
+    opacity: 0.3;
+  }
+  87% {
+    transform: scale(0.75);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(0.69);
+    opacity: 0;
+  }
+}
+@keyframes cd-calculus-core {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  73% {
+    opacity: 0.88;
+  }
+}
+@keyframes cd-calculus-fold {
+  0% {
+    transform: none;
+    opacity: 1;
+  }
+  36% {
+    transform: rotate(-4deg) scale(0.97, 0.81);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-4deg) scale(0.84, 0.12);
+    opacity: 0.46;
+  }
+}
+@keyframes cd-calculus-seal {
+  0% {
+    transform: rotate(-5deg) scale(1.09);
+  }
+  45% {
+    transform: rotate(-3deg) scale(0.96);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-calculus-effects .cd-played-card {
+    animation: cd-card-still 500ms linear both;
+  }
+  .cd-battle[data-presentation='calculus']
+    :is(
+      .cd-calculus-axis,
+      .cd-calculus-windup,
+      .cd-energy-before,
+      .cd-energy-rolling
+    ) {
+    display: none;
+  }
+  .cd-battle[data-presentation='calculus']
+    :is(.cd-energy-current, .cd-energy-name, .cd-result-title h3),
+  .cd-arena:is([data-move='strong'], [data-preparing])
+    [data-calculus-mark]::after {
+    animation: none;
+  }
+}

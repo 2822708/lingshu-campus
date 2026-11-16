@@ -370,10 +370,13 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
   if (run.phase === 'battle' && run.battle) {
     const ended = !['battle', 'discard'].includes(run.battle.phase);
     const won = run.battle.phase === 'victory';
+    const calculusTrial = run.floor === 10 && node === 'boss';
     const battle = displayBattle!;
     return (
       <CardBattleView
         mode="rogue"
+        presentation={calculusTrial ? 'calculus' : undefined}
+        playIntro={run.battle.id !== loaded.state?.battle?.id}
         state={battle}
         title={`第${run.floor}关 · ${chapterTheme.name} · ${battle.enemy.name}`}
         story={`${chapterTheme.place} · ${chapterTheme.goal} 未出的手牌保留，观察试阵行动后作出选择。`}
@@ -384,7 +387,11 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
         result={
           ended
             ? {
-                title: won ? '本场试阵已破' : '本次试炼暂告一段落',
+                title: won
+                  ? calculusTrial
+                    ? '考核通过'
+                    : '本场试阵已破'
+                  : '本次试炼暂告一段落',
                 text: won
                   ? '完成考核，确认后领取试炼学分，再选择领悟术式或实验法器。'
                   : '精力耗尽、撤离或僵局都会结束本次试炼，可回到准备页重新修习。',
