@@ -139,6 +139,13 @@ export function playSound(
     | 'trial-break'
     | 'trial-heavy'
     | 'trial-seal'
+    | 'trial-ring'
+    | 'trial-feedback'
+    | 'trial-cutoff'
+    | 'trial-noise-wide'
+    | 'trial-noise-spike'
+    | 'trial-repair'
+    | 'trial-thunder'
 ) {
   const { enabled, volume } = readSettings();
   if (!enabled || volume <= 0) return;
@@ -197,6 +204,39 @@ export function playSound(
     case 'trial-seal':
       tone(115, 69, 0.12, 'sine', volume * 0.3);
       texture(1220, 0.12, volume * 0.17);
+      break;
+    case 'trial-ring':
+      // A copper body: low vibration with quiet inharmonic overtones.
+      tone(146, 126, 0.25, 'sine', volume * 0.15);
+      tone(389, 350, 0.2, 'sine', volume * 0.08);
+      tone(611, 575, 0.14, 'triangle', volume * 0.04);
+      break;
+    case 'trial-feedback':
+      // Short rising return rather than a second impact on the enemy.
+      tone(155, 510, 0.095, 'triangle', volume * 0.15);
+      texture(1150, 0.09, volume * 0.1);
+      break;
+    case 'trial-cutoff':
+      tone(430, 75, 0.09, 'square', volume * 0.045);
+      texture(580, 0.05, volume * 0.1);
+      break;
+    case 'trial-noise-wide':
+      texture(560, 0.24, volume * 0.13);
+      texture(1750, 0.19, volume * 0.09);
+      break;
+    case 'trial-noise-spike':
+      texture(2350, 0.065, volume * 0.13);
+      tone(1150, 330, 0.08, 'triangle', volume * 0.1);
+      break;
+    case 'trial-repair':
+      texture(720, 0.045, volume * 0.12);
+      tone(240, 360, 0.11, 'triangle', volume * 0.1);
+      tone(490, 490, 0.075, 'sine', volume * 0.07, 0.045);
+      break;
+    case 'trial-thunder':
+      texture(1700, 0.08, volume * 0.15);
+      texture(260, 0.27, volume * 0.19);
+      tone(105, 35, 0.27, 'triangle', volume * 0.2);
       break;
   }
 }

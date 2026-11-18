@@ -3,6 +3,10 @@ import type { ReactNode } from 'react';
 import type { CardId } from '../card-battle/types';
 import CardBattleView from '../card-battle/ui/CardBattleView';
 import {
+  getBossPresentation,
+  getChapterScene,
+} from '../card-battle/ui/battle-art';
+import {
   JOBS,
   RELICS,
   ROGUE_CARDS,
@@ -370,12 +374,13 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
   if (run.phase === 'battle' && run.battle) {
     const ended = !['battle', 'discard'].includes(run.battle.phase);
     const won = run.battle.phase === 'victory';
-    const calculusTrial = run.floor === 10 && node === 'boss';
+    const bossPresentation = getBossPresentation(run.floor, node === 'boss');
     const battle = displayBattle!;
     return (
       <CardBattleView
         mode="rogue"
-        presentation={calculusTrial ? 'calculus' : undefined}
+        presentation={bossPresentation}
+        chapterScene={getChapterScene(chapter)}
         playIntro={run.battle.id !== loaded.state?.battle?.id}
         state={battle}
         title={`第${run.floor}关 · ${chapterTheme.name} · ${battle.enemy.name}`}
@@ -388,7 +393,7 @@ export default function RogueMode({ onExit, storage: providedStorage }: Props) {
           ended
             ? {
                 title: won
-                  ? calculusTrial
+                  ? bossPresentation
                     ? '考核通过'
                     : '本场试阵已破'
                   : '本次试炼暂告一段落',

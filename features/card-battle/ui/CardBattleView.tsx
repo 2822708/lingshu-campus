@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { CSSProperties, PointerEvent, ReactNode } from 'react';
-import { Files, Shield, Swords } from 'lucide-react';
 import type {
   CardBattleAction,
   CardBattleState,
@@ -16,16 +15,22 @@ import { ENEMY_ARCHETYPES } from '../enemies';
 import { playSound } from '../../../utils/sound';
 import { BattleActor } from './BattleActor';
 import type { BattleActorCue } from './BattleActor';
+import { battleArtUrl } from './battle-art';
+import type { BattlePresentation, BattleChapterScene } from './battle-art';
+import { SpellIcon, getSpellIconRole } from './SpellIcon';
+import { getConstructSounds } from './battle-sound';
 import './card-battle.css';
 import './battle-stage.css';
 import './rogue-battle-theme.css';
 import './battle-effects.css';
 import './calculus-presentation.css';
+import './layered-presentation.css';
 
 export interface CardBattleViewProps {
   /** Presentation only; the host still owns combat, rewards, and persistence. */
   mode?: 'dungeon' | 'rogue';
-  presentation?: 'calculus';
+  presentation?: BattlePresentation;
+  chapterScene?: BattleChapterScene;
   playIntro?: boolean;
   onPause?: () => void;
   routeMap?: ReactNode;
@@ -42,7 +47,6 @@ const COMPACT_HAND_QUERY = '(max-width: 600px) and (orientation: portrait)';
 const DOUBLE_TAP_MS = 350;
 const SWIPE_UP_DISTANCE = 48;
 const CARD_KIND_LABELS = { attack: '进攻', defense: '防御', utility: '准备' };
-const CARD_KIND_MARKS = { attack: Swords, defense: Shield, utility: Files };
 
 interface CommittedBattleCue extends BattleActorCue {
   playerHpBefore: number;
@@ -111,6 +115,14 @@ export function getCommittedBattleCue(
   const playerHealing = entries
     .filter((entry) => entry.kind === 'card')
     .reduce((sum, entry) => sum + (entry.heal ?? 0), 0);
+  const removedGuard =
+    before.enemy.guardRounds > 0 && after.enemy.guardRounds === 0;
+  const removedThorns = (before.enemy.thorns ?? 0) > 0 && !after.enemy.thorns;
+  const actualPlayerDamage = Math.max(
+    0,
+    before.player.hp + playerHealing - after.player.hp
+  );
+  const incoming = enemy ? getCardBattleIncomingPreview(before) : undefined;
   return {
     key: `${after.id}:${after.commandSeq}`,
     playedCard: card
@@ -132,10 +144,12 @@ export function getCommittedBattleCue(
     enemyHpBefore: before.enemy.hp,
     enemyMove: enemy ? before.intent.type : undefined,
     enemyMoveName: enemy ? before.intent.name : undefined,
-    playerDamage: Math.max(
-      0,
-      before.player.hp + playerHealing - after.player.hp
-    ),
+    playerDamage: actualPlayerDamage,
+    reflected:
+      played && (before.enemy.thorns ?? 0) > 0 ? actualPlayerDamage : 0,
+    // The committed action proves the hit occurred; the frozen pre-action state
+    // identifies the part that bypassed guard, capped to actual health lost.
+    piercing: enemy ? Math.min(actualPlayerDamage, incoming?.piercing ?? 0) : 0,
     enemyDamage: Math.max(
       0,
       before.enemy.hp - after.enemy.hp,
@@ -155,11 +169,15 @@ export function getCommittedBattleCue(
       .filter((entry) => entry.kind === 'enemy')
       .reduce((sum, entry) => sum + (entry.heal ?? 0), 0),
     drawn: entries.reduce((sum, entry) => sum + (entry.draw ?? 0), 0),
-    brokeBlock: card?.clearEnemyBlock
-      ? before.enemy.guardRounds || before.enemy.thorns || 0
-      : 0,
+    brokeBlock:
+      card?.clearEnemyBlock && (removedGuard || removedThorns) ? 1 : 0,
     guardLabel: '固守 · 减伤 50%',
-    breakLabel: before.enemy.thorns ? '解除固守与反震' : '解除固守',
+    breakLabel: [
+      removedGuard ? '解除固守' : '',
+      removedThorns ? '解除反震' : '',
+    ]
+      .filter(Boolean)
+      .join(' · '),
     statusNote: card?.expose
       ? '发现破绽'
       : card?.counter
@@ -189,11 +207,18 @@ function Energy({
   hp: number;
   max: number;
   resource?: '精力' | '生命';
-  motion?: { key: string; before: number };
+  motion?: { key: string; before: number; delay?: number };
 }) {
   const changing = motion && motion.before !== hp;
   return (
-    <div className="cd-energy">
+    <div
+      className="cd-energy"
+      style={
+        motion?.delay !== undefined
+          ? ({ '--cd-contact': `${motion.delay}ms` } as CSSProperties)
+          : undefined
+      }
+    >
       <span>
         <span className="cd-energy-name">{label}</span>
         {changing ? (
@@ -238,6 +263,7 @@ function Energy({
 export function CardBattleView({
   mode = 'dungeon',
   presentation,
+  chapterScene,
   playIntro = false,
   onPause,
   routeMap,
@@ -298,9 +324,11 @@ export function CardBattleView({
   }
   const { cue } = scene;
   const calculusCue = presentation === 'calculus' ? cue : null;
+  const layered = Boolean(presentation && presentation !== 'calculus');
+  const presentationCue = presentation ? cue : null;
   const preparing = calculusCue?.enemyMoveName === '压轴起式';
   const opening =
-    presentation === 'calculus' &&
+    Boolean(presentation) &&
     playIntro &&
     state.phase === 'battle' &&
     state.commandSeq === 0;
@@ -308,34 +336,46 @@ export function CardBattleView({
     if (opening) playSound('trial-paper');
   }, [opening]);
   useEffect(() => {
-    if (!calculusCue || calculusCue.actor === 'none') return;
-    if (calculusCue.playedCard || preparing) playSound('trial-paper');
+    if (!presentationCue || presentationCue.actor === 'none') return;
+    if (presentationCue.playedCard || preparing) playSound('trial-paper');
     const reduced = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
     ).matches;
-    const impact = calculusCue.brokeBlock
+    const impact = presentationCue.brokeBlock
       ? 'trial-break'
-      : calculusCue.playerDamage || calculusCue.enemyDamage
-        ? calculusCue.enemyMove === 'strong'
+      : presentationCue.playerDamage || presentationCue.enemyDamage
+        ? presentationCue.enemyMove === 'strong'
           ? 'trial-heavy'
           : 'trial-hit'
-        : calculusCue.blocked || calculusCue.playerBlock
+        : presentationCue.blocked || presentationCue.playerBlock
           ? 'trial-block'
           : null;
     const timers: number[] = [];
+    for (const sound of getConstructSounds(
+      presentation,
+      presentationCue,
+      getCalculusRelease(presentationCue)
+    )) {
+      timers.push(
+        window.setTimeout(
+          () => playSound(sound.name),
+          reduced ? 0 : sound.delay
+        )
+      );
+    }
     if (impact)
       timers.push(
         window.setTimeout(
           () => playSound(impact),
-          reduced ? 0 : getCalculusRelease(calculusCue) + 90
+          reduced ? 0 : getCalculusRelease(presentationCue) + 90
         )
       );
-    if (calculusCue.outcome === 'victory')
+    if (presentationCue.outcome === 'victory')
       timers.push(
         window.setTimeout(() => playSound('trial-seal'), reduced ? 0 : 600)
       );
     return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [calculusCue, preparing]);
+  }, [presentationCue, preparing, presentation]);
   const [selection, setSelection] = useState<string[]>([]);
   const [retreatConfirmation, setRetreatConfirmation] = useState(false);
   const [previewCardId, setPreviewCardId] = useState<string | null>(null);
@@ -443,6 +483,8 @@ export function CardBattleView({
   }, [state.id]);
   const discarding = state.phase === 'discard';
   const active = state.phase === 'battle' || discarding;
+  const elite = rogue && state.enemy.title === '实训精英';
+  const showEnemyStatuses = active || (!layered && !elite);
   const discardCount = Math.max(0, state.hand.length - 10);
   const previewCard =
     !notebook &&
@@ -483,10 +525,10 @@ export function CardBattleView({
       : cue?.actor === 'enemy' && (cue.playerDamage > 0 || cue.blocked > 0)
         ? 'enemy'
         : undefined;
-  const calculusStyle = calculusCue
+  const calculusStyle = presentationCue
     ? ({
-        '--cd-release': `${getCalculusRelease(calculusCue)}ms`,
-        '--cd-contact': `${getCalculusRelease(calculusCue) + 90}ms`,
+        '--cd-release': `${getCalculusRelease(presentationCue)}ms`,
+        '--cd-contact': `${getCalculusRelease(presentationCue) + 90}ms`,
       } as CSSProperties)
     : undefined;
   function toggleDiscard(id: string) {
@@ -573,6 +615,8 @@ export function CardBattleView({
         data-shape="portrait-4-3"
         data-mode={mode}
         data-presentation={presentation}
+        data-layered={layered || undefined}
+        data-scene={chapterScene}
         data-route-open={notebook === 'route' || undefined}
         data-intent-open={notebook === 'intent' || undefined}
         data-compact-hand={compactHand || undefined}
@@ -614,8 +658,19 @@ export function CardBattleView({
           aria-label="战斗双方"
           data-opening={opening || undefined}
           data-move={calculusCue?.enemyMove}
+          data-layered-move={layered ? cue?.enemyMoveName : undefined}
           data-preparing={preparing || undefined}
-          style={calculusStyle}
+          style={
+            {
+              ...calculusStyle,
+              ...(chapterScene && presentation !== 'calculus'
+                ? {
+                    '--cd-scene-wide': `url("${battleArtUrl(`scene-${chapterScene}-wide`)}")`,
+                    '--cd-scene-square': `url("${battleArtUrl(`scene-${chapterScene}-square`)}")`,
+                  }
+                : {}),
+            } as CSSProperties
+          }
         >
           <div
             className="cd-intent-row"
@@ -680,6 +735,31 @@ export function CardBattleView({
               </div>
             )}
           </div>
+          {layered && cue && (
+            <div
+              key={`layered:${cue.key}`}
+              className="cd-layered-effects"
+              aria-hidden="true"
+              data-effect-art={presentation}
+              data-move={cue.enemyMoveName}
+            >
+              {cue.actor === 'enemy' && (
+                <>
+                  {(cue.playerDamage > 0 || cue.blocked > 0) && (
+                    <i className="cd-engine-pulse" />
+                  )}
+                  <span className="cd-engine-move">
+                    施放 · {cue.enemyMoveName}
+                  </span>
+                </>
+              )}
+              {(cue.reflected ?? 0) > 0 && <i className="cd-reflection-path" />}
+              {(cue.piercing ?? 0) > 0 && <i className="cd-piercing-path" />}
+              {(cue.enemyHealed ?? 0) > 0 && (
+                <i className="cd-repair-contact" />
+              )}
+            </div>
+          )}
           {(opening ||
             strike ||
             cue?.playedCard ||
@@ -694,7 +774,9 @@ export function CardBattleView({
               }
               aria-hidden="true"
             >
-              {opening && <i className="cd-calculus-axis" />}
+              {opening && presentation === 'calculus' && (
+                <i className="cd-calculus-axis" />
+              )}
               {(preparing || calculusCue?.enemyMove === 'strong') && (
                 <>
                   <i className="cd-calculus-windup" />
@@ -722,6 +804,7 @@ export function CardBattleView({
             <BattleActor
               side="player"
               setting={rogue ? 'trial' : 'campus'}
+              presentation={presentation}
               cue={cue ? { ...cue, guardLabel: undefined } : null}
             />
             <Energy
@@ -730,10 +813,13 @@ export function CardBattleView({
               hp={state.player.hp}
               max={state.player.maxHp}
               motion={
-                calculusCue
+                presentationCue
                   ? {
-                      key: calculusCue.key,
-                      before: calculusCue.playerHpBefore,
+                      key: presentationCue.key,
+                      before: presentationCue.playerHpBefore,
+                      ...((presentationCue.reflected ?? 0) > 0 && layered
+                        ? { delay: getCalculusRelease(presentationCue) + 305 }
+                        : {}),
                     }
                   : undefined
               }
@@ -763,6 +849,13 @@ export function CardBattleView({
               setting={rogue ? 'trial' : 'campus'}
               archetype={state.enemy.archetype}
               presentation={presentation}
+              elite={elite}
+              constructState={{
+                guard: active && state.enemy.guardRounds > 0,
+                thorns: active && (state.enemy.thorns ?? 0) > 0,
+                lowHealth: active && state.enemy.hp * 2 <= state.enemy.maxHp,
+                defeated: state.enemy.hp === 0,
+              }}
               variant={
                 state.enemy.behavior === 'defensive'
                   ? 1
@@ -778,10 +871,10 @@ export function CardBattleView({
               hp={state.enemy.hp}
               max={state.enemy.maxHp}
               motion={
-                calculusCue
+                presentationCue
                   ? {
-                      key: calculusCue.key,
-                      before: calculusCue.enemyHpBefore,
+                      key: presentationCue.key,
+                      before: presentationCue.enemyHpBefore,
                     }
                   : undefined
               }
@@ -804,13 +897,13 @@ export function CardBattleView({
                   · {archetypeName}
                 </span>
               )}
-              {state.enemy.guardRounds > 0 && (
+              {showEnemyStatuses && state.enemy.guardRounds > 0 && (
                 <span title={`减伤 50%，剩余 ${state.enemy.guardRounds} 回合`}>
                   {' '}
                   · 固守 50% / {state.enemy.guardRounds} 轮
                 </span>
               )}
-              {state.enemy.exposed && (
+              {showEnemyStatuses && state.enemy.exposed && (
                 <b
                   className="cd-status-exposed"
                   title="下次受到主动攻击伤害增加 25%"
@@ -819,7 +912,7 @@ export function CardBattleView({
                   · 破绽 +25%
                 </b>
               )}
-              {(state.enemy.thorns ?? 0) > 0 && (
+              {showEnemyStatuses && (state.enemy.thorns ?? 0) > 0 && (
                 <b
                   className="cd-status-thorns"
                   title="反震绕过防护，可用破势解除"
@@ -894,6 +987,9 @@ export function CardBattleView({
             data-calculus-victory={
               calculusCue?.outcome === 'victory' || undefined
             }
+            data-boss-victory={
+              (layered && cue?.outcome === 'victory') || undefined
+            }
             aria-label={rogue ? '本局战果' : '副本结算'}
           >
             <div className="cd-result-title">
@@ -962,7 +1058,6 @@ export function CardBattleView({
                 const card = state.cards.find((value) => value.id === id)!;
                 const reason = getCardBattlePlayableReason(state, id);
                 const selected = selection.includes(id);
-                const Mark = CARD_KIND_MARKS[card.kind];
                 const faceEffect = getCardFaceEffect(state, card);
                 return (
                   <div key={id} className="ct-card-slot">
@@ -1025,7 +1120,7 @@ export function CardBattleView({
                           <strong>{card.name}</strong>
                         </span>
                         <span className="cd-card-mark" aria-hidden="true">
-                          <Mark strokeWidth={1.5} />
+                          <SpellIcon role={getSpellIconRole(card)} />
                         </span>
                         <span
                           className="cd-card-compact-kind"

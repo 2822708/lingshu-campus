@@ -1,6 +1,11 @@
 import type { CSSProperties } from 'react';
+import { PlayerBattleArt } from './PlayerBattleArt';
 import type { CardEnemyArchetype, ResolvedBattleCard } from '../types';
 import { TrialConstruct } from './TrialConstruct';
+import { LayeredConstruct } from './LayeredConstruct';
+import type { ConstructState } from './LayeredConstruct';
+import { BATTLE_ART_HOTSPOTS } from './battle-art';
+import type { BattlePresentation } from './battle-art';
 
 /** Shared presentation cue. It contains no game state or storage dependency. */
 export interface BattleActorCue {
@@ -15,6 +20,9 @@ export interface BattleActorCue {
   blocked: number;
   healed: number;
   enemyHealed?: number;
+  enemyMoveName?: string;
+  reflected?: number;
+  piercing?: number;
   drawn: number;
   brokeBlock: number;
   guardLabel?: string;
@@ -30,7 +38,9 @@ interface BattleActorProps {
   archetype?: CardEnemyArchetype;
   cue?: BattleActorCue | null;
   setting?: 'campus' | 'trial';
-  presentation?: 'calculus';
+  presentation?: BattlePresentation;
+  elite?: boolean;
+  constructState?: ConstructState;
 }
 
 type PortraitId = 'player' | 'duelist' | 'sentinel';
@@ -71,6 +81,13 @@ export function BattleActor({
   cue = null,
   setting = 'campus',
   presentation,
+  elite = false,
+  constructState = {
+    guard: false,
+    thorns: false,
+    lowHealth: false,
+    defeated: false,
+  },
 }: BattleActorProps) {
   const portrait = getPortrait(side, archetype, variant);
   const damage =
@@ -96,6 +113,20 @@ export function BattleActor({
   ]
     .filter(Boolean)
     .join(' ');
+  const layeredArt =
+    presentation && presentation !== 'calculus'
+      ? presentation
+      : elite && archetype
+        ? (`elite-${archetype}` as const)
+        : undefined;
+  const playerPose = attacking
+    ? 'strike'
+    : blockGain > 0 || blocked > 0
+      ? 'guard'
+      : damage > 0
+        ? 'hit'
+        : undefined;
+  const followedByHit = damage > 0 && playerPose !== 'hit';
   return (
     <div
       className={`ct-actor ct-actor-${side}`}
@@ -106,15 +137,45 @@ export function BattleActor({
         blocked > 0 ? (damage > 0 ? 'partial' : 'blocked') : undefined
       }
       data-presentation={presentation}
+      data-layered={layeredArt}
+      data-reflected={
+        (side === 'player' && (cue?.reflected ?? 0) > 0) || undefined
+      }
+      style={
+        layeredArt
+          ? ({
+              '--ct-core-x': BATTLE_ART_HOTSPOTS[layeredArt][0] / 960 - 0.5,
+              '--ct-core-y': (680 - BATTLE_ART_HOTSPOTS[layeredArt][1]) / 720,
+            } as CSSProperties)
+          : undefined
+      }
       aria-hidden="true"
     >
       <div key={cue?.key ?? 'idle'} className={classes}>
         <div className="ct-actor-image-frame">
           <div className="ct-actor-figure">
             {setting === 'trial' && side === 'enemy' ? (
-              <TrialConstruct
-                archetype={archetype}
-                presentation={presentation}
+              layeredArt ? (
+                <LayeredConstruct
+                  art={layeredArt}
+                  state={constructState}
+                  cue={cue}
+                />
+              ) : (
+                <TrialConstruct
+                  archetype={archetype}
+                  presentation={
+                    presentation === 'calculus' ? 'calculus' : undefined
+                  }
+                />
+              )
+            ) : side === 'player' &&
+              setting === 'trial' &&
+              presentation !== 'calculus' ? (
+              <PlayerBattleArt
+                idle={PORTRAITS.player}
+                pose={playerPose}
+                followedByHit={followedByHit}
               />
             ) : (
               <img
@@ -152,6 +213,16 @@ export function BattleActor({
         )}
         {blocked > 0 && (
           <span className="ct-effect-note ct-effect-block">挡住 {blocked}</span>
+        )}
+        {side === 'player' && (cue?.reflected ?? 0) > 0 && (
+          <span className="ct-effect-note ct-effect-reflected">
+            反震 −{cue?.reflected}
+          </span>
+        )}
+        {side === 'player' && (cue?.piercing ?? 0) > 0 && (
+          <span className="ct-effect-note ct-effect-piercing">
+            穿透 {cue?.piercing}
+          </span>
         )}
         {blockGain > 0 && (
           <span className="ct-effect-note ct-effect-block-gain">

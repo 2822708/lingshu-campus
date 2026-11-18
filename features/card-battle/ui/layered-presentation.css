@@ -1,0 +1,824 @@
+/* All parts are registered against one origin. The ground anchor is (480,680). */
+.ct-actor[data-layered] {
+  --ct-art-width: min(100cqw, 133.333cqh);
+}
+.ct-actor[data-layered='repair'] {
+  --ct-art-width: min(253.298cqw, 147.692cqh);
+}
+.ct-actor[data-layered='defense'] {
+  --ct-art-width: min(143.284cqw, 144.361cqh);
+}
+/* Final alpha extents include part rotation about the measured pivots. Fit left
+ * and right of x480 separately: 22px for the existing leftward lunge, 2px for
+ * the opposite edge, plus 5% print-edge clearance. Footline remains y680. */
+.ct-actor[data-layered='elite-duelist'] {
+  --ct-art-width: min(
+    calc(165.745cqw - 72.928px),
+    calc(223.529cqw - 8.941px),
+    196.222cqh
+  );
+  --ct-state-guard-inset: 32.917% 28.75% 5.556% 24.063%;
+  --ct-thorns-top: 32.917%;
+  --ct-thorns-right: 28.75%;
+}
+.ct-actor[data-layered='elite-sentinel'] {
+  --ct-art-width: min(
+    calc(207.273cqw - 91.2px),
+    calc(133.936cqw - 5.357px),
+    235.345cqh
+  );
+  --ct-state-guard-inset: 43.472% 15.938% 5.556% 27.083%;
+  --ct-thorns-top: 43.472%;
+  --ct-thorns-right: 15.938%;
+}
+.ct-actor[data-layered='elite-sprinter'] {
+  --ct-art-width: min(
+    calc(194.043cqw - 85.379px),
+    calc(118.304cqw - 4.732px),
+    188.558cqh
+  );
+  --ct-state-guard-inset: 35.417% 11.667% 5.556% 25.521%;
+  --ct-thorns-top: 35.417%;
+  --ct-thorns-right: 11.667%;
+}
+.ct-actor[data-layered='elite-disruptor'] {
+  --ct-art-width: min(
+    calc(226.866cqw - 99.821px),
+    calc(191.597cqw - 7.664px),
+    153.638cqh
+  );
+  --ct-state-guard-inset: 13.472% 25.208% 5.556% 29.063%;
+  --ct-thorns-top: 13.472%;
+  --ct-thorns-right: 25.208%;
+}
+.ct-actor[data-layered='elite-regenerator'] {
+  --ct-art-width: min(
+    calc(182.56cqw - 80.326px),
+    calc(214.085cqw - 8.563px),
+    194.517cqh
+  );
+  --ct-state-guard-inset: 34.306% 27.813% 5.556% 26.667%;
+  --ct-thorns-top: 34.306%;
+  --ct-thorns-right: 27.813%;
+}
+.ct-actor[data-layered='elite-counterguard'] {
+  --ct-art-width: min(
+    calc(130.508cqw - 57.423px),
+    calc(217.143cqw - 8.686px),
+    181.512cqh
+  );
+  --ct-state-guard-inset: 28.472% 28.125% 5.556% 15.938%;
+  --ct-thorns-top: 28.472%;
+  --ct-thorns-right: 28.125%;
+}
+.ct-layered-construct {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  container-type: size;
+}
+.ct-layered-canvas {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: var(--ct-art-width);
+  aspect-ratio: 4 / 3;
+  transform: translate(-50%, 5.556%);
+  isolation: isolate;
+}
+.ct-layered-canvas > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: 50% 94.444%;
+  pointer-events: none;
+}
+.ct-layered-canvas::after {
+  content: '';
+  position: absolute;
+  bottom: 4%;
+  left: 15%;
+  width: 70%;
+  height: 3%;
+  border-radius: 50%;
+  background: #23362d1a;
+  z-index: -1;
+}
+.ct-layered-canvas > i {
+  position: absolute;
+  pointer-events: none;
+}
+.ct-state-guard {
+  inset: var(--ct-state-guard-inset, 13% 13% 11%);
+  border: 2px solid #667e65;
+  border-radius: 48%;
+  box-shadow: inset 0 0 0 3px #e1d8bf66;
+}
+.ct-state-guard::before {
+  content: '';
+  position: absolute;
+  inset: 5%;
+  border: 1px dashed #23362d88;
+  border-radius: inherit;
+}
+.ct-state-thorns {
+  inset: var(--ct-thorns-top, 23%) var(--ct-thorns-right, 5%) auto auto;
+  width: 18%;
+  height: 20%;
+}
+.ct-state-thorns b {
+  display: block;
+  width: 70%;
+  height: 45%;
+  border-top: 3px solid #9e4531;
+  border-left: 3px solid #9e4531;
+  transform: skewX(-25deg);
+}
+.ct-state-thorns b + b {
+  margin-left: 25%;
+}
+.ct-state-half {
+  bottom: 5%;
+  left: 48%;
+  width: 5%;
+  height: 5%;
+  border: 1px solid #9e4531;
+  transform: rotate(45deg);
+  background: #e1d8bf;
+}
+.cd-battle[data-scene]:not([data-presentation='calculus']) .cd-arena {
+  background-image:
+    linear-gradient(#f6f3e83d, #f6f3e88a 72%, #f6f3e8a3), var(--cd-scene-wide);
+  background-size: cover;
+  background-position: center bottom;
+}
+.ct-player-poses {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.ct-player-preload {
+  display: none;
+}
+.ct-player-poses:not([data-ready]) .ct-player-idle {
+  animation: none !important;
+  opacity: 1;
+}
+.ct-player-poses:not([data-ready]) .ct-player-pose,
+.ct-player-poses:not([data-ready]) .ct-player-follow-hit {
+  display: none;
+}
+.ct-player-poses .ct-player-pose,
+.ct-player-poses .ct-player-follow-hit {
+  position: absolute;
+  inset: 0;
+}
+.ct-player-poses[data-pose] .ct-player-idle {
+  animation: ct-pose-idle 560ms steps(1, end) both;
+}
+.ct-player-poses .ct-player-pose {
+  animation: ct-pose-active 560ms steps(1, end) both;
+}
+.ct-actor-player {
+  --ct-hit-delay: var(--cd-contact, 162ms);
+}
+.ct-actor-player[data-reflected] {
+  --ct-hit-delay: calc(var(--cd-contact, 250ms) + 215ms);
+}
+.ct-player-poses[data-pose='hit'] .ct-player-idle {
+  animation: ct-pose-idle 300ms var(--ct-hit-delay) steps(1, end) forwards;
+}
+.ct-player-poses[data-pose='hit'] .ct-player-pose,
+.ct-player-poses .ct-player-follow-hit {
+  opacity: 0;
+  animation: ct-pose-active 300ms var(--ct-hit-delay) steps(1, end) forwards;
+}
+.ct-player-poses[data-then-hit] .ct-player-idle {
+  animation: ct-pose-idle calc(var(--ct-hit-delay) + 300ms) steps(1, end) both;
+}
+.ct-player-poses[data-then-hit] .ct-player-pose {
+  animation-duration: var(--ct-hit-delay);
+}
+@keyframes ct-pose-idle {
+  0%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes ct-pose-active {
+  0%,
+  99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* State layers persist from the real snapshot, transient cues use committed seq. */
+.ct-layered-construct[data-art='resonator'] [data-layer='rear-ring'] {
+  transform-origin: 50% 82%;
+}
+.ct-layered-construct[data-art='resonator'] [data-layer='front-ring'] {
+  transform-origin: 46% 75%;
+}
+.ct-layered-construct[data-art='noise'] [data-layer='tail-wide'] {
+  transform-origin: 47.917% 48.611%;
+}
+.ct-layered-construct[data-art='noise'] [data-layer='tail-spike'] {
+  transform-origin: 61.458% 48.611%;
+}
+.ct-layered-construct[data-art='repair'] [data-layer='shoulder'] {
+  transform-origin: 58.854% 32.639%;
+}
+.ct-layered-construct[data-art='repair'] [data-layer='module'] {
+  transform-origin: 41.146% 58.333%;
+}
+.ct-layered-construct[data-art='defense'] [data-layer='page'] {
+  transform-origin: 50% 11.111%;
+}
+.ct-layered-construct[data-art='elite-duelist'] [data-layer='part'] {
+  transform-origin: 46.875% 61.111%;
+}
+.ct-layered-construct[data-art='elite-sentinel'] [data-layer='part'] {
+  transform-origin: 67.708% 62.5%;
+}
+.ct-layered-construct[data-art='elite-sprinter'] [data-layer='part'] {
+  transform-origin: 42.708% 68.056%;
+}
+.ct-layered-construct[data-art='elite-disruptor'] [data-layer='part'] {
+  transform-origin: 56.25% 46.806%;
+}
+.ct-layered-construct[data-art='elite-regenerator'] [data-layer='part'] {
+  transform-origin: 63.542% 63.472%;
+}
+.ct-layered-construct[data-art='elite-counterguard'] [data-layer='part'] {
+  transform-origin: 44.271% 53.472%;
+}
+.ct-layered-construct[data-thorns] [data-layer='front-ring'] {
+  filter: drop-shadow(1px 0 #9e4531);
+}
+.cd-arena[data-opening]
+  .ct-layered-construct[data-art='resonator']
+  [data-layer='rear-ring'] {
+  animation: ct-ring-rise 350ms 90ms ease-out both;
+}
+.cd-arena[data-opening]
+  .ct-layered-construct[data-art='resonator']
+  [data-layer='front-ring'] {
+  animation: ct-ring-rise 350ms 180ms ease-out both;
+}
+.cd-arena[data-opening] .ct-layered-construct [data-layer='core'] {
+  animation: ct-core-on 180ms 350ms ease-out both;
+}
+.cd-arena[data-opening] .ct-layered-construct:not([data-art='resonator']) {
+  animation: ct-assembly-enter 600ms ease-out both;
+}
+.ct-layered-construct[data-enemy-move='谐振脉冲'] [data-layer='front-ring'] {
+  animation: ct-ring-pulse 420ms ease-out both;
+}
+.ct-layered-construct[data-enemy-move='断电校准'] [data-layer='core'] {
+  animation: ct-core-calibrate 500ms ease-out both;
+}
+.ct-layered-construct[data-art='noise'] [data-layer='waveform'] {
+  transform-origin: 50% 46%;
+}
+.ct-layered-construct[data-enemy-move='宽带噪声'] [data-layer='tail-wide'],
+.ct-layered-construct[data-enemy-move='宽带噪声'] [data-layer='waveform'] {
+  animation: ct-noise-wide 430ms steps(4, end) both;
+}
+.ct-layered-construct[data-enemy-move='尖峰干扰'] [data-layer='tail-spike'],
+.ct-layered-construct[data-enemy-move='尖峰干扰'] [data-layer='waveform'] {
+  animation: ct-noise-spike 430ms ease-out both;
+}
+.ct-layered-construct[data-enemy-move='信道切换'] [data-layer='waveform'] {
+  animation: ct-noise-switch 500ms steps(3, end) both;
+}
+.ct-layered-construct[data-repairing][data-enemy-move='自适应修补']
+  [data-layer='shoulder'] {
+  animation: ct-repair-shoulder 360ms var(--cd-contact, 160ms) ease-out both;
+}
+.ct-layered-construct[data-repairing]:not([data-enemy-move='自适应修补'])
+  [data-layer='module'],
+.ct-layered-construct[data-repairing] [data-layer='wiring'] {
+  animation: ct-repair-module 360ms var(--cd-contact, 160ms) ease-out both;
+}
+.ct-layered-construct[data-enemy-move='故障复现'] [data-layer='frame'] {
+  animation: ct-fault 350ms steps(3, end) both;
+}
+.ct-layered-construct[data-enemy-move='结业劫雷'] [data-layer='back-frame'] {
+  animation: ct-frame-align 250ms ease-in both;
+}
+.ct-layered-construct[data-enemy-move='结业劫雷'] [data-layer='front-frame'] {
+  animation: ct-frame-align 250ms 60ms ease-in both;
+}
+.ct-layered-construct[data-enemy-move='结业劫雷'] [data-layer='focus'] {
+  animation: ct-focus-flash 520ms ease-out both;
+}
+.ct-layered-construct[data-enemy-move='答辩间隙'] [data-layer='focus'] {
+  animation: ct-core-calibrate 500ms ease-out both;
+}
+.ct-layered-construct[data-art='defense']:not([data-guard])
+  [data-layer='shield'] {
+  opacity: 0.18;
+}
+.ct-layered-construct[data-repairing] [data-layer='page'] {
+  animation: ct-repair-module 400ms var(--cd-contact, 160ms) ease-out both;
+}
+.ct-actor-scene.is-attacking
+  .ct-layered-construct[data-art^='elite-']
+  [data-layer='part'] {
+  animation: ct-elite-part 430ms ease-out both;
+}
+.ct-actor-scene.is-attacking
+  .ct-layered-construct[data-art='elite-sprinter']
+  [data-layer='part'] {
+  /* The low wing tip clears y680 at +4deg around its final mounting joint. */
+  animation-name: ct-elite-wing;
+}
+.ct-actor-scene.is-hit
+  .ct-layered-construct[data-art^='elite-']
+  [data-layer='part'] {
+  animation: ct-fault 350ms 90ms steps(3, end) both;
+}
+.ct-layered-construct[data-art='elite-regenerator'][data-repairing]
+  [data-layer='part'] {
+  animation: ct-repair-module 360ms var(--cd-contact, 160ms) ease-out both;
+}
+.ct-layered-construct[data-defeated] [data-layer='core'],
+.ct-layered-construct[data-defeated] [data-layer='focus'],
+.ct-layered-construct[data-defeated] [data-layer='waveform'],
+.ct-layered-construct[data-defeated] [data-layer='wiring'] {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+.ct-layered-construct[data-art^='elite-'][data-defeated] {
+  opacity: 0.6;
+  filter: grayscale(1);
+}
+.ct-layered-construct[data-art^='elite-'][data-defeated] [data-layer='part'] {
+  transform: rotate(-5deg);
+}
+.ct-actor[data-layered] .ct-actor-scene.is-downed .ct-actor-figure {
+  animation: none;
+}
+.cd-battle[data-layered]
+  .cd-arena[data-opening]
+  .ct-actor-enemy
+  .ct-actor-figure {
+  animation: none;
+}
+.ct-actor-scene.is-downed .ct-layered-construct [data-layer='front-ring'],
+.ct-actor-scene.is-downed .ct-layered-construct [data-layer='rear-ring'] {
+  animation: ct-ring-down 400ms var(--cd-contact, 160ms) ease-out both;
+}
+.ct-actor-scene.is-downed .ct-layered-construct [data-layer='base'] {
+  animation: ct-base-stop 400ms var(--cd-contact, 160ms) ease-out both;
+}
+.ct-layered-construct[data-defeated] [data-layer='front-ring'],
+.ct-layered-construct[data-defeated] [data-layer='rear-ring'] {
+  transform: scaleY(0.82);
+}
+
+.cd-layered-effects {
+  position: absolute;
+  inset: 0;
+  grid-row: 2;
+  grid-column: 1/-1;
+  pointer-events: none;
+  z-index: 2;
+}
+.cd-layered-effects > i {
+  position: absolute;
+  display: block;
+}
+.cd-engine-pulse {
+  left: 72%;
+  top: 40%;
+  width: 13%;
+  height: 30%;
+  border: 3px double #9b6841;
+  border-radius: 50%;
+  background: #9b68411a;
+  animation: cd-pulse-travel 170ms var(--cd-release, 160ms) ease-in both;
+}
+.cd-layered-effects[data-move='宽带噪声'] .cd-engine-pulse {
+  border-radius: 0;
+  height: 45%;
+  border: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 4px,
+    #23362d 5px 6px,
+    transparent 7px 9px
+  );
+  clip-path: polygon(
+    0 10%,
+    30% 2%,
+    50% 15%,
+    80% 4%,
+    100% 12%,
+    100% 90%,
+    68% 82%,
+    40% 99%,
+    0 90%
+  );
+}
+.cd-layered-effects[data-move='尖峰干扰'] .cd-engine-pulse {
+  height: 35%;
+  border: 0;
+  border-radius: 0;
+  background: #9e4531;
+  clip-path: polygon(
+    0 45%,
+    30% 45%,
+    42% 0,
+    56% 100%,
+    70% 52%,
+    100% 45%,
+    100% 55%,
+    73% 60%,
+    55% 100%,
+    40% 20%,
+    34% 55%,
+    0 55%
+  );
+}
+.cd-layered-effects[data-move='结业劫雷'] .cd-engine-pulse {
+  top: 5%;
+  height: 80%;
+  width: 9%;
+  border: 0;
+  border-radius: 0;
+  background: #9e4531;
+  clip-path: polygon(
+    65% 0,
+    20% 48%,
+    52% 48%,
+    5% 100%,
+    90% 37%,
+    57% 37%,
+    100% 0
+  );
+  animation: cd-thunder-travel 180ms var(--cd-release, 160ms) ease-in both;
+}
+.cd-engine-move {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 5px;
+  border-left: 2px solid #9e4531;
+  background: #f8f3e7ee;
+  color: #9e4531;
+  font: 700 clamp(9px, 1.25vw, 13px)/1.4 serif;
+  white-space: nowrap;
+  animation: cd-card-still 560ms linear both;
+}
+.cd-reflection-path {
+  left: 70%;
+  top: 51%;
+  width: 18%;
+  height: 4px;
+  background: #9e4531;
+  clip-path: polygon(0 50%, 25% 0, 100% 38%, 100% 62%, 25% 100%);
+  animation: cd-reflect-travel 150ms calc(var(--cd-contact, 160ms) + 65ms)
+    ease-in both;
+}
+.cd-piercing-path {
+  left: 70%;
+  top: 46%;
+  width: 21%;
+  height: 2px;
+  background: #9e4531;
+  box-shadow: 0 4px #e1d8bf;
+  animation: cd-pulse-travel 150ms var(--cd-release, 160ms) ease-in both;
+}
+.cd-repair-contact {
+  inset: 24% 9% 15% 65%;
+  border: 1px dashed #426f4c;
+  border-radius: 45%;
+  animation: ct-repair-glow 380ms var(--cd-contact, 160ms) ease-out both;
+}
+.cd-battle .ct-effect-reflected,
+.cd-battle .ct-effect-piercing {
+  background: #f8f3e7f0;
+  color: #9e4531;
+  padding: 1px 4px;
+}
+.cd-battle .ct-effect-reflected {
+  bottom: 22%;
+  animation-delay: var(--ct-hit-delay);
+}
+.cd-battle .ct-effect-piercing {
+  bottom: 9%;
+  animation-delay: var(--cd-contact, 160ms);
+}
+.cd-battle[data-layered] .ct-effect-number,
+.cd-battle[data-layered] .ct-effect-block,
+.cd-battle[data-layered] .ct-effect-break > *,
+.cd-battle[data-layered] .ct-impact::before,
+.cd-battle[data-layered] .ct-impact::after,
+.cd-battle[data-layered] .ct-impact i {
+  animation-delay: var(--cd-contact, 160ms);
+}
+.cd-battle[data-layered] .ct-actor-scene.is-hit .ct-actor-image-frame {
+  animation-delay: var(--cd-contact, 160ms);
+}
+.cd-battle[data-layered] .ct-actor-player[data-reflected] .ct-effect-damage,
+.cd-battle[data-layered] .ct-actor-player[data-reflected] .ct-impact::before,
+.cd-battle[data-layered] .ct-actor-player[data-reflected] .ct-impact::after,
+.cd-battle[data-layered] .ct-actor-player[data-reflected] .ct-impact i,
+.cd-battle[data-layered]
+  .ct-actor-player[data-reflected]
+  .ct-actor-scene.is-hit
+  .ct-actor-image-frame {
+  animation-delay: var(--ct-hit-delay);
+}
+.cd-battle[data-layered] .ct-actor-scene,
+.ct-actor[data-layered] .ct-actor-scene {
+  container-type: size;
+}
+.cd-battle .ct-actor-enemy[data-layered] .ct-impact {
+  top: calc(100% - var(--ct-art-width) * 0.75 * var(--ct-core-y));
+  left: calc(50% + var(--ct-art-width) * var(--ct-core-x));
+}
+.cd-battle[data-layered] .cd-common-effects .cd-strike-trail {
+  animation-delay: var(--cd-release, 160ms);
+}
+.cd-result-summary[data-boss-victory] h3 {
+  border: 3px double #9e4531;
+  color: #9e4531;
+  width: fit-content;
+  padding: 3px 8px;
+  animation: cd-calculus-seal 190ms 550ms ease-out both;
+}
+
+@keyframes ct-ring-rise {
+  from {
+    transform: scaleY(0.15);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes ct-core-on {
+  from {
+    opacity: 0.1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ct-ring-pulse {
+  0%,
+  100% {
+    transform: none;
+  }
+  36% {
+    transform: rotate(-7deg) scaleX(0.94);
+  }
+  65% {
+    transform: rotate(4deg);
+  }
+}
+@keyframes ct-core-calibrate {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  40%,
+  60% {
+    opacity: 0.25;
+  }
+}
+@keyframes ct-assembly-enter {
+  from {
+    transform: translateY(12%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes ct-noise-wide {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(-2%);
+  }
+  50% {
+    transform: translateX(2%) scaleY(0.94);
+  }
+  75% {
+    transform: translateX(-1%);
+  }
+}
+@keyframes ct-noise-spike {
+  0%,
+  100% {
+    transform: none;
+  }
+  40% {
+    transform: scaleY(1.12) scaleX(0.96);
+    filter: drop-shadow(2px 0 #9e4531);
+  }
+  65% {
+    transform: scaleY(0.96);
+  }
+}
+@keyframes ct-noise-switch {
+  0%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+  45% {
+    opacity: 0.1;
+    transform: scaleY(0.08);
+  }
+}
+@keyframes ct-repair-shoulder {
+  from {
+    transform: translate(-3%, -4%) rotate(-3deg);
+    filter: drop-shadow(0 0 3px #667e65);
+  }
+  to {
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes ct-repair-module {
+  from {
+    transform: translateX(4%);
+    opacity: 0.45;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes ct-fault {
+  0%,
+  100% {
+    transform: none;
+  }
+  32% {
+    transform: translate(-1%, 1%);
+  }
+  65% {
+    transform: translate(1%, -1%);
+  }
+}
+@keyframes ct-frame-align {
+  from {
+    transform: translateX(3%) rotate(3deg);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes ct-focus-flash {
+  0%,
+  100% {
+    filter: none;
+  }
+  42% {
+    filter: drop-shadow(0 0 5px #9e4531);
+  }
+}
+@keyframes ct-elite-part {
+  0%,
+  100% {
+    transform: none;
+  }
+  38% {
+    transform: rotate(-8deg);
+  }
+  60% {
+    transform: rotate(6deg);
+  }
+}
+@keyframes ct-elite-wing {
+  0%,
+  100% {
+    transform: none;
+  }
+  38% {
+    transform: rotate(-8deg);
+  }
+  60% {
+    transform: rotate(4deg);
+  }
+}
+@keyframes ct-ring-down {
+  from {
+    transform: none;
+  }
+  to {
+    transform: scaleY(0.82);
+  }
+}
+@keyframes ct-base-stop {
+  0%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: translateY(-1%);
+  }
+  65% {
+    transform: translateX(1%);
+  }
+}
+@keyframes ct-repair-glow {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes cd-pulse-travel {
+  from {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(-370%);
+    opacity: 0;
+  }
+}
+@keyframes cd-reflect-travel {
+  from {
+    transform: translateX(0) scaleX(0.6);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(-270%);
+    opacity: 0;
+  }
+}
+@keyframes cd-thunder-travel {
+  from {
+    transform: translateX(0) scaleY(0.1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(-550%) scaleY(1);
+    opacity: 0;
+  }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .cd-battle[data-scene]:not([data-presentation='calculus']) .cd-arena {
+    background-image:
+      linear-gradient(#f6f3e83d, #f6f3e88a 72%, #f6f3e8a3),
+      var(--cd-scene-square);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ct-layered-construct,
+  .ct-layered-construct *,
+  .ct-player-poses *,
+  .cd-layered-effects *,
+  .cd-result-summary[data-boss-victory] h3 {
+    animation: none !important;
+  }
+  .ct-player-poses[data-pose] .ct-player-idle {
+    opacity: 1;
+  }
+  .ct-player-poses .ct-player-pose {
+    display: none;
+  }
+  .ct-player-poses .ct-player-follow-hit {
+    display: none;
+  }
+  .cd-layered-effects > i {
+    display: none;
+  }
+  .cd-engine-move {
+    animation: cd-card-still 560ms linear both !important;
+  }
+}

@@ -33,6 +33,26 @@ const WIDTH = 640;
 const HEIGHT = 580;
 const FIRST_Y = 530;
 const STEP = 54;
+const LANDMARKS = [
+  new URL('../card-battle/ui/assets/batch-two/map-study.webp', import.meta.url)
+    .href,
+  new URL(
+    '../card-battle/ui/assets/batch-two/map-circuit.webp',
+    import.meta.url
+  ).href,
+  new URL(
+    '../card-battle/ui/assets/batch-two/map-terminal.webp',
+    import.meta.url
+  ).href,
+  new URL(
+    '../card-battle/ui/assets/batch-two/map-workshop.webp',
+    import.meta.url
+  ).href,
+  new URL(
+    '../card-battle/ui/assets/batch-two/map-defense.webp',
+    import.meta.url
+  ).href,
+];
 
 function point({ floor, lane }: Pick<RogueMapNode, 'floor' | 'lane'>) {
   return {
@@ -145,6 +165,17 @@ export default function RogueRouteMap({ run, onChoose, busy = false }: Props) {
         tabIndex={0}
       >
         <div className="rm-route-canvas" ref={canvas}>
+          <img
+            className="rm-route-landmark"
+            src={LANDMARKS[chapter - 1]}
+            alt=""
+            aria-hidden="true"
+            data-chapter={chapter}
+            width="320"
+            height="240"
+            draggable={false}
+            decoding="async"
+          />
           <svg
             className="rm-route-edges"
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}

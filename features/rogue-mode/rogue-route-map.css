@@ -119,6 +119,21 @@
   pointer-events: none;
 }
 
+/* Chapter scenery sits on the paper behind every selectable node and line. */
+.rm-route-landmark {
+  position: absolute;
+  right: -6%;
+  top: 17%;
+  width: 45%;
+  height: auto;
+  opacity: 0.15;
+  filter: saturate(0.45);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  user-select: none;
+  z-index: -1;
+}
+
 .rm-route-edges line {
   stroke: #8a987a;
   stroke-width: 1.2;
